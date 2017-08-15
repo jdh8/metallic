@@ -4,12 +4,10 @@
 void* memchr(const void* source, int c, size_t length)
 {
     for (const unsigned char* cache = source; length; --length)
-    {
         if (*cache == c)
             return (void*) cache;
         else
             ++cache;
-    }
 
     return NULL;
 }
@@ -25,43 +23,36 @@ int memcmp(const void* lhs, const void* rhs, size_t length)
     const unsigned char* b = rhs;
 
     for (int sign; length; --length)
-    {
         if ((sign = compare(*a++, *b++)))
             return sign;
-    }
 
     return 0;
 }
 
 void* memset(void* destination, int c, size_t length)
 {
-    const uint64_t mask = UINT64_C(0x0101010101010101) * (unsigned char) c;
+    const uint64_t vector = UINT64_C(0x0101010101010101) * (unsigned char) c;
     unsigned char* dst = destination;
 
-    /* Align destination by 8 bytes */
-    for (; length && (uintptr_t) dst % 8; --length)
+    for (; length && (uintptr_t) dst % sizeof(uint64_t); --length)
         *dst++ = c;
 
-    /* Set aligned 8-byte chunks */
-    for (; length >= 8; length -= 8)
-    {
-        *(uint64_t*) dst = mask;
-        dst += 8;
-    }
+    uint64_t* vdst = (uint64_t*) destination;
 
-    /* Set remaining bytes */
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
+        *vdst++ = vector;
 
-    if (length & 4)
-    {
-        *(uint32_t*) dst = mask;
-        dst += 4;
-    }
+    uint32_t* dst32 = (uint32_t*) vdst;
 
-    if (length & 2)
-    {
-        *(uint16_t*) dst = mask;
-        dst += 2;
-    }
+    if (length & sizeof(uint32_t))
+        *dst32++ = vector;
+
+    uint16_t* dst16 = (uint16_t*) dst32;
+
+    if (length & sizeof(uint16_t))
+        *dst16++ = vector;
+
+    dst = (unsigned char*) dst16;
 
     if (length & 1)
         *dst = c;
@@ -69,63 +60,88 @@ void* memset(void* destination, int c, size_t length)
     return destination;
 }
 
-void* memcpy(void* restrict destination, const void* restrict source, size_t length)
+static unsigned char* copy(unsigned char* destination, const unsigned char* source, size_t length)
 {
-    unsigned char* restrict dst = destination;
-    const unsigned char* restrict src = source;
+    for (; length && (uintptr_t) destination % sizeof(uint64_t); --length)
+        *destination++ = *source++;
 
-    /* Align destination by 8 bytes */
-    for (; length && (uintptr_t) dst % 8; --length)
-        *dst++ = *src++;
+    uint64_t* vdst = (uint64_t*) destination;
+    const uint64_t* vsrc = (const uint64_t*) source;
 
-    /* Copy aligned 8-byte chunks */
-    for (; length >= 8; length -= 8)
-    {
-        *(uint64_t*) dst = *(const uint64_t*) src;
-        dst += 8;
-        src += 8;
-    }
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
+        *vdst++ = *vsrc++;
 
-    /* Copy remaining bytes */
+    uint32_t* dst32 = (uint32_t*) vdst;
+    const uint32_t* src32 = (const uint32_t*) vsrc;
 
-    if (length & 4)
-    {
-        *(uint32_t*) dst = *(const uint32_t*) src;
-        dst += 4;
-        src += 4;
-    }
+    if (length & sizeof(uint32_t))
+        *dst32++ = *src32++;
 
-    if (length & 2)
-    {
-        *(uint16_t*) dst = *(const uint16_t*) src;
-        dst += 2;
-        src += 2;
-    }
+    uint16_t* dst16 = (uint16_t*) dst32;
+    const uint16_t* src16 = (const uint16_t*) src32;
+
+    if (length & sizeof(uint16_t))
+        *dst16++ = *src16++;
+
+    destination = (unsigned char*) dst16;
+    source = (const unsigned char*) src16;
 
     if (length & 1)
-        *dst = *src;
+        *destination++ = *source++;
+
+    return destination;
+}
+
+void* memcpy(void* restrict destination, const void* restrict source, size_t length)
+{
+    copy(destination, source, length);
+    return destination;
+}
+
+static unsigned char* reverse_copy(unsigned char* destination, const unsigned char* source, size_t length)
+{
+    destination += length;
+    source += length;
+
+    for (; length && (uintptr_t) destination % sizeof(uint64_t); --length)
+        *--destination = *--source;
+
+    uint64_t* vdst = (uint64_t*) destination;
+    const uint64_t* vsrc = (const uint64_t*) source;
+
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
+        *--vdst = *--vsrc;
+
+    uint32_t* dst32 = (uint32_t*) vdst;
+    const uint32_t* src32 = (const uint32_t*) vsrc;
+
+    if (length & sizeof(uint32_t))
+        *--dst32 = *--src32;
+
+    uint16_t* dst16 = (uint16_t*) dst32;
+    const uint16_t* src16 = (const uint16_t*) src32;
+
+    if (length & sizeof(uint16_t))
+        *--dst16 = *--src16;
+
+    destination = (unsigned char*) dst16;
+    source = (const unsigned char*) src16;
+
+    if (length & 1)
+        *--destination = *--source;
 
     return destination;
 }
 
 void* memmove(void* destination, const void* source, size_t length)
 {
-    unsigned char* restrict dst = destination;
-    const unsigned char* restrict src = source;
+    unsigned char* dst = destination;
+    const unsigned char* src = source;
 
     if (dst - src >= length)
-    {
-        for (; length; --length)
-            *dst++ = *src++;
-    }
+        copy(dst, src, length);
     else
-    {
-        dst += length;
-        src += length;
-
-        for (; length; --length)
-            *--dst = *--src;
-    }
+        reverse_copy(dst, src, length);
 
     return destination;
 }
