@@ -7,11 +7,7 @@ void* memcpy(void* restrict destination, const void* restrict source, size_t len
 
     /* I know this is naive, but compiler will optimized this because we have restrict. */
     for (; length; --length)
-    {
-        *dst = *src;
-        ++dst;
-        ++src;
-    }
+        *dst++ = *src++;
 
     return destination;
 }
