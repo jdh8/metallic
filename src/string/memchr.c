@@ -6,14 +6,12 @@ void* memchr(const void* source, int c, size_t length)
     const unsigned char* src = source;
 
     for (; length && (uintptr_t) src % sizeof(unsigned long); --length)
-        if (*src == c)
-            return (void*) src;
-        else
-            ++src;
+        if (*src++ == c)
+            return (void*)--src;
 
     const unsigned long* vsrc = (const unsigned long*) src;
-    const unsigned long magic = 0x7efefefefefefeffUL;
-    const unsigned long mask = 0x0101010101010101UL * (unsigned char) c;
+    const unsigned long magic = (unsigned long) 0x7efefefefefefeffu;
+    const unsigned long mask = 0x0101010101010101u * (unsigned char) c;
 
     for (; length >= sizeof(unsigned long); length -= sizeof(unsigned long))
     {
@@ -27,10 +25,8 @@ void* memchr(const void* source, int c, size_t length)
     }
 
     for (; length; --length)
-        if (*src == c)
-            return (void*) src;
-        else
-            ++src;
+        if (*src++ == c)
+            return (void*)--src;
 
     return NULL;
 }

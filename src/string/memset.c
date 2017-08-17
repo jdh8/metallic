@@ -3,7 +3,7 @@
 
 void* memset(void* destination, int c, size_t length)
 {
-    const unsigned long vector = 0x0101010101010101UL * (unsigned char) c;
+    const unsigned long vector = 0x0101010101010101u * (unsigned char) c;
     unsigned char* dst = destination;
 
     for (; length && (uintptr_t) dst % sizeof(unsigned long); --length)
