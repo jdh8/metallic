@@ -3,20 +3,20 @@
 
 void* memset(void* destination, int c, size_t length)
 {
-    const unsigned long vector = 0x0101010101010101u * (unsigned char) c;
+    const uint64_t vector = 0x0101010101010101u * (unsigned char) c;
     unsigned char* dst = destination;
 
-    for (; length && (uintptr_t) dst % sizeof(unsigned long); --length)
+    for (; length && (uintptr_t) dst % sizeof(uint64_t); --length)
         *dst++ = c;
 
-    unsigned long* vdst = (unsigned long*) destination;
+    uint64_t* vdst = (uint64_t*) destination;
 
-    for (; length >= sizeof(unsigned long); length -= sizeof(unsigned long))
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
         *vdst++ = vector;
 
     uint32_t* dst32 = (uint32_t*) vdst;
 
-    if (sizeof(unsigned long) > sizeof(uint32_t) && length & sizeof(uint32_t))
+    if (length & sizeof(uint32_t))
         *dst32++ = vector;
 
     uint16_t* dst16 = (uint16_t*) dst32;
