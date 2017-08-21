@@ -7,6 +7,13 @@ void* memcpy(void*__restrict destination, const void*__restrict source, size_t l
 void* memmove(void* destination, const void* source, size_t length);
 void* memset(void* destination, int c, size_t length);
 
+#ifdef _GNU_SOURCE
+void* __mempcpy(void*__restrict destination, const void*__restrict source, size_t length);
+
+inline void* mempcpy(void*__restrict destination, const void*__restrict source, size_t length)
+{ return __mempcpy(destination, source, length); }
+#endif
+
 #ifdef __cplusplus
 namespace __metallic {
 #endif
