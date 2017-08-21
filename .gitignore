@@ -50,9 +50,3 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
-
-# Intermediate and final results for WebAssembly
-*.ll
-*.s
-*.wast
-*.wasm
