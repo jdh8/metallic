@@ -1,6 +1,6 @@
 Metallic
 ========
-A try to build a C runtime on WebAssembly
+A try to build a C/C++ runtime on WebAssembly
 
 This name is from Gary Bernhardt "[The Birth & Death of JavaScript][bdjs]",
 where a world of **metal** web applications is conceived.  This library is
@@ -9,12 +9,23 @@ is near native.
 
 [bdjs]: https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript
 
-Dependency
-----------
-Only freestanding C headers:
+System requirements
+-------------------
+Most environments with GCC-compatible compilers (e.g. GCC and clang) meet these
+requirements.
 
-* stddef.h
-* stdint.h
+* GCC-compatible builtins
+* ILP32 or LP64 data model
 
-Compilers able to generate WebAssembly code are likely to provide these
-headers.
+License
+-------
+Mozilla Public License is chosen because it draws a clear line between copyleft
+and copycenter usage.  The line lies in file boundaries.
+
+If you are to modify these source files, this is copyleft, i.e. you must
+release these modifications as free software.  Nevertheless, if you simply
+include or link to this library, you can keep your project proprietary.
+
+I think this is the best licensing strategy for a library which already has
+competitors.  This license enforces openness of the library but allows maximum
+usage thereof.

@@ -6,17 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifdef __cplusplus
-#define _Noreturn [[noreturn]]
-extern "C" {
-#endif
+typedef __builtin_va_list va_list;
 
-_Noreturn inline void abort(void) { __builtin_trap(); }
+#define va_start(list, antecedent) __builtin_va_start(list, antecedent)
+#define va_arg(list, type) __builtin_va_arg(list, type)
+#define va_end(list) __builtin_va_end(v)
 
-_Noreturn void exit(int);
-_Noreturn void _Exit(int);
-
-#ifdef __cplusplus
-}
-#undef _Noreturn
+#if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
+#define va_copy(destination, source) __builtin_va_copy(destination, source)
 #endif

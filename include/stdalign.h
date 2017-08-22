@@ -6,17 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef double time_t;
-typedef double clock_t;
+#ifndef __cplusplus
 
-#define CLOCKS_PER_SEC 1000.0
+#define alignas _Alignas
+#define alignof _Alignof
 
-extern double _Date_now(void);
-extern double clock(void);
+#endif
 
-inline time_t time(time_t* timer)
-{
-    time_t result = _Date_now() / 1000;
-    if (timer) *timer = result;
-    return result;
-}
+#define __alignas_is_defined 1
+#define __alignof_is_defined 1
+
