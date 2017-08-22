@@ -8,38 +8,36 @@
  */
 #define MB_LEN_MAX 16
 
-#define CHAR_BIT 8
-
-#define SCHAR_MIN (-128)
-#define SCHAR_MAX 127
-#define UCHAR_MAX 255
-
-#ifdef __CHAR_UNSIGNED__
-# define CHAR_MIN 0
-# define CHAR_MAX UCHAR_MAX
+#ifdef __CHAR_BIT__
+#define CHAR_BIT __CHAR_BIT__
 #else
+#define CHAR_BIT 8
+#endif
+
+#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define SCHAR_MAX ((signed char)(UCHAR_MAX / 2))
+#define UCHAR_MAX ((unsigned char)-1)
+
+#if (char)-1 < 0
 # define CHAR_MIN SCHAR_MIN
 # define CHAR_MAX SCHAR_MAX
+#else
+# define CHAR_MIN '\0'
+# define CHAR_MAX UCHAR_MAX
 #endif
 
-#define SHRT_MIN  (-32768)
-#define SHRT_MAX  32767
-#define USHRT_MAX 65535
+#define SHRT_MIN  (-SHRT_MAX - 1)
+#define SHRT_MAX  ((short)(USHRT_MAX / 2))
+#define USHRT_MAX ((unsigned short)-1)
 
 #define INT_MIN  (-INT_MAX - 1)
-#define INT_MAX  0x7FFFFFFF
-#define UINT_MAX 0xFFFFFFFFU
+#define INT_MAX  ((int)(-1u / 2))
+#define UINT_MAX (-1u)
 
 #define LONG_MIN  (-LONG_MAX - 1)
-
-#ifdef __LP64__
-# define LONG_MAX  0x7FFFFFFFFFFFFFFF
-# define ULONG_MAX 0xFFFFFFFFFFFFFFFFU
-#else
-# define LONG_MAX  0x7FFFFFFF
-# define ULONG_MAX 0xFFFFFFFFU
-#endif
+#define LONG_MAX  ((long)(-1UL / 2))
+#define ULONG_MAX (-1UL)
 
 #define LLONG_MIN  (-LLONG_MAX - 1)
-#define LLONG_MAX  0x7FFFFFFFFFFFFFFF
-#define ULLONG_MAX 0xFFFFFFFFFFFFFFFFU
+#define LLONG_MAX  ((long long)(-1ULL / 2))
+#define ULLONG_MAX (-1ULL)
