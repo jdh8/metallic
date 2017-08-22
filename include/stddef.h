@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef unsigned long size_t;
-typedef long ptrdiff_t;
+typedef __SIZE_TYPE__ size_t;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
 #if (__cplusplus >= 201103)
 # define NULL nullptr

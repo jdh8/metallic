@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+typedef __INTPTR_TYPE__ intptr_t;
+typedef __UINTPTR_TYPE__ uintptr_t;
+
 typedef signed char int8_t;
 typedef short int16_t;
 typedef int int32_t;
@@ -37,17 +40,14 @@ typedef uint32_t uint_least32_t;
 typedef uint64_t uint_least64_t;
 
 typedef signed char int_fast8_t;
-typedef long        int_fast16_t;
-typedef long        int_fast32_t;
+typedef intptr_t    int_fast16_t;
+typedef intptr_t    int_fast32_t;
 typedef int64_t     int_fast64_t;
 
 typedef unsigned char uint_fast8_t;
-typedef unsigned long uint_fast16_t;
-typedef unsigned long uint_fast32_t;
+typedef uintptr_t     uint_fast16_t;
+typedef uintptr_t     uint_fast32_t;
 typedef uint64_t      uint_fast64_t;
-
-typedef long intptr_t;
-typedef unsigned long uintptr_t;
 
 typedef int64_t intmax_t;
 typedef uint64_t uintmax_t;
@@ -79,12 +79,12 @@ typedef uint64_t uintmax_t;
 #define INT8_MAX  0x7F
 #define INT16_MAX 0x7FFF
 #define INT32_MAX 0x7FFFFFFF
-#define INT64_MAX 0x7FFFFFFFFFFFFFFF
+#define INT64_MAX INT64_C(0x7FFFFFFFFFFFFFFF)
 
 #define UINT8_MAX  0xFF
 #define UINT16_MAX 0xFFFFU
 #define UINT32_MAX 0xFFFFFFFFU
-#define UINT64_MAX 0xFFFFFFFFFFFFFFFFU
+#define UINT64_MAX UINT64_C(0xFFFFFFFFFFFFFFFF)
 
 #define INT_LEAST8_MIN  INT8_MIN
 #define INT_LEAST16_MIN INT16_MIN
@@ -128,8 +128,8 @@ typedef uint64_t uintmax_t;
 #define SIG_ATOMIC_MIN INT32_MIN
 #define SIG_ATOMIC_MAX INT32_MAX
 
-#define WCHAR_MIN __WCHAR_MIN
-#define WCHAR_MAX __WCHAR_MAX
+#define WCHAR_MIN __WCHAR_MIN__
+#define WCHAR_MAX __WCHAR_MAX__
 
 #define WINT_MIN 0u
 #define WINT_MAX INT32_MAX
