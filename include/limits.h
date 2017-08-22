@@ -14,7 +14,7 @@
 #define CHAR_BIT 8
 #endif
 
-#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define SCHAR_MIN (-SCHAR_MAX - (-(signed char)1 == ~(signed char)0))
 #define SCHAR_MAX ((signed char)(UCHAR_MAX / 2))
 #define UCHAR_MAX ((unsigned char)-1)
 
@@ -26,18 +26,18 @@
 # define CHAR_MAX UCHAR_MAX
 #endif
 
-#define SHRT_MIN  (-SHRT_MAX - 1)
+#define SHRT_MIN  (-SHRT_MAX - (-(short)1 == ~(short)0))
 #define SHRT_MAX  ((short)(USHRT_MAX / 2))
 #define USHRT_MAX ((unsigned short)-1)
 
-#define INT_MIN  (-INT_MAX - 1)
+#define INT_MIN  (-INT_MAX - (-1 == ~0))
 #define INT_MAX  ((int)(-1u / 2))
 #define UINT_MAX (-1u)
 
-#define LONG_MIN  (-LONG_MAX - 1)
+#define LONG_MIN  (-LONG_MAX - (-1L == ~0L))
 #define LONG_MAX  ((long)(-1UL / 2))
 #define ULONG_MAX (-1UL)
 
-#define LLONG_MIN  (-LLONG_MAX - 1)
+#define LLONG_MIN  (-LLONG_MAX - (-1LL == ~0LL))
 #define LLONG_MAX  ((long long)(-1ULL / 2))
 #define ULLONG_MAX (-1ULL)
