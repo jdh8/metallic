@@ -1,6 +1,5 @@
 #ifdef __wasm__
 
-#include <type_traits>
 #include <cstdint>
 
 namespace {
