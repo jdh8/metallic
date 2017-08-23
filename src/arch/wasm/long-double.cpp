@@ -53,6 +53,11 @@ bool Tetra::isnan() const
 
 } // namespace
 
+bool isunordered(Tetra a, Tetra b)
+{
+    return Tetra(a).isnan() || Tetra(b).isnan();
+}
+
 bool operator==(Tetra a, Tetra b)
 {
     return (__int128(a) == __int128(b) && !a.isnan()) || !(a || b);
@@ -62,7 +67,7 @@ extern "C" {
 
 int __unordtf2(Tetra::Real a, Tetra::Real b)
 {
-    return Tetra(a).isnan() || Tetra(b).isnan();
+    return isunordered(Tetra(a), Tetra(b));
 }
 
 int __eqtf2(Tetra::Real a, Tetra::Real b)
