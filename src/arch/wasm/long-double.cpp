@@ -56,7 +56,7 @@ bool Tetra::isnan() const
 
 bool operator==(Tetra a, Tetra b)
 {
-    return a.exp != 0x7fff && b.exp != 0x7fff && (!(a || b) || __int128(a) == __int128(b));
+    return __int128(a) == __int128(b) && a.exp != 0x7fff || !(a || b);
 }
 
 extern "C" {
