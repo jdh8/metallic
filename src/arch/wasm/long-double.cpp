@@ -70,6 +70,11 @@ int __eqtf2(Tetra::Real a, Tetra::Real b)
     return Tetra(a) == Tetra(b);
 }
 
+int __netf2(Tetra::Real a, Tetra::Real b)
+{
+    return !__eqtf2(a, b);
+}
+
 } // extern "C"
 
 #endif // __wasm__
