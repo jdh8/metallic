@@ -63,6 +63,16 @@ bool operator==(Tetra a, Tetra b)
     return (a.bits() == b.bits() && !a.isnan()) || !(a || b);
 }
 
+bool operator<(Tetra a, Tetra b)
+{
+    return !isunordered(a, b) && ((a.bits() < b.bits()) != (a.sign && b.sign)) && (a || b);
+}
+
+bool operator<=(Tetra a, Tetra b)
+{
+    return (!isunordered(a, b) && ((a.bits() <= b.bits()) != (a.sign && b.sign))) || !(a || b);
+}
+
 extern "C" {
 
 int __unordtf2(Tetra::Real a, Tetra::Real b)
@@ -78,6 +88,26 @@ int __eqtf2(Tetra::Real a, Tetra::Real b)
 int __netf2(Tetra::Real a, Tetra::Real b)
 {
     return !__eqtf2(a, b);
+}
+
+int __lttf2(Tetra::Real a, Tetra::Real b)
+{
+    return Tetra(a) < Tetra(b);
+}
+
+int __gttf2(Tetra::Real a, Tetra::Real b)
+{
+    return __lttf2(b, a);
+}
+
+int __letf2(Tetra::Real a, Tetra::Real b)
+{
+    return Tetra(a) <= Tetra(b);
+}
+
+int __getf2(Tetra::Real a, Tetra::Real b)
+{
+    return __letf2(b, a);
 }
 
 } // extern "C"
