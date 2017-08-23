@@ -15,9 +15,9 @@ struct Tetra
     Tetra(Real);
 
     explicit operator Real() const;
-    explicit operator __int128() const;
     explicit operator bool() const;
 
+    __int128 bits() const;
     bool isnan() const;
 };
 
@@ -34,16 +34,16 @@ Tetra::operator Real() const
     return result;
 }
 
-Tetra::operator __int128() const
+Tetra::operator bool() const
+{
+    return exp || mantissa;
+}
+
+__int128 Tetra::bits() const
 {
     __int128 result;
     __builtin_memcpy(&result, this, sizeof(Tetra));
     return result;
-}
-
-Tetra::operator bool() const
-{
-    return exp || mantissa;
 }
 
 bool Tetra::isnan() const
@@ -60,7 +60,7 @@ bool isunordered(Tetra a, Tetra b)
 
 bool operator==(Tetra a, Tetra b)
 {
-    return (__int128(a) == __int128(b) && !a.isnan()) || !(a || b);
+    return (a.bits() == b.bits() && !a.isnan()) || !(a || b);
 }
 
 extern "C" {
