@@ -149,7 +149,7 @@ Tetra::Tetra(Real real)
 }
 
 Tetra::Tetra(Single object)
-  : mantissa(static_cast<unsigned __int128>(object.mantissa) << (112 - 23)),
+  : mantissa(Unsigned(0, object.mantissa << 25)),
     exp(object.exp == 0xFF ? 0xFF : 0x3FFF - 0x7F + object.exp),
     sign(object.sign)
 {
@@ -160,12 +160,12 @@ Tetra::Tetra(Single object)
             break;
         default:
             exp -= zeros - 9;
-            mantissa <<= zeros - 8;
+            mantissa = Unsigned(mantissa) << (zeros - 8);
     }
 }
 
 Tetra::Tetra(Double object)
-  : mantissa(static_cast<unsigned __int128>(object.mantissa) << (112 - 52)),
+  : mantissa(Unsigned(object.mantissa << 60, object.mantissa >> 4)),
     exp(object.exp == 0x7FF ? 0x7FF : 0x3FFF - 0x3FF + object.exp),
     sign(object.sign)
 {
@@ -176,18 +176,18 @@ Tetra::Tetra(Double object)
             break;
         default:
             exp -= zeros - 12;
-            mantissa <<= zeros - 11;
+            mantissa = Unsigned(mantissa) << (zeros - 11);
     }
 }
 
 Tetra::Tetra(std::uint32_t integer)
-  : mantissa(static_cast<unsigned __int128>(integer) << (112 - 32 + 1 + __builtin_clz(integer))),
+  : mantissa(Unsigned(integer) << (112 - 32 + 1 + __builtin_clz(integer))),
     exp((0x401E - __builtin_clz(integer)) * !!integer),
     sign(0)
 {}
 
 Tetra::Tetra(std::uint64_t integer)
-  : mantissa(static_cast<unsigned __int128>(integer) << (112 - 64 + 1 + __builtin_clzll(integer))),
+  : mantissa(Unsigned(integer) << (112 - 64 + 1 + __builtin_clzll(integer))),
     exp((0x403E - __builtin_clzll(integer)) * !!integer),
     sign(0)
 {}
