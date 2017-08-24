@@ -12,7 +12,7 @@ struct Tetra
 
     Tetra(Real);
 
-    explicit operator Real() const;
+    operator Real() const;
     explicit operator bool() const;
 
     __int128 bits() const;
@@ -116,7 +116,7 @@ int __getf2(Tetra::Real a, Tetra::Real b)
 
 Tetra::Real __negtf2(Tetra::Real a)
 {
-    return Tetra::Real(-Tetra(a));
+    return -Tetra(a);
 }
 
 } // extern "C"
