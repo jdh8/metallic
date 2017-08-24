@@ -61,7 +61,7 @@ Unsigned operator<<(Unsigned a, int shift)
     if (shift & 64)
         return { 0, a.low << shift };
     else
-        return { a.low << shift, a.high << shift | a.low >> -shift };
+        return { a.low << shift, a.high << shift | a.low >> (64 - shift) };
 }
 
 Signed operator>>(Signed a, int shift)
@@ -69,7 +69,7 @@ Signed operator>>(Signed a, int shift)
     if (shift & 64)
         return { std::uint64_t(a.high) >> shift, a.high >> 63 };
     else
-        return { a.high << -shift | a.low >> shift, a.high >> shift };
+        return { a.high << (64 - shift) | a.low >> shift, a.high >> shift };
 }
 
 Unsigned operator>>(Unsigned a, int shift)
@@ -149,7 +149,7 @@ Tetra::Tetra(Real real)
 }
 
 Tetra::Tetra(Single object)
-  : mantissa(Unsigned(0, object.mantissa << 25)),
+  : mantissa(__int128(object.mantissa) << (112 - 23)),
     exp(object.exp == 0xFF ? 0xFF : 0x3FFF - 0x7F + object.exp),
     sign(object.sign)
 {
@@ -160,12 +160,12 @@ Tetra::Tetra(Single object)
             break;
         default:
             exp -= zeros - 9;
-            mantissa = Unsigned(mantissa) << (zeros - 8);
+            mantissa = Unsigned(0, std::uint64_t(mantissa >> 64) << (zeros - 8));
     }
 }
 
 Tetra::Tetra(Double object)
-  : mantissa(Unsigned(object.mantissa << 60, object.mantissa >> 4)),
+  : mantissa(__int128(object.mantissa) << (112 - 52)),
     exp(object.exp == 0x7FF ? 0x7FF : 0x3FFF - 0x3FF + object.exp),
     sign(object.sign)
 {
@@ -176,12 +176,12 @@ Tetra::Tetra(Double object)
             break;
         default:
             exp -= zeros - 12;
-            mantissa = Unsigned(mantissa) << (zeros - 11);
+            mantissa = Unsigned(mantissa) << ((zeros - 11) & 63);
     }
 }
 
 Tetra::Tetra(std::uint32_t integer)
-  : mantissa(Unsigned(integer) << (112 - 32 + 1 + __builtin_clz(integer))),
+  : mantissa(Unsigned(0, std::uint64_t(integer) << (112 - 32 - 64 + 1 + __builtin_clz(integer)))),
     exp((0x401E - __builtin_clz(integer)) * !!integer),
     sign(0)
 {}
