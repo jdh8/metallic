@@ -1,26 +1,90 @@
 #include <cstdint>
 
+namespace {
+
+struct Signed
+{
+    std::uint64_t low;
+    std::int64_t high;
+
+    Signed(std::uint64_t, std::int64_t);
+    Signed(__int128);
+    operator __int128() const;
+};
+
+Signed::Signed(std::uint64_t l, std::int64_t h)
+  : low(l), high(h)
+{}
+
+Signed::Signed(__int128 data)
+{
+    __builtin_memcpy(this, &data, sizeof(__int128));
+}
+
+Signed::operator __int128() const
+{
+    __int128 result;
+    __builtin_memcpy(&result, this, sizeof(__int128));
+    return result;
+}
+
+struct Unsigned
+{
+    std::uint64_t low;
+    std::uint64_t high;
+
+    Unsigned(std::uint64_t, std::uint64_t);
+    Unsigned(unsigned __int128);
+    operator unsigned __int128() const;
+};
+
+Unsigned::Unsigned(std::uint64_t l, std::uint64_t h)
+  : low(l), high(h)
+{}
+
+Unsigned::Unsigned(unsigned __int128 data)
+{
+    __builtin_memcpy(this, &data, sizeof(unsigned __int128));
+}
+
+Unsigned::operator unsigned __int128() const
+{
+    unsigned __int128 result;
+    __builtin_memcpy(&result, this, sizeof(unsigned __int128));
+    return result;
+}
+
+} // namespace
+
+Unsigned operator<<(Unsigned a, int shift)
+{
+    if (shift & 64)
+        return { 0, a.low << shift };
+    else
+        return { a.low << shift, a.high << shift | a.low >> -shift };
+}
+
+Signed operator>>(Signed a, int shift)
+{
+    if (shift & 64)
+        return { std::uint64_t(a.high) >> shift, a.high >> 63 };
+    else
+        return { a.high << -shift | a.low >> shift, a.high >> shift };
+}
+
+Unsigned operator>>(Unsigned a, int shift)
+{
+    if (shift & 64)
+        return { a.high >> shift, 0 };
+    else
+        return { a.high << -shift | a.low >> shift, a.high >> shift };
+}
+
 extern "C" {
 
-__int128 __ashlti3(__int128 a, int shift)
-{
-    std::uint64_t array[2];
-    __builtin_memcpy(array, &a, sizeof(__int128));
-
-    if (shift & 64)
-    {
-        array[1] = array[0] << shift;
-        array[0] = 0;
-    }
-    else
-    {
-        array[1] = array[1] << shift | array[0] >> -shift;
-        array[0] <<= shift;
-    }
-
-    __builtin_memcpy(&a, array, sizeof(__int128));
-    return a;
-}
+__int128 __ashlti3(__int128 a, int shift) { return Unsigned(a) << shift; }
+__int128 __ashrti3(__int128 a, int shift) { return Signed(a) >> shift; }
+__int128 __lshrti3(__int128 a, int shift) { return Unsigned(a) >> shift; }
 
 } // extern "C"
 
