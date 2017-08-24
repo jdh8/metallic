@@ -51,10 +51,14 @@ bool Tetra::isnan() const
 
 } // namespace
 
+namespace std {
+
 bool isunordered(Tetra a, Tetra b)
 {
     return Tetra(a).isnan() || Tetra(b).isnan();
 }
+
+} // namespace std
 
 bool operator==(Tetra a, Tetra b)
 {
@@ -63,13 +67,17 @@ bool operator==(Tetra a, Tetra b)
 
 bool operator<(Tetra a, Tetra b)
 {
-    return !isunordered(a, b) && ((a.bits() < b.bits()) != (a.sign && b.sign)) && (a || b);
+    return !std::isunordered(a, b) && ((a.bits() < b.bits()) != (a.sign && b.sign)) && (a || b);
 }
 
 bool operator<=(Tetra a, Tetra b)
 {
-    return (!isunordered(a, b) && ((a.bits() <= b.bits()) != (a.sign && b.sign))) || !(a || b);
+    return (!std::isunordered(a, b) && ((a.bits() <= b.bits()) != (a.sign && b.sign))) || !(a || b);
 }
+
+bool operator!=(Tetra a, Tetra b) { return !(a == b); }
+bool operator> (Tetra a, Tetra b) { return b < a; }
+bool operator>=(Tetra a, Tetra b) { return b <= a; }
 
 Tetra operator-(Tetra a)
 {
@@ -79,44 +87,15 @@ Tetra operator-(Tetra a)
 
 extern "C" {
 
-int __unordtf2(Tetra::Real a, Tetra::Real b)
-{
-    return isunordered(Tetra(a), Tetra(b));
-}
+int __unordtf2(Tetra::Real a, Tetra::Real b) { return std::isunordered(Tetra(a), Tetra(b)); }
 
-int __eqtf2(Tetra::Real a, Tetra::Real b)
-{
-    return Tetra(a) == Tetra(b);
-}
+int __eqtf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) == Tetra(b); }
+int __netf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) != Tetra(b); }
+int __lttf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) < Tetra(b); }
+int __gttf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) > Tetra(b); }
+int __letf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) <= Tetra(b); }
+int __getf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) >= Tetra(b); }
 
-int __netf2(Tetra::Real a, Tetra::Real b)
-{
-    return !__eqtf2(a, b);
-}
-
-int __lttf2(Tetra::Real a, Tetra::Real b)
-{
-    return Tetra(a) < Tetra(b);
-}
-
-int __gttf2(Tetra::Real a, Tetra::Real b)
-{
-    return __lttf2(b, a);
-}
-
-int __letf2(Tetra::Real a, Tetra::Real b)
-{
-    return Tetra(a) <= Tetra(b);
-}
-
-int __getf2(Tetra::Real a, Tetra::Real b)
-{
-    return __letf2(b, a);
-}
-
-Tetra::Real __negtf2(Tetra::Real a)
-{
-    return -Tetra(a);
-}
+Tetra::Real __negtf2(Tetra::Real a) { return -Tetra(a); }
 
 } // extern "C"
