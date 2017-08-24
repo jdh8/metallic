@@ -2,6 +2,34 @@
 
 namespace {
 
+struct Single
+{
+    std::uint32_t mantissa: 23;
+    unsigned int exp : 8;
+    unsigned int sign: 1;
+
+    Single(float);
+};
+
+Single::Single(float real)
+{
+    __builtin_memcpy(this, &real, sizeof(float));
+}
+
+struct Double
+{
+    std::uint64_t mantissa: 52;
+    unsigned int exp : 11;
+    unsigned int sign: 1;
+
+    Double(double);
+};
+
+Double::Double(double real)
+{
+    __builtin_memcpy(this, &real, sizeof(double));
+}
+
 struct Tetra
 {
     [[gnu::mode(TF)]] typedef float Real;
@@ -11,6 +39,8 @@ struct Tetra
     unsigned int sign:  1;
 
     Tetra(Real);
+    Tetra(Single);
+    Tetra(Double);
 
     operator Real() const;
     explicit operator bool() const;
@@ -21,8 +51,39 @@ struct Tetra
 
 Tetra::Tetra(Real real)
 {
-    static_assert(sizeof(Tetra) == sizeof(Real), "Bug: [[gnu::mode(TF)]] float does not fit Tetra.");
     __builtin_memcpy(this, &real, sizeof(Tetra));
+}
+
+Tetra::Tetra(Single object)
+  : mantissa(static_cast<unsigned __int128>(object.mantissa) << (112 - 23)),
+    exp(object.exp == 0xFF ? 0xFF : 0x3FFF - 0x7F + object.exp),
+    sign(object.sign)
+{
+    if (object.exp == 0) switch (int zeros = __builtin_clz(object.mantissa))
+    {
+        case 32:
+            exp = 0;
+            break;
+        default:
+            exp -= zeros - 9;
+            mantissa <<= zeros - 8;
+    }
+}
+
+Tetra::Tetra(Double object)
+  : mantissa(static_cast<unsigned __int128>(object.mantissa) << (112 - 52)),
+    exp(object.exp == 0x7FF ? 0x7FF : 0x3FFF - 0x3FF + object.exp),
+    sign(object.sign)
+{
+    if (object.exp == 0) switch (int zeros = __builtin_clzll(object.mantissa))
+    {
+        case 64:
+            exp = 0;
+            break;
+        default:
+            exp -= zeros - 12;
+            mantissa <<= zeros - 11;
+    }
 }
 
 Tetra::operator Real() const
@@ -46,7 +107,7 @@ __int128 Tetra::bits() const
 
 bool Tetra::isnan() const
 {
-    return exp == 0x7fff && mantissa;
+    return exp == 0x7FFF && mantissa;
 }
 
 } // namespace
@@ -97,5 +158,8 @@ int __letf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) <= Tetra(b); }
 int __getf2(Tetra::Real a, Tetra::Real b) { return Tetra(a) >= Tetra(b); }
 
 Tetra::Real __negtf2(Tetra::Real a) { return -Tetra(a); }
+
+Tetra::Real __extendsftf2(float a)  { return Tetra(Single(a)); }
+Tetra::Real __extenddftf2(double a) { return Tetra(Double(a)); }
 
 } // extern "C"
