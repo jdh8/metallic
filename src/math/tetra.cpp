@@ -2,94 +2,6 @@
 
 namespace {
 
-struct Signed
-{
-    std::uint64_t low;
-    std::int64_t high;
-
-    Signed(std::uint64_t, std::int64_t);
-    Signed(__int128);
-    operator __int128() const;
-};
-
-Signed::Signed(std::uint64_t l, std::int64_t h)
-  : low(l), high(h)
-{}
-
-Signed::Signed(__int128 data)
-{
-    __builtin_memcpy(this, &data, sizeof(__int128));
-}
-
-Signed::operator __int128() const
-{
-    __int128 result;
-    __builtin_memcpy(&result, this, sizeof(__int128));
-    return result;
-}
-
-struct Unsigned
-{
-    std::uint64_t low;
-    std::uint64_t high;
-
-    Unsigned(std::uint64_t, std::uint64_t);
-    Unsigned(unsigned __int128);
-    operator unsigned __int128() const;
-};
-
-Unsigned::Unsigned(std::uint64_t l, std::uint64_t h)
-  : low(l), high(h)
-{}
-
-Unsigned::Unsigned(unsigned __int128 data)
-{
-    __builtin_memcpy(this, &data, sizeof(unsigned __int128));
-}
-
-Unsigned::operator unsigned __int128() const
-{
-    unsigned __int128 result;
-    __builtin_memcpy(&result, this, sizeof(unsigned __int128));
-    return result;
-}
-
-} // namespace
-
-Unsigned operator<<(Unsigned a, int shift)
-{
-    if (shift & 64)
-        return { 0, a.low << shift };
-    else
-        return { a.low << shift, a.high << shift | a.low >> (64 - shift) };
-}
-
-Signed operator>>(Signed a, int shift)
-{
-    if (shift & 64)
-        return { std::uint64_t(a.high) >> shift, a.high >> 63 };
-    else
-        return { a.high << (64 - shift) | a.low >> shift, a.high >> shift };
-}
-
-Unsigned operator>>(Unsigned a, int shift)
-{
-    if (shift & 64)
-        return { a.high >> shift, 0 };
-    else
-        return { a.high << -shift | a.low >> shift, a.high >> shift };
-}
-
-extern "C" {
-
-__int128 __ashlti3(__int128 a, int shift) { return Unsigned(a) << shift; }
-__int128 __ashrti3(__int128 a, int shift) { return Signed(a) >> shift; }
-__int128 __lshrti3(__int128 a, int shift) { return Unsigned(a) >> shift; }
-
-} // extern "C"
-
-namespace {
-
 struct Single
 {
     std::uint32_t mantissa: 23;
@@ -160,7 +72,7 @@ Tetra::Tetra(Single object)
             break;
         default:
             exp -= zeros - 9;
-            mantissa = Unsigned(0, std::uint64_t(mantissa >> 64) << (zeros - 8));
+            mantissa = __int128(std::uint64_t(mantissa >> 64) << (zeros - 8)) << 64;
     }
 }
 
@@ -176,18 +88,18 @@ Tetra::Tetra(Double object)
             break;
         default:
             exp -= zeros - 12;
-            mantissa = Unsigned(mantissa) << ((zeros - 11) & 63);
+            mantissa = wrap(mantissa) << Shift64(zeros - 11);
     }
 }
 
 Tetra::Tetra(std::uint32_t integer)
-  : mantissa(Unsigned(0, std::uint64_t(integer) << (112 - 32 - 64 + 1 + __builtin_clz(integer)))),
+  : mantissa(__int128(std::uint64_t(integer) << (112 - 32 - 64 + 1 + __builtin_clz(integer))) << 64),
     exp((0x401E - __builtin_clz(integer)) * !!integer),
     sign(0)
 {}
 
 Tetra::Tetra(std::uint64_t integer)
-  : mantissa(Unsigned(integer) << (112 - 64 + 1 + __builtin_clzll(integer))),
+  : mantissa(wrap(__int128(integer)) << (112 - 64 + 1 + __builtin_clzll(integer))),
     exp((0x403E - __builtin_clzll(integer)) * !!integer),
     sign(0)
 {}
@@ -280,8 +192,8 @@ Tetra::Real __negtf2(Tetra::Real a) { return -Tetra(a); }
 Tetra::Real __extendsftf2(float a)  { return Tetra(Single(a)); }
 Tetra::Real __extenddftf2(double a) { return Tetra(Double(a)); }
 Tetra::Real __floatsitf(std::int32_t a) { return Tetra(a); }
-Tetra::Real __floattitf(std::int64_t a) { return Tetra(a); }
+Tetra::Real __floatditf(std::int64_t a) { return Tetra(a); }
 Tetra::Real __floatunsitf(std::uint32_t a) { return Tetra(a); }
-Tetra::Real __floatuntitf(std::uint64_t a) { return Tetra(a); }
+Tetra::Real __floatunditf(std::uint64_t a) { return Tetra(a); }
 
 } // extern "C"
