@@ -71,6 +71,12 @@ bool operator<=(Tetra a, Tetra b)
     return (!isunordered(a, b) && ((a.bits() <= b.bits()) != (a.sign && b.sign))) || !(a || b);
 }
 
+Tetra operator-(Tetra a)
+{
+    a.sign ^= 1;
+    return a;
+}
+
 extern "C" {
 
 int __unordtf2(Tetra::Real a, Tetra::Real b)
@@ -106,6 +112,11 @@ int __letf2(Tetra::Real a, Tetra::Real b)
 int __getf2(Tetra::Real a, Tetra::Real b)
 {
     return __letf2(b, a);
+}
+
+Tetra::Real __negtf2(Tetra::Real a)
+{
+    return Tetra::Real(-Tetra(a));
 }
 
 } // extern "C"
