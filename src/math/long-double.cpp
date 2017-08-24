@@ -1,5 +1,3 @@
-#ifdef __wasm__
-
 #include <cstdint>
 
 namespace {
@@ -111,5 +109,3 @@ int __getf2(Tetra::Real a, Tetra::Real b)
 }
 
 } // extern "C"
-
-#endif // __wasm__
