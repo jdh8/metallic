@@ -1,5 +1,29 @@
 #include <cstdint>
 
+extern "C" {
+
+__int128 __ashlti3(__int128 a, int shift)
+{
+    std::uint64_t array[2];
+    __builtin_memcpy(array, &a, sizeof(__int128));
+
+    if (shift & 64)
+    {
+        array[1] = array[0] << shift;
+        array[0] = 0;
+    }
+    else
+    {
+        array[1] = array[1] << shift | array[0] >> -shift;
+        array[0] <<= shift;
+    }
+
+    __builtin_memcpy(&a, array, sizeof(__int128));
+    return a;
+}
+
+} // extern "C"
+
 namespace {
 
 struct Single
@@ -41,6 +65,12 @@ struct Tetra
     Tetra(Real);
     Tetra(Single);
     Tetra(Double);
+
+    Tetra(std::uint32_t);
+    Tetra(std::uint64_t);
+
+    Tetra(std::int32_t);
+    Tetra(std::int64_t);
 
     operator Real() const;
     explicit operator bool() const;
@@ -84,6 +114,30 @@ Tetra::Tetra(Double object)
             exp -= zeros - 12;
             mantissa <<= zeros - 11;
     }
+}
+
+Tetra::Tetra(std::uint32_t integer)
+  : mantissa(static_cast<unsigned __int128>(integer) << (112 - 32 + 1 + __builtin_clz(integer))),
+    exp((0x401E - __builtin_clz(integer)) * !!integer),
+    sign(0)
+{}
+
+Tetra::Tetra(std::uint64_t integer)
+  : mantissa(static_cast<unsigned __int128>(integer) << (112 - 64 + 1 + __builtin_clzll(integer))),
+    exp((0x403E - __builtin_clzll(integer)) * !!integer),
+    sign(0)
+{}
+
+Tetra::Tetra(std::int32_t integer)
+  : Tetra(std::uint32_t(integer < 0 ? -integer : integer))
+{
+    sign = integer < 0;
+}
+
+Tetra::Tetra(std::int64_t integer)
+  : Tetra(std::uint64_t(integer < 0 ? -integer : integer))
+{
+    sign = integer < 0;
 }
 
 Tetra::operator Real() const
@@ -161,5 +215,9 @@ Tetra::Real __negtf2(Tetra::Real a) { return -Tetra(a); }
 
 Tetra::Real __extendsftf2(float a)  { return Tetra(Single(a)); }
 Tetra::Real __extenddftf2(double a) { return Tetra(Double(a)); }
+Tetra::Real __floatsitf(std::int32_t a) { return Tetra(a); }
+Tetra::Real __floattitf(std::int64_t a) { return Tetra(a); }
+Tetra::Real __floatunsitf(std::uint32_t a) { return Tetra(a); }
+Tetra::Real __floatuntitf(std::uint64_t a) { return Tetra(a); }
 
 } // extern "C"
