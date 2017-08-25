@@ -88,7 +88,7 @@ Tetra::Tetra(Double object)
             break;
         default:
             exp -= zeros - 12;
-            mantissa = wrap(mantissa) << Shift64(zeros - 11);
+            mantissa = Integer<__int128>(mantissa) << Shift64(zeros - 11);
     }
 }
 
@@ -99,7 +99,7 @@ Tetra::Tetra(std::uint32_t integer)
 {}
 
 Tetra::Tetra(std::uint64_t integer)
-  : mantissa(wrap(__int128(integer)) << (112 - 64 + 1 + __builtin_clzll(integer))),
+  : mantissa(Integer<__int128>(integer) << (112 - 64 + 1 + __builtin_clzll(integer))),
     exp((0x403E - __builtin_clzll(integer)) * !!integer),
     sign(0)
 {}
