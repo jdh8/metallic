@@ -15,8 +15,8 @@ long double __floatsitf(uint32_t a)
     uint64_t source = *(uint64_t*)&x;
 
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
-    uint64_t summand = (0x3CLL << 56) * !!a;
-    uint64_t high = (source & INT64_MAX) >> shift | (source & 1ULL << 63) + summand;
+    uint64_t bias = (0x3CLL << 56) * !!a;
+    uint64_t high = (source & INT64_MAX) >> shift | (source & 1ULL << 63) + bias;
 
     unsigned __int128 representation = (unsigned __int128) high << 64;
 
