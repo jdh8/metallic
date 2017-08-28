@@ -19,9 +19,7 @@ int32_t __fixtfsi(long double x)
         return 0;
 
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
-    int64_t signbit = high & (unsigned __int128) 1 << 127;
-
-    high = (high - bias) << shift | signbit;
+    high = (high - bias) << shift | (high & 1ULL << 63);
 
     return *(double*)&high;
 }
