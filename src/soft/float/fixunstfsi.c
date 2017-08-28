@@ -11,7 +11,6 @@
 
 uint32_t __fixunstfsi(long double x)
 {
-    const int64_t bias = 0x3CLL << 56;
     int64_t high = *(__int128*)&x >> 64;
 
     if (high & 0xFFFFLL << 48 && high << 16) /* -NaN */
@@ -21,6 +20,7 @@ uint32_t __fixunstfsi(long double x)
     if (high < 0x3FFFLL << 48) /* x < 1 */
         return 0;
 
+    const int64_t bias = 0x3CLL << 56;
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
     high = (high - bias) << shift;
 

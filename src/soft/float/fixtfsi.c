@@ -11,13 +11,13 @@
 
 int32_t __fixtfsi(long double x)
 {
-    const int64_t bias = 0x3CLL << 56;
     int64_t high = *(__int128*)&x >> 64;
 
     /* These numbers may turn invalid with exponent bias subtracted. */
     if ((high & INT64_MAX) < 0x3FFFLL << 48) /* |x| < 1 */
         return 0;
 
+    const int64_t bias = 0x3CLL << 56;
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
     high = (high - bias) << shift | (high & 1ULL << 63);
 
