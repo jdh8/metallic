@@ -64,3 +64,5 @@ static unsigned __int128 divide(unsigned __int128 numerator, unsigned __int128 d
 
     return naive(numerator, denominator, remainder);
 }
+
+/* vim: set ft=c: */

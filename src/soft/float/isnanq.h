@@ -16,3 +16,5 @@ static int isnanq(long double x)
 
     return !(high || low);
 }
+
+/* vim: set ft=c: */

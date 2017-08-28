@@ -29,3 +29,5 @@ inline int ispunct(int c) { return isgraph(c) && !isalnum(c); }
 #ifdef __cplusplus
 }
 #endif
+
+/* vim: set ft=c: */
