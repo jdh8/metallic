@@ -8,28 +8,31 @@
  */
 #include <stdint.h>
 
-static unsigned __int128 divide(unsigned __int128 numerator, unsigned __int128 denominator, unsigned __int128* remainder)
+static uint64_t stub(uint64_t numerator, uint64_t denominator, unsigned __int128* remainder)
 {
-    if (numerator >> 64 == 0) {
-        if (denominator >> 64 == 0) {
-            *remainder = (uint64_t) numerator % (uint64_t) denominator;
-            return (uint64_t) numerator / (uint64_t) denominator;
-        }
-        else {
-            *remainder = numerator;
-            return 0;
-        }
-    }
+    *remainder = numerator % denominator;
+    return numerator / denominator;
+}
 
+static int degenerate(uint64_t numerator, unsigned __int128* remainder)
+{
+    *remainder = numerator;
+    return 0;
+}
+
+static unsigned __int128 naive(unsigned __int128 numerator, unsigned __int128 denominator, unsigned __int128* remainder)
+{
     unsigned __int128 bit = 1;
     unsigned __int128 quotient = 0;
 
-    if (denominator >> 64 == 0) {
+    if (denominator >> 64 == 0)
+    {
         int shift =  __builtin_clzll((uint64_t) denominator);
         denominator = (unsigned __int128)((uint64_t) denominator << shift) << 64;
         bit = (unsigned __int128)((uint64_t) 1 << shift) << 64;
     }
-    else while (!(denominator & (unsigned __int128) 1 << 127)) {
+    else while (!(denominator & (unsigned __int128) 1 << 127))
+    {
         int shift = __builtin_clzll((uint64_t)(denominator >> 64));
         uint64_t high = denominator >> 64;
         uint64_t low = denominator;
@@ -38,15 +41,26 @@ static unsigned __int128 divide(unsigned __int128 numerator, unsigned __int128 d
         bit = (uint64_t) 1 << shift;
     }
 
-    while (bit) {
-        if (numerator >= denominator) {
+    while (bit)
+    {
+        if (numerator >= denominator)
+        {
             numerator -= denominator;
             quotient |= bit;
         }
+
         denominator >>= 1;
         bit >>= 1;
     }
 
     *remainder = numerator;
     return quotient;
+}
+
+static unsigned __int128 divide(unsigned __int128 numerator, unsigned __int128 denominator, unsigned __int128* remainder)
+{
+    if (numerator >> 64 == 0)
+        return (denominator >> 64 == 0) ? stub(numerator, denominator, remainder) : degenerate(numerator, remainder);
+
+    return naive(numerator, denominator, remainder);
 }
