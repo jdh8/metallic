@@ -8,9 +8,9 @@
  */
 #include "divide.h"
 
-unsigned __int128 __umodti3(unsigned __int128 numerator, unsigned __int128 denominator)
+unsigned __int128 __umodti3(unsigned __int128 num, unsigned __int128 den)
 {
-    unsigned __int128 remainder;
-    divide(numerator, denominator, &remainder);
-    return remainder;
+    unsigned __int128 rem;
+    divide(num, den, &rem);
+    return rem;
 }

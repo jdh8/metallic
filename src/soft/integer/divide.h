@@ -8,61 +8,52 @@
  */
 #include <stdint.h>
 
-static uint64_t stub(uint64_t numerator, uint64_t denominator, unsigned __int128* remainder)
-{
-    *remainder = numerator % denominator;
-    return numerator / denominator;
-}
-
-static int degenerate(uint64_t numerator, unsigned __int128* remainder)
-{
-    *remainder = numerator;
-    return 0;
-}
-
-static unsigned __int128 naive(unsigned __int128 numerator, unsigned __int128 denominator, unsigned __int128* remainder)
+static unsigned __int128 naive(unsigned __int128 num, unsigned __int128 den, unsigned __int128* rem)
 {
     unsigned __int128 bit = 1;
     unsigned __int128 quotient = 0;
 
-    if (denominator >> 64 == 0)
+    if (den >> 64 == 0)
     {
-        int shift =  __builtin_clzll((uint64_t) denominator);
-        denominator = (unsigned __int128)((uint64_t) denominator << shift) << 64;
+        int shift =  __builtin_clzll((uint64_t) den);
+        den = (unsigned __int128)((uint64_t) den << shift) << 64;
         bit = (unsigned __int128)((uint64_t) 1 << shift) << 64;
     }
-    else while (!(denominator & (unsigned __int128) 1 << 127))
+    else while (!(den & (unsigned __int128) 1 << 127))
     {
-        int shift = __builtin_clzll((uint64_t)(denominator >> 64));
-        uint64_t high = denominator >> 64;
-        uint64_t low = denominator;
+        int shift = __builtin_clzll((uint64_t)(den >> 64));
+        uint64_t high = den >> 64;
+        uint64_t low = den;
 
-        denominator = (unsigned __int128)(high >> shift) << 64 | (high << -shift | low >> shift);
+        den = (unsigned __int128)(high >> shift) << 64 | (high << -shift | low >> shift);
         bit = (uint64_t) 1 << shift;
     }
 
     while (bit)
     {
-        if (numerator >= denominator)
+        if (num >= den)
         {
-            numerator -= denominator;
+            num -= den;
             quotient |= bit;
         }
 
-        denominator >>= 1;
+        den >>= 1;
         bit >>= 1;
     }
 
-    *remainder = numerator;
+    *rem = num;
     return quotient;
 }
 
-static unsigned __int128 divide(unsigned __int128 numerator, unsigned __int128 denominator, unsigned __int128* remainder)
+static unsigned __int128 divide(unsigned __int128 num, unsigned __int128 den, unsigned __int128* rem)
 {
-    if (numerator >> 64 == 0)
-        return (denominator >> 64 == 0) ? stub(numerator, denominator, remainder) : degenerate(numerator, remainder);
+    if (num >> 64 == 0)
+    {
+        *rem = den >> 64 ? num : (uint64_t)num % (uint64_t)den;
+        return (uint64_t)num / (uint64_t)den * !(den >> 64);
+    }
 
-    return naive(numerator, denominator, remainder);
+    return naive(num, den, rem);
 }
 
 /* vim: set ft=c: */

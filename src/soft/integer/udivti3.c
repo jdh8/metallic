@@ -8,8 +8,8 @@
  */
 #include "divide.h"
 
-unsigned __int128 __udivti3(unsigned __int128 numerator, unsigned __int128 denominator)
+unsigned __int128 __udivti3(unsigned __int128 num, unsigned __int128 den)
 {
-    unsigned __int128 remainder;
-    return divide(numerator, denominator, &remainder);
+    unsigned __int128 rem;
+    return divide(num, den, &rem);
 }
