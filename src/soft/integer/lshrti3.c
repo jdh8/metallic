@@ -15,6 +15,8 @@ unsigned __int128 __lshrti3(unsigned __int128 integer, int shift)
 
     if (shift & 64)
         return high >> shift;
-    else
+    else if (shift &= 63)
         return (unsigned __int128)(high >> shift) << 64 | (high << -shift | low >> shift);
+    else
+        return integer;
 }
