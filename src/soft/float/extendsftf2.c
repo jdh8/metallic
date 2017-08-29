@@ -15,8 +15,8 @@ long double __extendsftf2(float x)
     uint64_t source = *(uint64_t*)&y;
 
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
-    uint64_t bias = (0x3CLL << 56) * (x && !(x - x));
-    uint64_t high = (source & INT64_MAX) >> shift | (source & 1ULL << 63) + bias;
+    uint64_t bias = (uint64_t)(x - x ? 0x78 : !!x * 0x3C) << 56;
+    uint64_t high = ((source & INT64_MAX) >> shift | (source & 1ULL << 63)) + bias;
 
     unsigned __int128 representation = (unsigned __int128) high << 64;
 
