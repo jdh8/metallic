@@ -10,11 +10,10 @@
 
 static int isnanq(long double x)
 {
+    const __int128 maxexp = (__int128) 0x7FFF << 112;
     __int128 q = *(__int128*)&x;
-    int64_t high = (q >> 64 & INT64_MAX) ^ 0x7FFF000000000000;
-    uint64_t low = q;
 
-    return !(high || low);
+    return (q & maxexp) == maxexp && q << 16;
 }
 
 /* vim: set ft=c: */

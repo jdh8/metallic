@@ -23,4 +23,3 @@ int __cmptf2(long double x, long double y)
 
     return ((a > b) - (a < b) + sign) ^ sign;
 }
-
