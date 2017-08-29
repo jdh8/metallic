@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "divide.h"
+#include "qdiv.h"
 
 unsigned __int128 __udivti3(unsigned __int128 num, unsigned __int128 den)
 {
     unsigned __int128 rem;
-    return divide(num, den, &rem);
+    return qdiv(num, den, &rem);
 }

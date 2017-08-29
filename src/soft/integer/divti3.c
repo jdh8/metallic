@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "divide.h"
+#include "qdiv.h"
 
 __int128 __divti3(__int128 num, __int128 den)
 {
@@ -19,5 +19,5 @@ __int128 __divti3(__int128 num, __int128 den)
 
     nsign ^= dsign; /* nsign = -(num ^ den < 0) */
 
-    return (divide(num, den, &rem) ^ nsign) - nsign;
+    return (qdiv(num, den, &rem) ^ nsign) - nsign;
 }
