@@ -13,8 +13,7 @@ static uint64_t longdiv(unsigned __int128 num, uint64_t den, uint64_t* rem)
     uint64_t nhi = num >> 64;
     uint64_t nlo = num;
 
-    if (!nhi)
-    {
+    if (!nhi) {
         *rem = nlo % den;
         return nlo / den;
     }
@@ -23,18 +22,14 @@ static uint64_t longdiv(unsigned __int128 num, uint64_t den, uint64_t* rem)
     uint64_t quo = 0;
     unsigned __int128 sub = (unsigned __int128) den << 63;
 
-    while (bit)
-    {
-        if (num >= sub)
-        {
+    while (bit) {
+        if (num >= sub) {
             num -= sub;
             quo |= bit;
         }
-
         sub >>= 1;
         bit >>= 1;
     }
-
     *rem = num;
     return quo;
 }
@@ -52,18 +47,14 @@ static uint64_t fulldiv(unsigned __int128 num, unsigned __int128 den, unsigned _
     if (shift)
         den = (unsigned __int128)(high >> shift) << 64 | (high << -shift | low >> shift);
 
-    while (bit)
-    {
-        if (num >= den)
-        {
+    while (bit) {
+        if (num >= den) {
             num -= den;
             quo |= bit;
         }
-
         den >>= 1;
         bit >>= 1;
     }
-
     *rem = num;
     return quo;
 }
@@ -75,30 +66,22 @@ static unsigned __int128 qdiv(unsigned __int128 num, unsigned __int128 den, unsi
     uint64_t nlo = num;
     uint64_t dlo = den;
 
-    if (!nhi)
-    {
+    if (!nhi) {
         *rem = dhi ? num : nlo % dlo;
         return nlo / dlo * !dhi;
     }
-
-    if (!dlo)
-    {
+    if (!dlo) {
         *rem = (unsigned __int128)(nhi % dhi) << 64 | nlo;
         return nhi / dhi;
     }
-
-    if (!dhi)
-    {
-        if (!(dlo & (dlo - 1)))
-        {
+    if (!dhi) {
+        if (!(dlo & (dlo - 1))) {
             *rem = nlo & (dlo - 1);
-
             if (dlo == 1) return num;
 
             int shift = __builtin_ctzll(dlo);
             return (unsigned __int128)(nhi >> shift) << 64 | (nhi << -shift | nlo >> shift);
         }
-
         uint64_t rem64;
         uint64_t qhi = nhi / dlo;
         uint64_t qlo = longdiv((unsigned __int128)(nhi % dlo) << 64 | nlo, dlo, &rem64);
@@ -106,7 +89,6 @@ static unsigned __int128 qdiv(unsigned __int128 num, unsigned __int128 den, unsi
         *rem = rem64;
         return (unsigned __int128) qhi << 64 | qlo;
     }
-
     return fulldiv(num, den, rem);
 }
 
