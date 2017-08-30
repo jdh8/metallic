@@ -18,7 +18,7 @@ void* memchr(const void* source, int c, size_t length)
             return (void*)--src;
 
     const uint64_t* vsrc = (const uint64_t*) src;
-    const uint64_t magic = 0x7efefefefefefeffu;
+    const uint64_t magic = 0x7EFEFEFEFEFEFEFFu;
     const uint64_t mask = 0x0101010101010101u * (unsigned char) c;
 
     for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
