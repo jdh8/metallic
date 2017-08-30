@@ -88,7 +88,7 @@ static uint64_t russian(unsigned __int128 u, unsigned __int128 v, unsigned __int
     return q;
 }
 
-unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128* r)
+static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128* r)
 {
     uint64_t u2 = u >> 64;
     uint64_t v2 = v >> 64;
