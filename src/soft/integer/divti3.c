@@ -6,18 +6,18 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "qdiv.h"
+#include "udivmodti4.h"
 
-__int128 __divti3(__int128 num, __int128 den)
+__int128 __divti3(__int128 u, __int128 v)
 {
-    unsigned __int128 rem;
-    int nsign = num >> 127; /* -(num < 0) */
-    int dsign = den >> 127; /* -(den < 0) */
+    unsigned __int128 r;
+    int signu = u >> 127; /* -(u < 0) */
+    int signv = v >> 127; /* -(v < 0) */
 
-    num = (num ^ nsign) - nsign; /* num = abs(num) */
-    den = (den ^ dsign) - dsign; /* den = abs(den) */
+    u = (u ^ signu) - signu; /* u = abs(u) */
+    v = (v ^ signv) - signv; /* v = abs(v) */
 
-    nsign ^= dsign; /* nsign = -(num ^ den < 0) */
+    signu ^= signv; /* = -(u ^ v < 0) */
 
-    return (qdiv(num, den, &rem) ^ nsign) - nsign;
+    return (udivmodti4(u, v, &r) ^ signu) - signu;
 }
