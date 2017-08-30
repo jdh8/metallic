@@ -13,23 +13,23 @@ static unsigned __int128 fullmul(uint64_t a, uint64_t b)
 #ifdef __x86_64__
     return (unsigned __int128) a * b;
 #else
-    uint32_t ahi = a >> 32;
-    uint32_t bhi = b >> 32;
-    uint32_t alo = a;
-    uint32_t blo = b;
+    uint32_t a1 = a >> 32;
+    uint32_t b1 = b >> 32;
+    uint32_t a0 = a;
+    uint32_t b0 = b;
 
-    return ((unsigned __int128) ahi * bhi << 64 | (uint64_t) alo * blo)
-        + ((unsigned __int128) ahi * blo << 32)
-        + ((unsigned __int128) alo * bhi << 32);
+    return ((unsigned __int128) a1 * b1 << 64 | (uint64_t) a0 * b0)
+        + ((unsigned __int128) a1 * b0 << 32)
+        + ((unsigned __int128) a0 * b1 << 32);
 #endif
 }
 
 unsigned __int128 __multi3(unsigned __int128 a, unsigned __int128 b)
 {
-    uint64_t ahi = a >> 64;
-    uint64_t bhi = b >> 64;
-    uint64_t alo = a;
-    uint64_t blo = b;
+    uint64_t a1 = a >> 64;
+    uint64_t b1 = b >> 64;
+    uint64_t a0 = a;
+    uint64_t b0 = b;
 
-    return ((unsigned __int128)(ahi * blo + alo * bhi) << 64) + fullmul(alo, blo);
+    return ((unsigned __int128)(a1 * b0 + a0 * b1) << 64) + fullmul(a0, b0);
 }
