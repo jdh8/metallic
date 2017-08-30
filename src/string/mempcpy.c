@@ -7,17 +7,8 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "mempcpy.h"
-#include "memrcpy.h"
 
-void* memmove(void* destination, const void* source, size_t length)
+void* __mempcpy(void* restrict destination, const void* restrict source, size_t length)
 {
-    unsigned char* dst = destination;
-    const unsigned char* src = source;
-
-    if (dst - src >= length)
-        mempcpy(dst, src, length);
-    else
-        memrcpy(dst, src, length);
-
-    return destination;
+    return mempcpy(destination, source, length);
 }

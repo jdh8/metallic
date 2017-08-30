@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static unsigned char* reverse_copy(unsigned char* destination, const unsigned char* source, size_t length)
+static unsigned char* memrcpy(unsigned char* destination, const unsigned char* source, size_t length)
 {
     destination += length;
     source += length;

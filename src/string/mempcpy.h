@@ -9,7 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static unsigned char* copy(unsigned char* destination, const unsigned char* source, size_t length)
+static unsigned char* mempcpy(unsigned char* destination, const unsigned char* source, size_t length)
 {
     for (; length && (uintptr_t) destination % sizeof(uint64_t); --length)
         *destination++ = *source++;
