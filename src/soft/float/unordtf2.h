@@ -8,7 +8,7 @@
  */
 #include "isnanq.h"
 
-static int isunorderedq(long double x, long double y)
+static int unordtf2(long double x, long double y)
 {
     return isnanq(x) || isnanq(y);
 }

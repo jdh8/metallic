@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "isunorderedq.h"
+#include "unordtf2.h"
 
 int __cmptf2(long double x, long double y)
 {
@@ -16,7 +16,7 @@ int __cmptf2(long double x, long double y)
     if ((a|b) << 1 == 0)
         return 0;
 
-    if (isunorderedq(x, y))
+    if (unordtf2(x, y))
         return 1;
 
     int sign = (a & b) >> 127;
