@@ -6,32 +6,30 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 
-extern void* __stack_pointer;
-static void* __heap_pointer;
-
-void* sbrk(ptrdiff_t increment)
+void* sbrk(intptr_t increment)
 {
-    const size_t pagesize = 65536;
-    size_t end = pagesize * __builtin_wasm_current_memory();
-    size_t brk = (size_t)__heap_pointer + increment;
+    const size_t pagesize = 64 * 1024;
+    static uintptr_t heap = 0;
+    uintptr_t top = pagesize * __builtin_wasm_current_memory();
 
-    if (brk > end) {
-        size_t excess = brk - end;
+    if (heap + increment > top) {
+        uintptr_t overflow = heap + increment - top;
+        size_t pages = overflow / pagesize + !!(overflow % pagesize);
 
-        if (__builtin_wasm_grow_memory(excess / pagesize + !!(excess % pagesize)) == -1)
+        if (__builtin_wasm_grow_memory(pages) == -1)
             return (void*) -1;
     }
 
-    return __heap_pointer = (void*) brk;
+    return (void*)(heap += increment);
 }
 
-extern int main();
+extern int main(void);
 
 _Noreturn void _start(void)
 {
-    __heap_pointer = __stack_pointer;
+    sbrk((intptr_t)__builtin_frame_address(0));
     exit(main());
 }
