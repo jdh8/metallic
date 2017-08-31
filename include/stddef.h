@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _STDDEF_H
+#define _STDDEF_H
+
 typedef __SIZE_TYPE__ size_t;
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
@@ -37,3 +40,5 @@ class max_align_t
 #if __cplusplus > 201402
 enum class byte: unsigned char {};
 #endif /* C++17 */
+
+#endif /* _STDDEF_H */
