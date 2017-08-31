@@ -11,20 +11,28 @@
 
 static unsigned char* memrcpy(unsigned char* destination, const unsigned char* source, size_t length)
 {
+    typedef uint64_t Vector __attribute__((vector_size(16)));
+
     destination += length;
     source += length;
 
-    for (; length && (uintptr_t) destination % sizeof(uint64_t); --length)
+    for (; length && (uintptr_t) destination % sizeof(Vector); --length)
         *--destination = *--source;
 
-    uint64_t* vdst = (uint64_t*) destination;
-    const uint64_t* vsrc = (const uint64_t*) source;
+    Vector* vdst = (Vector*) destination;
+    const Vector* vsrc = (const Vector*) source;
 
-    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
+    for (; length >= sizeof(Vector); length -= sizeof(Vector))
         *--vdst = *--vsrc;
 
-    uint32_t* dst32 = (uint32_t*) vdst;
-    const uint32_t* src32 = (const uint32_t*) vsrc;
+    uint64_t* dst64 = (uint64_t*) vdst;
+    const uint64_t* src64 = (const uint64_t*) vsrc;
+
+    if (length & sizeof(uint64_t))
+        *--dst64 = *--src64;
+
+    uint32_t* dst32 = (uint32_t*) dst64;
+    const uint32_t* src32 = (const uint32_t*) src64;
 
     if (length & sizeof(uint32_t))
         *--dst32 = *--src32;
