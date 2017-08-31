@@ -12,6 +12,7 @@
 #define HAVE_MMAP 0
 #define LACKS_TIME_H
 #define LACKS_SYS_TYPES_H
+#define MALLOC_ALIGNMENT ((size_t)16)
 #define NO_MALLOC_STATS 1
 #define USE_BUILTIN_FFS 1
 #define USE_LOCKS 0
