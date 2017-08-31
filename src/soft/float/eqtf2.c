@@ -13,7 +13,11 @@ int __eqtf2(long double x, long double y)
     unsigned __int128 a = *(unsigned __int128*)&x;
     unsigned __int128 b = *(unsigned __int128*)&y;
 
+#ifdef __FAST_MATH__
+    return a == b;
+#else
     return (a == b && !isnanq(x)) || (a|b) << 1 == 0;
+#endif
 }
 
 int __netf2(long double x, long double y)
