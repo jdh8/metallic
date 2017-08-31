@@ -9,24 +9,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-void* sbrk(intptr_t increment)
-{
-    const size_t pagesize = 64 * 1024;
-    static uintptr_t heap = 0;
-    uintptr_t top = pagesize * __builtin_wasm_current_memory();
-
-    if (heap + increment > top) {
-        uintptr_t overflow = heap + increment - top;
-        size_t pages = overflow / pagesize + !!(overflow % pagesize);
-
-        if (__builtin_wasm_grow_memory(pages) == -1)
-            return (void*) -1;
-    }
-
-    return (void*)(heap += increment);
-}
-
-extern int main(void);
+void* sbrk(intptr_t);
+int main(void);
 
 _Noreturn void _start(void)
 {
