@@ -10,13 +10,13 @@
 extern "C" {
 #endif
 
-int memcmp(const void* lhs, const void* rhs, size_t length);
-void* memcpy(void*__restrict destination, const void*__restrict source, size_t length);
-void* memmove(void* destination, const void* source, size_t length);
-void* memset(void* destination, int c, size_t length);
+int memcmp(const void*, const void*, size_t);
+void* memcpy(void*__restrict, const void*__restrict, size_t);
+void* memmove(void*, const void*, size_t);
+void* memset(void*, int, size_t);
 
 #ifdef _GNU_SOURCE
-void* __mempcpy(void*__restrict destination, const void*__restrict source, size_t length);
+void* __mempcpy(void*__restrict, const void*__restrict, size_t);
 
 inline void* mempcpy(void*__restrict destination, const void*__restrict source, size_t length)
 { return __mempcpy(destination, source, length); }
@@ -26,7 +26,7 @@ inline void* mempcpy(void*__restrict destination, const void*__restrict source, 
 namespace __metallic {
 #endif
 
-void* memchr(const void* source, int c, size_t length);
+void* memchr(const void*, int, size_t);
 
 #ifdef __cplusplus
 } // namespace __metallic
