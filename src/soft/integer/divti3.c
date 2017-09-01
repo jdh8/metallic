@@ -14,10 +14,10 @@ __int128 __divti3(__int128 u, __int128 v)
     int signu = u >> 127; /* -(u < 0) */
     int signv = v >> 127; /* -(v < 0) */
 
-    u = (u ^ signu) - signu; /* u = abs(u) */
-    v = (v ^ signv) - signv; /* v = abs(v) */
+    u = u + signu ^ signu; /* u = abs(u) */
+    v = v + signv ^ signv; /* v = abs(v) */
 
     signu ^= signv; /* = -(u ^ v < 0) */
 
-    return (udivmodti4(u, v, &r) ^ signu) - signu;
+    return udivmodti4(u, v, &r) + signu ^ signu;
 }

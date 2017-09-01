@@ -13,9 +13,9 @@ __int128 __modti3(__int128 u, __int128 v)
     unsigned __int128 r;
     int sign = u >> 127; /* -(u < 0) */
 
-    u = (u ^ sign) - sign; /* u = abs(u) */
+    u = u + sign ^ sign; /* u = abs(u) */
     v = v < 0 ? -v : v;
 
     udivmodti4(u, v, &r);
-    return (r ^ sign) - sign;
+    return r + sign ^ sign;
 }
