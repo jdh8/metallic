@@ -19,6 +19,8 @@
 
 #define malloc_getpagesize 65536
 
+#define memalign aligned_alloc
+
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
   Doug Lea and released to the public domain, as explained at
