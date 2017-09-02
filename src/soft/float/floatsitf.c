@@ -17,8 +17,7 @@ long double __floatsitf(int32_t a)
     const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
     uint64_t bias = (0x3CLL << 56) * !!a;
     uint64_t high = ((source & INT64_MAX) >> shift | (source & 1ULL << 63)) + bias;
+    uint64_t vector __attribute__((vector_size(sizeof(long double)))) = { 0, high };
 
-    unsigned __int128 representation = (unsigned __int128) high << 64;
-
-    return *(long double*)&representation;
+    return *(long double*)&vector;
 }

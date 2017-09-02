@@ -6,12 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include <stdint.h>
+
 long double __negtf2(long double x)
 {
-    unsigned __int128 q = *(unsigned __int128*)&x;
+    typedef uint64_t Vector __attribute__((vector_size(sizeof(long double))));
 
-    q ^= (unsigned __int128) 1 << 127;
+    Vector vector = *(Vector*)&x;
 
-    return *(long double*)&q;
+    vector[1] ^= 1ULL << 63;
+
+    return *(long double*)&vector;
 }
 
