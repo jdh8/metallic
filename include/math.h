@@ -9,8 +9,20 @@
 #ifndef _MATH_H
 #define _MATH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 float fabsf(float);
 double fabs(double);
 long double fabsl(long double);
+
+#ifdef __cplusplus
+} // extern "C"
+
+inline float abs(float x) { return fabsf(x); }
+inline double abs(double x) { return fabs(x); }
+inline long double abs(long double x) { return fabsl(x); }
+#endif
 
 #endif /* math.h */

@@ -14,6 +14,10 @@ typedef double clock_t;
 
 #define CLOCKS_PER_SEC 1000.0
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern double _Date_now(void);
 extern double clock(void);
 
@@ -23,5 +27,9 @@ inline time_t time(time_t* timer)
     if (timer) *timer = result;
     return result;
 }
+
+#ifdef __cplusplus
+} // extern "C"
+#endif
 
 #endif /* time.h */
