@@ -6,17 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <math.h>
-#include <stdint.h>
-
-static int isnanq(long double x)
-{
-#ifdef __FAST_MATH__
-    return 0;
-#else
-    x = fabsl(x);
-    return *(unsigned __int128*)&x > (unsigned __int128) 0x7FFF << 112;
-#endif
-}
-
-/* vim: set ft=c: */
+float fabsf(float);
+double fabs(double);
+long double fabsl(long double);
