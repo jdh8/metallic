@@ -46,3 +46,5 @@ static long double floatuntitf(unsigned __int128 a)
 
     return *(long double*)&representation;
 }
+
+/* vim: set ft=c: */
