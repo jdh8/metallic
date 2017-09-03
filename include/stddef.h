@@ -41,4 +41,4 @@ class max_align_t
 enum class byte: unsigned char {};
 #endif /* C++17 */
 
-#endif /* _STDDEF_H */
+#endif /* stddef.h */
