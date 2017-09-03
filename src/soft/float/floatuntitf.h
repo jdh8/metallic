@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef METALLIC_FLOATUNTITF_H
+#define METALLIC_FLOATUNTITF_H
+
 #include <float.h>
 #include <stdint.h>
 
@@ -46,5 +49,7 @@ static long double floatuntitf(unsigned __int128 a)
 
     return *(long double*)&representation;
 }
+
+#endif /* floatuntitf.h */
 
 /* vim: set ft=c: */

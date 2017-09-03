@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef METALLIC_UDIVMODTI4_H
+#define METALLIC_UDIVMODTI4_H
+
 #include <stdint.h>
 
 /*!
@@ -123,5 +126,7 @@ static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, un
 
     return russian(u, v, r);
 }
+
+#endif /* udivmodti4.h */
 
 /* vim: set ft=c: */

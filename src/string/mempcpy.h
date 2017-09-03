@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef METALLIC_MEMPCPY_H
+#define METALLIC_MEMPCPY_H
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -48,3 +51,5 @@ static unsigned char* mempcpy(unsigned char* destination, const unsigned char* s
 
     return destination;
 }
+
+#endif /* mempcpy.h */
