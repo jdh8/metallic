@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _ERRNO_H
+#define _ERRNO_H
+
 int* __errno_location(void);
 #define errno (*__errno_location())
 
@@ -141,3 +144,4 @@ int* __errno_location(void);
 #define EOWNERDEAD      130 /* Owner died */
 #define ENOTRECOVERABLE 131 /* State not recoverable */
 
+#endif /* errno.h */

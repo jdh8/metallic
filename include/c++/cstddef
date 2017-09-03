@@ -6,10 +6,21 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-namespace std {
+#ifndef _METALLIC_CSTDDEF
+#define _METALLIC_CSTDDEF
 
 #include <stddef.h>
 
+namespace std {
+
+using ::size_t;
+using ::ptrdiff_t;
+using ::nullptr_t;
+using ::max_align_t;
+using ::byte;
+
 }
+
+#endif
 
 // vim: ft=cpp

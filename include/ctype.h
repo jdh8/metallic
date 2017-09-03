@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _CTYPE_H
+#define _CTYPE_H
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,5 +32,7 @@ inline int ispunct(int c) { return isgraph(c) && !isalnum(c); }
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* ctype.h */
 
 /* vim: set ft=c: */

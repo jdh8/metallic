@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _STDINT_H
+#define _STDINT_H
+
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __UINTPTR_TYPE__ uintptr_t;
 
@@ -133,3 +136,5 @@ typedef uint64_t uintmax_t;
 
 #define WINT_MIN 0u
 #define WINT_MAX INT32_MAX
+
+#endif /* stdint.h */

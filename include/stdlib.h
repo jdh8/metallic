@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _STDLIB_H
+#define _STDLIB_H
+
 #include "bits/specifiers.h"
 
 typedef __SIZE_TYPE__ size_t;
@@ -31,3 +34,5 @@ void* aligned_alloc(size_t, size_t);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* stdlib.h */

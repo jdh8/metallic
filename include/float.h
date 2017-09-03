@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _FLOAT_H
+#define _FLOAT_H
+
 #define FLT_RADIX __FLT_RADIX__
 
 #define FLT_MANT_DIG __FLT_MANT_DIG__
@@ -73,3 +76,5 @@
 #define LDBL_TRUE_MIN __LDBL_DENORM_MIN__
 
 #endif /* C11 */
+
+#endif /* float.h */

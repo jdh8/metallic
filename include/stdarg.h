@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _STDARG_H
+#define _STDARG_H
+
 typedef __builtin_va_list va_list;
 
 #define va_start(list, antecedent) __builtin_va_start(list, antecedent)
@@ -14,4 +17,6 @@ typedef __builtin_va_list va_list;
 
 #if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
 #define va_copy(destination, source) __builtin_va_copy(destination, source)
+#endif
+
 #endif

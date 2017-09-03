@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef _LIMITS_H
+#define _LIMITS_H
 
 /* Minima and maxima can be found in a cross-platform way due to the following
  * facts:
@@ -68,3 +70,5 @@
 
 /* Unicode may consume 32 bits for a character. */
 #define MB_LEN_MAX (32 / CHAR_BIT + !!(32 % CHAR_BIT))
+
+#endif /* limits.h */
