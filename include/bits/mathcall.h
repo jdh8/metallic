@@ -185,4 +185,62 @@ inline _Scalar copysign(_Scalar __x, _Scalar __y) { return _MATHCALL(copysign)(_
 
 #endif /* C++11 and _SUFFIX */
 
+#if (__cplusplus >= 201103)
+
+inline bool isgreater(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_isgreater(__x, __y);
+#else
+    return __x > __y;
+#endif
+}
+
+inline bool isgreaterequal(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_isgreaterequal(__x, __y);
+#else
+    return __x >= __y;
+#endif
+}
+
+inline bool isless(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_isless(__x, __y);
+#else
+    return __x < __y;
+#endif
+}
+
+inline bool islessequal(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_islessequal(__x, __y);
+#else
+    return __x <= __y;
+#endif
+}
+
+inline bool islessgreater(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_islessgreater(__x, __y);
+#else
+    return __x < __y || __x > __y;
+#endif
+}
+
+inline bool isunordered(_Scalar __x, _Scalar __y)
+{
+#ifdef __GNUC__
+    return __builtin_islessgreater(__x, __y);
+#else
+    return __x != __x || __y != __y;
+#endif
+}
+
+#endif /* C++11 */
+
 #undef _MATHCALL
