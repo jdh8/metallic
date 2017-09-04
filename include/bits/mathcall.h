@@ -187,6 +187,66 @@ inline _Scalar copysign(_Scalar __x, _Scalar __y) { return _MATHCALL(copysign)(_
 
 #if (__cplusplus >= 201103)
 
+extern "C++" {
+
+inline bool isfinite(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_isfinite(__x);
+#else
+    return fabs(__x) < 1 / _Scalar();
+#endif
+}
+
+inline bool isinf(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_isinf(__x);
+#else
+    return fabs(__x) >= 1 / _Scalar();
+#endif
+}
+
+inline bool isnan(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_isnan(__x);
+#else
+    return __x != __x;
+#endif
+}
+
+inline bool isnormal(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_isnormal(__x);
+#else
+    _Scalar __reciprocal = 1 / __x;
+    return __reciprocal && isfinite(__reciprocal);
+#endif
+}
+
+inline bool signbit(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_signbit(__x);
+#else
+    return copysign(1, __x) < 0;
+#endif
+}
+
+inline int fpclassify(_Scalar __x)
+{
+#ifdef __GNUC__
+    return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, __x);
+#else
+    if (isnan(__x))    return FP_NAN;
+    if (isinf(__x))    return FP_INFINITE;
+    if (isnormal(__x)) return FP_NORMAL;
+    return __x ? FP_SUBNORMAL : FP_ZERO;
+#endif
+}
+
 inline bool isgreater(_Scalar __x, _Scalar __y)
 {
 #ifdef __GNUC__
@@ -240,6 +300,8 @@ inline bool isunordered(_Scalar __x, _Scalar __y)
     return __x != __x || __y != __y;
 #endif
 }
+
+} // extern "C++"
 
 #endif /* C++11 */
 
