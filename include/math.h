@@ -13,16 +13,26 @@
 extern "C" {
 #endif
 
-float fabsf(float);
-double fabs(double);
-long double fabsl(long double);
+#define _Scalar double
+#include "bits/mathcall.h"
+#undef _Scalar
+
+#define _Scalar float
+#define _SUFFIX f
+#include "bits/mathcall.h"
+#undef _Scalar
+#undef _SUFFIX
+
+#define _Scalar long double
+#define _SUFFIX l
+#include "bits/mathcall.h"
+#undef _Scalar
+#undef _SUFFIX
 
 #ifdef __cplusplus
 } // extern "C"
 
-inline float abs(float x) { return fabsf(x); }
 inline double abs(double x) { return fabs(x); }
-inline long double abs(long double x) { return fabsl(x); }
 #endif
 
 #endif /* math.h */
