@@ -10,12 +10,27 @@
 #define _MATH_H
 
 #if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
+
+typedef float float_t;
+typedef double double_t;
+
 #define FP_NAN       0
 #define FP_INFINITE  1
 #define FP_NORMAL    2
 #define FP_SUBNORMAL 3
 #define FP_ZERO      4
+
+#ifdef __GNUC__
+#define HUGE_VALF __builtin_huge_valf()
+#define HUGE_VAL  __builtin_huge_val()
+#define HUGE_VALL __builtin_huge_vall()
+#else
+#define HUGE_VALF (1 / 0.f)
+#define HUGE_VAL  (1 / 0.)
+#define HUGE_VALL (1 / 0.L)
 #endif
+
+#endif /* C99 or C++11 */
 
 #ifdef __cplusplus
 extern "C" {
