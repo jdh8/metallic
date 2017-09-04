@@ -9,24 +9,6 @@
 #ifndef _MATH_H
 #define _MATH_H
 
-#if (__STDC_VERSION__ >= 199901)
-# ifdef __GNUC__
-# define isgreater(x, y)      __builtin_isgreater(x, y)
-# define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
-# define isless(x, y)         __builtin_isless(x, y)
-# define islessequal(x, y)    __builtin_islessequal(x, y)
-# define islessgreater(x, y)  __builtin_islessgreater(x, y)
-# define isunordered(x, y)    __builtin_isunordered(x, y)
-# else
-# define isgreater(x, y)      ((x) > (y))
-# define isgreaterequal(x, y) ((x) >= (y))
-# define isless(x, y)         ((x) < (y))
-# define islessequal(x, y)    ((x) <= (y))
-# define islessgreater(x, y)  ((x) < (y) || (x) > (y))
-# define isunordered(x, y)    ((x) != (x) || (y) != (y))
-# endif
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,6 +33,24 @@ extern "C" {
 } // extern "C"
 
 inline double abs(double x) { return fabs(x); }
+#endif
+
+#if (__STDC_VERSION__ >= 199901)
+# ifdef __GNUC__
+# define isgreater(x, y)      __builtin_isgreater(x, y)
+# define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
+# define isless(x, y)         __builtin_isless(x, y)
+# define islessequal(x, y)    __builtin_islessequal(x, y)
+# define islessgreater(x, y)  __builtin_islessgreater(x, y)
+# define isunordered(x, y)    __builtin_isunordered(x, y)
+# else
+# define isgreater(x, y)      ((x) > (y))
+# define isgreaterequal(x, y) ((x) >= (y))
+# define isless(x, y)         ((x) < (y))
+# define islessequal(x, y)    ((x) <= (y))
+# define islessgreater(x, y)  ((x) < (y) || (x) > (y))
+# define isunordered(x, y)    ((x) != (x) || (y) != (y))
+# endif
 #endif
 
 #endif /* math.h */
