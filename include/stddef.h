@@ -22,22 +22,23 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-#if __cplusplus >= 201103
-
-typedef decltype(nullptr) nullptr_t;
-
-class max_align_t
+#if (__STDC_VERSION__ >= 201112 || __cplusplus >= 201103)
+typedef struct
 {
 # ifdef __i386__
     __float128 __g;
 # endif
     long double __e;
     long long __x;
-};
+}
+max_align_t;
+#endif /* C11 or C++11 */
 
+#if (__cplusplus >= 201103)
+typedef decltype(nullptr) nullptr_t;
 #endif /* C++11 */
 
-#if __cplusplus > 201402
+#if (__cplusplus > 201402)
 enum class byte: unsigned char {};
 #endif /* C++17 */
 
