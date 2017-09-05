@@ -33,16 +33,10 @@ void* memchr(const void*, int, size_t);
 
 #ifdef __cplusplus
 } // namespace __metallic
-
-extern "C++" inline
-const void* memchr(const void* source, int c, size_t length)
-{ return __metallic::memchr(source, c, length); }
-
-extern "C++" inline
-void* memchr(void* source, int c, size_t length)
-{ return __metallic::memchr(source, c, length); }
-
 } // extern "C"
+
+inline const void* memchr(const void* source, int c, size_t length) { return __metallic::memchr(source, c, length); }
+inline void* memchr(void* source, int c, size_t length) { return __metallic::memchr(source, c, length); }
 #endif
 
 #endif /* string.h */
