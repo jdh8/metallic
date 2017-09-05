@@ -23,6 +23,17 @@ typedef double double_t;
 #define HUGE_VALF __builtin_huge_valf()
 #define HUGE_VAL  __builtin_huge_val()
 #define HUGE_VALL __builtin_huge_vall()
+
+#define INFINITY  __builtin_inff()
+#define NAN       __builtin_nanf("")
+
+#define MATH_ERRNO     1
+#define MATH_ERREXCEPT 2
+
+#if defined(__FAST_MATH__) || defined(__wasm__)
+#define math_errhandling 0
+#else
+#define math_errhandling (MATH_ERRNO | MATH_ERREXCEPT)
 #endif
 
 #endif /* C99 or C++11 */
