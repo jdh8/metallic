@@ -1,6 +1,6 @@
 Metallic
 ========
-A try to build a C runtime on WebAssembly
+A try to build a C runtime library for WebAssembly
 
 This name is from Gary Bernhardt "[The Birth & Death of JavaScript][bdjs]",
 where a world of **metal** web applications is conceived.  This library is

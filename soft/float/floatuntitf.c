@@ -1,4 +1,4 @@
-/* This file is part of Metallic, a C++ library for WebAssembly.
+/* This file is part of Metallic, a runtime library for WebAssembly.
  *
  * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
  *
