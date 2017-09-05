@@ -9,11 +9,11 @@
 #ifndef METALLIC_UNORDTF2_H
 #define METALLIC_UNORDTF2_H
 
-#include "isnanq.h"
+#include "isnanl.h"
 
 static int unordtf2(long double x, long double y)
 {
-    return isnanq(x) || isnanq(y);
+    return __isnanl(x) || __isnanl(y);
 }
 
 #endif

@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "isnanq.h"
+#include "isnanl.h"
 
 int __eqtf2(long double x, long double y)
 {
@@ -16,7 +16,7 @@ int __eqtf2(long double x, long double y)
 #ifdef __FAST_MATH__
     return a == b;
 #else
-    return (a == b && !isnanq(x)) || (a|b) << 1 == 0;
+    return (a == b && !__isnanl(x)) || (a|b) << 1 == 0;
 #endif
 }
 

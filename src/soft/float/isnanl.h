@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static int isnanq(long double x)
+static int __isnanl(long double x)
 {
 #ifdef __FAST_MATH__
     return 0;
@@ -22,6 +22,6 @@ static int isnanq(long double x)
 #endif
 }
 
-#endif /* isnanq.h */
+#endif /* isnanl.h */
 
 /* vim: set ft=c: */

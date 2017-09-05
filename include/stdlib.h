@@ -32,7 +32,15 @@ void* aligned_alloc(size_t, size_t);
 #endif
 
 #ifdef __cplusplus
-}
+} // extern "C"
+
+inline int abs(int a) { return a < 0 ? -a : a; }
+inline long abs(long a) { return a < 0 ? -a : a; }
+inline long long abs(long long a) { return a < 0 ? -a : a; }
+#else
+int abs(int);
+long labs(long);
+long long llabs(long long);
 #endif
 
 #endif /* stdlib.h */
