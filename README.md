@@ -1,6 +1,6 @@
 Metallic
 ========
-A try to build a C/C++ runtime on WebAssembly
+A try to build a C runtime on WebAssembly
 
 This name is from Gary Bernhardt "[The Birth & Death of JavaScript][bdjs]",
 where a world of **metal** web applications is conceived.  This library is
@@ -15,6 +15,7 @@ Dependencies
 Most environments with GCC-compatible compilers (e.g. GCC and clang) meet these
 requirements.
 
+* Standard C headers
 * GCC-compatible builtins
 * ILP32 or LP64 data model
 

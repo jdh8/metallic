@@ -6,15 +6,19 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef _STDBOOL_H
-#define _STDBOOL_H
+#include <stdlib.h>
 
-#ifndef __cplusplus
-#define bool  _Bool
-#define true  1
-#define false 0
-#endif
+#define CAT2(a, b) a##b
+#define CAT(a, b)  CAT2(a, b)
 
-#define __bool_true_false_are_defined 1
+typedef CAT(PREFIX, div_t) Result;
 
-#endif
+Result CAT(PREFIX, div)(Integer numerator, Integer denominator)
+{
+    Result result;
+
+    result.quot = numerator / denominator;
+    result.rem = numerator % denominator;
+
+    return result;
+}

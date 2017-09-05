@@ -6,13 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef _CTYPE_H
-#define _CTYPE_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 inline int iscntrl(int c) { return c < 32u || c == 127; }
 inline int isprint(int c) { return c - 32 < 95u; }
 inline int isblank(int c) { return c == 32 || c == 9; }
@@ -28,11 +21,3 @@ inline int isxdigit(int c) { return isdigit(c) || (c | 0x20) - 'a' < 6u; }
 
 inline int isalnum(int c) { return isdigit(c) || isalpha(c); }
 inline int ispunct(int c) { return isgraph(c) && !isalnum(c); }
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* ctype.h */
-
-/* vim: set ft=c: */

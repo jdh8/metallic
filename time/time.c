@@ -6,20 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef _TIME_H
-#define _TIME_H
-
-typedef double time_t;
-typedef double clock_t;
-
-#define CLOCKS_PER_SEC 1000.0
-
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <time.h>
 
 extern double _Date_now(void);
-extern double clock(void);
 
 inline time_t time(time_t* timer)
 {
@@ -27,9 +16,3 @@ inline time_t time(time_t* timer)
     if (timer) *timer = result;
     return result;
 }
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
-
-#endif /* time.h */
