@@ -6,6 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef int Integer;
-#define PREFIX
-#include "abs.h"
+#define CAT2(a, b) a##b
+#define CAT(a, b)  CAT2(a, b)
+
+Integer CAT(PREFIX, abs)(Integer a)
+{
+    return a < 0 ? -a : a ? a : 0;
+}
