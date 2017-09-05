@@ -31,16 +31,37 @@ void free(void*);
 void* aligned_alloc(size_t, size_t);
 #endif
 
+typedef struct { int quot; int rem; } div_t;
+typedef struct { long quot; long rem; } ldiv_t;
+#if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
+typedef struct { long long quot; long long rem; } lldiv_t;
+#endif
+
+int abs(int);
+long labs(long);
+#if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
+long long llabs(long long);
+#endif
+
+inline div_t div(int x, int y) { return (div_t) { x / y, x % y }; }
+inline ldiv_t ldiv(long x, long y) { return (ldiv_t) { x / y, x % y }; }
+#if (__STDC_VERSION__ >= 199901 || __cplusplus >= 201103)
+inline lldiv_t lldiv(long long x, long long y) { return (lldiv_t) { x / y, x % y }; }
+#endif
+
 #ifdef __cplusplus
 } // extern "C"
 
-inline int abs(int a) { return a < 0 ? -a : a; }
-inline long abs(long a) { return a < 0 ? -a : a; }
-inline long long abs(long long a) { return a < 0 ? -a : a; }
-#else
-int abs(int);
-long labs(long);
-long long llabs(long long);
+inline long abs(long x) { return labs(x); }
+#if (__cplusplus >= 201103)
+inline long long abs(long long x) { return llabs(x); }
 #endif
+
+inline ldiv_t div(long x, long y) { return ldiv(x, y); }
+#if (__cplusplus >= 201103)
+inline lldiv_t div(long long x, long long y) { return lldiv(x, y); }
+#endif
+
+#endif /* C++ */
 
 #endif /* stdlib.h */
