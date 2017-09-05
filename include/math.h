@@ -20,21 +20,27 @@ typedef double double_t;
 #define FP_SUBNORMAL 3
 #define FP_ZERO      4
 
-#ifdef __GNUC__
 #define HUGE_VALF __builtin_huge_valf()
 #define HUGE_VAL  __builtin_huge_val()
 #define HUGE_VALL __builtin_huge_vall()
-#else
-#define HUGE_VALF (1 / 0.f)
-#define HUGE_VAL  (1 / 0.)
-#define HUGE_VALL (1 / 0.L)
 #endif
 
 #endif /* C99 or C++11 */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#if (__STDC_VERSION__ >= 199901)
+#define fpclassify(x)        __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, x)
+#define isfinite(x)          __builtin_isfinite(x)
+#define isinf(x)             __builtin_isinf(x)
+#define isnan(x)             __builtin_isnan(x)
+#define isnormal(x)          __builtin_isnormal(x)
+#define signbit(x)           __builtin_signbit(x)
+#define isgreater(x, y)      __builtin_isgreater(x, y)
+#define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
+#define isless(x, y)         __builtin_isless(x, y)
+#define islessequal(x, y)    __builtin_islessequal(x, y)
+#define islessgreater(x, y)  __builtin_islessgreater(x, y)
+#define isunordered(x, y)    __builtin_isunordered(x, y)
+#endif /* C99 */
 
 #define _Scalar double
 #include "bits/mathcall.h"
@@ -51,44 +57,5 @@ extern "C" {
 #include "bits/mathcall.h"
 #undef _Scalar
 #undef _SUFFIX
-
-#ifdef __cplusplus
-} // extern "C"
-
-inline double abs(double x) { return fabs(x); }
-#endif
-
-#if (__STDC_VERSION__ >= 199901)
-# ifdef __GNUC__
-# define fpclassify(x)        __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, x)
-# define isfinite(x)          __builtin_isfinite(x)
-# define isinf(x)             __builtin_isinf(x)
-# define isnan(x)             __builtin_isnan(x)
-# define isnormal(x)          __builtin_isnormal(x)
-# define signbit(x)           __builtin_signbit(x)
-# define isgreater(x, y)      __builtin_isgreater(x, y)
-# define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
-# define isless(x, y)         __builtin_isless(x, y)
-# define islessequal(x, y)    __builtin_islessequal(x, y)
-# define islessgreater(x, y)  __builtin_islessgreater(x, y)
-# define isunordered(x, y)    __builtin_isunordered(x, y)
-# else
-# define isfinite(x)          (1 / (x) && (x) == (x))
-# define isinf(x)             ((x) >= 1 / 0.f || (x) <= -1 / 0.f)
-# define isnan(x)             ((x) != (x))
-# define isnormal(x)          (1 / (x) && isfinite(1 / (x)))
-# define signbit(x)           (copysign(1, x) < 0)
-# define isgreater(x, y)      ((x) > (y))
-# define isgreaterequal(x, y) ((x) >= (y))
-# define isless(x, y)         ((x) < (y))
-# define islessequal(x, y)    ((x) <= (y))
-# define islessgreater(x, y)  ((x) < (y) || (x) > (y))
-# define isunordered(x, y)    ((x) != (x) || (y) != (y))
-# define fpclassify(x)        (isnan(x) ? FP_NAN :       \
-                               isinf(x) ? FP_INFINITE :  \
-                               isnormal(x) ? FP_NORMAL : \
-                               x ? FP_SUBNORMAL : FP_ZERO)
-# endif
-#endif /* C99 */
 
 #endif /* math.h */
