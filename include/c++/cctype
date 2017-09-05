@@ -13,21 +13,21 @@
 
 namespace std {
 
-using ::iscntrl(int);
-using ::isprint(int);
-using ::isblank(int);
-using ::isspace(int);
-using ::isgraph(int);
+using ::iscntrl;
+using ::isprint;
+using ::isblank;
+using ::isspace;
+using ::isgraph;
 
-using ::isupper(int);
-using ::islower(int);
-using ::isalpha(int);
+using ::isupper;
+using ::islower;
+using ::isalpha;
 
-using ::isdigit(int);
-using ::isxdigit(int);
+using ::isdigit;
+using ::isxdigit;
 
-using ::isalnum(int);
-using ::ispunct(int);
+using ::isalnum;
+using ::ispunct;
 
 }
 
