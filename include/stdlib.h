@@ -13,6 +13,21 @@
 
 typedef __SIZE_TYPE__ size_t;
 
+#if (__cplusplus >= 201103)
+#define NULL nullptr
+#elif defined(__GNUG__)
+#define NULL __null
+#elif defined(__cplusplus)
+#define NULL 0
+#else
+#define NULL ((void*) 0)
+#endif
+
+#define EXIT_SUCCESS 0
+#define EXIT_FAILURE 1
+
+#define RAND_MAX 0x7FFFFFFF
+
 #ifdef __cplusplus
 extern "C" {
 #endif
