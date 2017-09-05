@@ -24,12 +24,16 @@ _METALLIC_NORETURN void exit(int);
 void* malloc(size_t);
 void* calloc(size_t, size_t);
 void* realloc(void*, size_t);
-
 void free(void*);
 
 #if (__STDC_VERSION__ >= 201112 || __cplusplus > 201402)
 void* aligned_alloc(size_t, size_t);
 #endif
+
+int rand();
+void srand(unsigned);
+void qsort(void*, size_t, size_t, int(*)(const void*, const void*));
+void* bsearch(const void*, const void*, size_t, size_t, int(*)(const void*, const void*));
 
 typedef struct { int quot; int rem; } div_t;
 typedef struct { long quot; long rem; } ldiv_t;
