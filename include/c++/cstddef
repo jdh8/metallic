@@ -15,10 +15,11 @@ namespace std {
 
 using ::size_t;
 using ::ptrdiff_t;
-using ::nullptr_t;
-using ::max_align_t;
-using ::byte;
 
+#if (__cplusplus >= 201103)
+using ::max_align_t;
+using ::nullptr_t;
+#endif
 }
 
 #endif
