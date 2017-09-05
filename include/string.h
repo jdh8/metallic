@@ -26,17 +26,12 @@ inline void* mempcpy(void*__restrict destination, const void*__restrict source, 
 #endif
 
 #ifdef __cplusplus
-namespace __metallic {
-#endif
-
-void* memchr(const void*, int, size_t);
-
-#ifdef __cplusplus
-} // namespace __metallic
 } // extern "C"
 
-inline const void* memchr(const void* source, int c, size_t length) { return __metallic::memchr(source, c, length); }
-inline void* memchr(void* source, int c, size_t length) { return __metallic::memchr(source, c, length); }
+inline const void* memchr(const void* source, int c, size_t length) { return __builtin_memchr(source, c, length); }
+inline void* memchr(void* source, int c, size_t length) { return __builtin_memchr(source, c, length); }
+#else
+void* memchr(const void*, int, size_t);
 #endif
 
 #endif /* string.h */
