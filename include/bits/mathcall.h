@@ -47,7 +47,7 @@ inline _Scalar frexp(_Scalar __x, int* __exp) { return _MATHCALL(__builtin_frexp
 inline _Scalar ldexp(_Scalar __x, int __exp) { return _MATHCALL(__builtin_ldexp)(__x, __exp); }
 inline _Scalar modf(_Scalar __x, _Scalar* __i) { return _MATHCALL(__builtin_modf)(__x, __i); }
 
-#else
+#elif (__STDC_VERSION__ >= 199901) || !defined(_SUFFIX)
 
 _Scalar _MATHCALL(fabs)(_Scalar);
 _Scalar _MATHCALL(fmod)(_Scalar, _Scalar);
@@ -81,7 +81,7 @@ _Scalar _MATHCALL(modf)(_Scalar, _Scalar*);
 _Scalar _MATHCALL(fabs)(_Scalar);
 _Scalar _MATHCALL(fmod)(_Scalar, _Scalar);
 
-#endif /* C++ */
+#endif
 
 #if (__STDC_VERSION__ >= 199901)
 
