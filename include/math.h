@@ -37,7 +37,7 @@ typedef double double_t;
 #define FP_ZERO      2
 #define FP_SUBNORMAL 3
 #define FP_NORMAL    4
-#endif
+#endif /* C99 or C++11 */
 
 #if __STDC_VERSION__ >= 199901L
 #define fpclassify(x)        __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, x)
@@ -59,7 +59,7 @@ extern "C" {
 #endif
 
 #define _Scalar float
-#define _SUFFIX
+#define _SUFFIX f
 #include "bits/mathcalls.h"
 #undef _Scalar
 #undef _SUFFIX
@@ -71,7 +71,7 @@ extern "C" {
 #undef _SUFFIX
 
 #define _Scalar long double
-#define _SUFFIX
+#define _SUFFIX l
 #include "bits/mathcalls.h"
 #undef _Scalar
 #undef _SUFFIX
