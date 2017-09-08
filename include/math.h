@@ -35,15 +35,15 @@ typedef double double_t;
 #define HUGE_VAL  __builtin_huge_val()
 #define HUGE_VALL __builtin_huge_vall()
 #define FP_ILOGBNAN __INT_MAX__
-#define FP_ILOGB0   (-__INT_MAX__ - (-1 & 3 == 3))  /* INT_MIN */
+#define FP_ILOGB0   (-__INT_MAX__ - (-1 & 3 == 3))  // INT_MIN
 #else
 #define NAN (0.0f / 0.0f)
 #define INFINITY 9e999f
 #define HUGE_VALF INFINITY
 #define HUGE_VAL  ((double)INFINITY)
 #define HUGE_VALL ((long double)INFINITY)
-#define FP_ILOGBNAN ((int)((unsigned)-1 / 2))       /* INT_MAX */
-#define FP_ILOGB0   (-FP_ILOGBNAN - (-1 & 3 == 3))  /* INT_MIN */
+#define FP_ILOGBNAN ((int)((unsigned)-1 / 2))       // INT_MAX
+#define FP_ILOGB0   (-FP_ILOGBNAN - (-1 & 3 == 3))  // INT_MIN
 #endif
 #endif /* C99 or C++11 */
 
