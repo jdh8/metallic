@@ -31,6 +31,14 @@
     default: function,                                          \
     long double _Complex: function##l                           \
 )
+#define fabs(x) _Generic(x,     \
+    float: fabsf,               \
+    default: fabs,              \
+    long double: fabsl,         \
+    float _Complex: cabsf,      \
+    double _Complex: cabs,      \
+    long double _Complex: cabsl \
+)
 #elif __GNUC__ * 100 + __GNUC_MINOR__ >= 301
 #define _TGMATH(x, function) __builtin_choose_expr(                                                     \
     __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr(             \
@@ -47,11 +55,17 @@
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), float _Complex), function##f, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), long double _Complex), function##l, function         \
 ))
+#define fabs(x) __builtin_choose_expr(                                                         \
+    __builtin_types_compatible_p(__typeof__(x), float), fabsf, __builtin_choose_expr(          \
+    __builtin_types_compatible_p(__typeof__(x), long double), fabsl, __builtin_choose_expr(    \
+    __builtin_types_compatible_p(__typeof__(x), float _Complex), cabsf, __builtin_choose_expr( \
+    __builtin_types_compatible_p(__typeof__(x), double _Complex), cabs, __builtin_choose_expr( \
+    __builtin_types_compatible_p(__typeof__(x), long double _Complex), cabsl, fabs             \
+)))))
 #else
 #error This tgmath.h implementation depends on C11 or GCC >= 3.1.
 #endif
 
-#define fabs(x) _TGMATH(x, fabs)(x)
 #define exp(x) _TGMATH(x, exp)(x)
 #define log(x) _TGMATH(x, log)(x)
 #define pow(x, y) _TGMATH((x)*(y), pow)(x, y)
