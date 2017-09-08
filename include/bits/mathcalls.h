@@ -81,6 +81,6 @@ _Scalar _MATHCALL(scalbln)(_Scalar, long);
 int     _MATHCALL(ilogb)(_Scalar);
 _Scalar _MATHCALL(logb)(_Scalar);
 _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
-_Scalar _MATHCALL(nextoward)(_Scalar, _Scalar);
+_Scalar _MATHCALL(nexttoward)(_Scalar, _Scalar);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
 #endif
