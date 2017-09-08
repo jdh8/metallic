@@ -28,7 +28,7 @@ typedef double double_t;
 #define math_errhandling MATH_ERREXCEPT
 #endif
 
-#if __GNUC__ >= 4
+#if __GNUC__ * 100 + __GNUC_MINOR__ >= 303
 #define NAN      __builtin_nanf("")
 #define INFINITY __builtin_inff()
 #define HUGE_VALF __builtin_huge_valf()
@@ -49,12 +49,17 @@ typedef double double_t;
 
 #if __STDC_VERSION__ >= 199901L
 #if __GNUC__ >= 4
+#define signbit(x) __builtin_signbit(x)
+#else
+#define signbit(x) (sizeof(x - 0.0) > sizeof(long double) ? copysignl(1, x) < 0 : copysign(1, x) < 0)
+#endif
+
+#if __GNUC__ * 100 + __GNUC_MINOR__ >= 404 || __has_builtin(__builtin_fpclassify)
 #define fpclassify(x)        __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, x)
 #define isfinite(x)          __builtin_isfinite(x)
 #define isinf(x)             __builtin_isinf(x)
 #define isnan(x)             __builtin_isnan(x)
 #define isnormal(x)          __builtin_isnormal(x)
-#define signbit(x)           __builtin_signbit(x)
 #define isgreater(x, y)      __builtin_isgreater(x, y)
 #define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
 #define isless(x, y)         __builtin_isless(x, y)
@@ -74,7 +79,6 @@ typedef double double_t;
 #define isnormal(x)          (isfinite(x) && isfinite(1 / (x)))
 #define fpclassify(x)        (isfinite(x) ? (x) ? (isfinite(1 / (x)) ? FP_NORMAL : FP_SUBNORMAL) : FP_ZERO \
                                           : (x) == (x) ? FP_INFINITE : FP_NAN)
-#define signbit(x)           (copysign(1, x) < 0)
 #endif
 #endif /* C99 */
 
