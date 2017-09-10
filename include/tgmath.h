@@ -129,3 +129,5 @@
 #define cproj(z) _TGMATH_COMPLEX(z, cproj)(z)
 
 #endif // tgmath.h
+
+// vim: ft=c

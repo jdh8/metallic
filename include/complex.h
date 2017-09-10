@@ -48,3 +48,5 @@ extern "C" {
 #endif
 
 #endif // complex.h
+
+// vim: ft=c

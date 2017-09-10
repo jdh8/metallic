@@ -84,3 +84,5 @@ _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
 _Scalar _MATHCALL(nexttoward)(_Scalar, _Scalar);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
 #endif
+
+/* vim: set ft=c: */

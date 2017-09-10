@@ -40,3 +40,4 @@ _ComplexScalar _MATHCALL(casinh)(_ComplexScalar);
 _ComplexScalar _MATHCALL(cacosh)(_ComplexScalar);
 _ComplexScalar _MATHCALL(catanh)(_ComplexScalar);
 
+// vim: ft=c
