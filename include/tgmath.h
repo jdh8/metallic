@@ -39,7 +39,7 @@
     double _Complex: cabs,      \
     long double _Complex: cabsl \
 )
-#elif __GNUC__ * 100 + __GNUC_MINOR__ >= 301
+#else
 #define _TGMATH(x, function) __builtin_choose_expr(                                                     \
     __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr(             \
     __builtin_types_compatible_p(__typeof__(x), long double), function##l, __builtin_choose_expr(       \
@@ -62,8 +62,6 @@
     __builtin_types_compatible_p(__typeof__(x), double _Complex), cabs, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x), long double _Complex), cabsl, fabs             \
 )))))
-#else
-#error This tgmath.h implementation depends on C11 or GCC >= 3.1.
 #endif
 
 #define exp(x) _TGMATH(x, exp)(x)

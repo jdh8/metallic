@@ -41,7 +41,7 @@ extern "C" {
 } // extern "C"
 #endif
 
-#if __STDC_VERSION__ >= 201112L && (__GNUC__ * 100 + __GNUC_MINOR__ >= 407 || __has_builtin(__builtin_complex))
+#if __STDC_VERSION__ >= 201112L
 #define CMPLXF(x, y) __builtin_complex((float)(x), (float)(y))
 #define CMPLX(x, y) __builtin_complex((double)(x), (double)(y))
 #define CMPLXL(x, y) __builtin_complex((long double)(x), (long double)(y))

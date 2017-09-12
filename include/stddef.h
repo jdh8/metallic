@@ -9,16 +9,10 @@
 #ifndef _STDDEF_H
 #define _STDDEF_H
 
-#include "bits/types/size.h"
 #include "bits/types/null.h"
 
-#ifdef __GNUC__
+typedef __SIZE_TYPE__ size_t;
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
-#elif defined(__LP64__) || defined(_LP64) || defined(_WIN64)
-typedef long ptrdiff_t;
-#else
-typedef int ptrdiff_t;
-#endif
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 

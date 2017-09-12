@@ -9,16 +9,8 @@
 #ifndef _STDINT_H
 #define _STDINT_H
 
-#ifdef __GNUC__
 typedef __INTPTR_TYPE__ intptr_t;
 typedef __UINTPTR_TYPE__ uintptr_t;
-#elif defined(__LP64__) || defined(_LP64) || defined(_WIN64)
-typedef long intptr_t;
-typedef unsigned long uintptr_t;
-#else
-typedef int intptr_t;
-typedef unsigned intptr_t;
-#endif
 
 typedef signed char int8_t;
 typedef short int16_t;
@@ -26,10 +18,8 @@ typedef int int32_t;
 
 #ifdef __LP64__
 typedef long int64_t;
-#elif __GNUC__
-__extension__ typedef long long int64_t;
 #else
-typedef long long int64_t;
+__extension__ typedef long long int64_t;
 #endif
 
 typedef unsigned char uint8_t;
@@ -38,10 +28,8 @@ typedef unsigned int uint32_t;
 
 #ifdef __LP64__
 typedef unsigned long uint64_t;
-#elif __GNUC__
-__extension__ typedef unsigned long long uint64_t;
 #else
-typedef unsigned long long uint64_t;
+__extension__ typedef unsigned long long uint64_t;
 #endif
 
 typedef int8_t  int_least8_t;
