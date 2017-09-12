@@ -15,7 +15,6 @@ Dependencies
 Most environments with GCC-compatible compilers (e.g. GCC and clang) meet these
 requirements.
 
-* Freestanding C headers
 * GCC-compatible builtins
 * ILP32 or LP64 data model
 

@@ -1,4 +1,4 @@
-/* This file is part of Metallic, a runtime library for WebAssembly.
+/* This file is part of Metallic, a C++ library for WebAssembly.
  *
  * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
  *
@@ -6,16 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef NULL
+#ifndef _STDBOOL_H
+#define _STDBOOL_H
 
-#if __cplusplus >= 201103L
-#define NULL nullptr
-#elif __GNUG__
-#define NULL __null
-#elif __cplusplus
-#define NULL 0
-#else
-#define NULL ((void*)0)
+#ifndef __cplusplus
+#define bool  _Bool
+#define true  1
+#define false 0
 #endif
+
+#define __bool_true_false_are_defined 1
 
 #endif
