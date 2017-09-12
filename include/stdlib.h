@@ -9,12 +9,14 @@
 #ifndef _STDLIB_H
 #define _STDLIB_H
 
+#include "bits/null.h"
 #include "bits/specifiers.h"
-#include "bits/types/size.h"
-#include "bits/types/null.h"
-#include "bits/types/wchar.h"
 
-#ifdef __cplusplus
+typedef __SIZE_TYPE__ size_t;
+
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#else
 extern "C" {
 #endif
 
