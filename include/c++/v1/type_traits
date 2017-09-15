@@ -45,7 +45,7 @@ template<typename _T> struct remove_const<const _T> { typedef _T type; };
 template<typename _T> struct remove_volatile { typedef _T type; };
 template<typename _T> struct remove_volatile<volatile _T> { typedef _T type; };
 
-template<typename _T> struct remove_cv : remove_volatile<remove_const<_T>> {};
+template<typename _T> struct remove_cv : remove_volatile<typename remove_const<_T>::type> {};
 
 template<typename _T> struct remove_reference { typedef _T type; };
 template<typename _T> struct remove_reference<_T&> { typedef _T type; };
@@ -282,6 +282,84 @@ struct aligned_storage
 {
     class type { alignas(_Alignment) unsigned char __data[_Length]; };
 };
+
+template<typename..._Types>
+struct __aligned_union_helper
+{
+    static constexpr size_t alignment_value = 0;
+    class type {};
+};
+
+template<typename _T, typename..._Rest>
+struct __aligned_union_helper<_T, _Rest...>
+{
+  private:
+    typedef __aligned_union_helper<_Rest...> _R;
+
+  public:
+    static constexpr size_t alignment_value = alignof(_T) > _R::alignment_value ? alignof(_T) : _R::alignment_value;
+    class type { alignas(alignment_value) char _data[sizeof(_T) > sizeof(_R::type) ? sizeof(_T) : sizeof(_R::type)]; };
+};
+
+template<size_t _Length, typename..._Types>
+struct aligned_union : __aligned_union_helper<char[_Length], _Types...> {};
+
+template<typename..._Types>
+struct aligned_union<0, _Types...> : __aligned_union_helper<_Types...> {};
+
+template<bool, typename = void> struct enable_if {};
+template<typename _T> struct enable_if<true, _T> { typedef _T type; };
+
+template<bool, typename, typename> struct conditional;
+template<typename _T, typename _F> struct conditional<true, _T, _F> { typedef _T type; };
+template<typename _T, typename _F> struct conditional<false, _T, _F> { typedef _F type; };
+
+template<typename _T>
+class decay
+{
+  private:
+    typedef typename remove_reference<_T>::type _U;
+
+  public:
+    typedef typename conditional<
+        is_array<_U>::value,
+        typename remove_extent<_U>::type*,
+        typename conditional<
+            is_function<_U>::value,
+            typename add_pointer<_U>::type,
+            typename remove_cv<_U>::type
+        >::type
+    >::type type;
+};
+
+template<typename...> using __void_t = void;
+
+template<typename..._T> struct common_type {};
+template<typename _T> struct common_type<_T> : common_type<_T, _T> {};
+
+template<typename, typename, typename = void> struct __common_type_binary {};
+
+template<typename _T, typename _U>
+struct __common_type_binary<_T, _U, __void_t<decltype(true ? declval<_T>() : declval<_U>())>>
+{
+    typedef typename decay<decltype(true ? declval<_T>() : declval<_U>())>::type type;
+};
+
+template<typename _T, typename _U> struct common_type<_T, _U>
+  : __common_type_binary<typename decay<_T>::type, typename decay<_U>::type>
+{};
+
+template<typename, typename = void> struct __common_type_multiary {};
+
+template<typename _T, typename _U, typename..._V>
+struct __common_type_multiary<common_type<_T, _U, _V...>, __void_t<typename common_type<_T, _U>::type>>
+  : common_type<typename common_type<_T, _U>::type, _V...>
+{};
+
+template<typename _T, typename _U, typename..._V>
+struct common_type<_T, _U, _V...> : __common_type_multiary<common_type<_T, _U, _V...>> {};
+
+template<typename _T> struct underlying_type { typedef __underlying_type(_T) type; };
 
 } // namespace std
 
