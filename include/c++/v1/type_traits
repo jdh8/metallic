@@ -344,6 +344,11 @@ struct is_void
 {};
 
 template<typename _T>
+struct __is_null_pointer
+  : is_same<typename remove_cv<_T>::type, decltype(nullptr)>
+{};
+
+template<typename _T>
 struct is_integral
   : integral_constant<bool, !is_same<typename make_signed<_T>::type, typename make_unsigned<_T>::type>::value>
 {};
@@ -545,54 +550,16 @@ struct is_arithmetic
 
 template<typename _T>
 struct is_fundamental
-  : integral_constant<bool, (is_arithmetic<_T>::value || is_void<_T>::value) && __is_pod(_T)>
-{};
-
-template<>
-struct is_fundamental<decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_fundamental<const decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_fundamental<volatile decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_fundamental<const volatile decltype(nullptr)>
-  : true_type
+  : integral_constant<bool,
+        (is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value)
+        && __is_pod(_T)>
 {};
 
 template<typename _T>
 struct is_scalar
   : integral_constant<bool,
         is_arithmetic<_T>::value || is_enum<_T>::value ||
-        is_pointer<_T>::value || is_member_pointer<_T>::value>
-{};
-
-template<>
-struct is_scalar<decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_scalar<const decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_scalar<volatile decltype(nullptr)>
-  : true_type
-{};
-
-template<>
-struct is_scalar<const volatile decltype(nullptr)>
-  : true_type
+        is_pointer<_T>::value || is_member_pointer<_T>::value || __is_null_pointer<_T>::value>
 {};
 
 template<typename _T>
