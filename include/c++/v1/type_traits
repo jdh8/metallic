@@ -614,9 +614,7 @@ struct is_arithmetic
 
 template<typename _T>
 struct is_fundamental
-  : integral_constant<bool,
-        (is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value)
-        && !__is_aggregate(_T)>
+  : integral_constant<bool, is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value>
 {};
 
 template<typename _T>
