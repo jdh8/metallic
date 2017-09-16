@@ -717,9 +717,64 @@ struct is_trivially_constructible
   : integral_constant<bool, __is_trivially_constructible(_T, _Args...)>
 {};
 
+template<bool, typename, typename...>
+struct __is_nothrow_constructible_helper
+  : false_type
+{};
+
+template<typename _T, typename..._Args>
+struct __is_nothrow_constructible_helper<true, _T, _Args...>
+  : integral_constant<bool, noexcept(_T(declval<_Args>()...))>
+{};
+
+template<typename _T, typename..._Args>
+struct is_nothrow_constructible
+  : __is_nothrow_constructible_helper<is_constructible<_T, _Args...>::value, _T, _Args...>
+{};
+
+template<typename _T>
+struct is_default_constructible
+  : is_constructible<_T>
+{};
+
 template<typename _T>
 struct is_trivially_default_constructible
   : is_trivially_constructible<_T>
+{};
+
+template<typename _T>
+struct is_nothrow_default_constructible
+  : is_nothrow_constructible<_T>
+{};
+
+template<typename _T>
+struct is_copy_constructible
+  : is_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
+
+template<typename _T>
+struct is_trivially_copy_constructible
+  : is_trivially_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
+
+template<typename _T>
+struct is_nothrow_copy_constructible
+  : is_nothrow_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
+
+template<typename _T>
+struct is_move_constructible
+  : is_constructible<_T, typename add_rvalue_reference<_T>::type>
+{};
+
+template<typename _T>
+struct is_trivially_move_constructible
+  : is_trivially_constructible<_T, typename add_rvalue_reference<_T>::type>
+{};
+
+template<typename _T>
+struct is_nothrow_move_constructible
+  : is_nothrow_constructible<_T, typename add_rvalue_reference<_T>::type>
 {};
 
 //////////////////////////// Miscellaneous /////////////////////////////
