@@ -369,23 +369,28 @@ struct is_integral<const volatile bool>
 {};
 
 template<typename>
-struct is_floating_point
+struct __is_floating_point_helper
   : false_type
 {};
 
 template<>
-struct is_floating_point<float>
+struct __is_floating_point_helper<float>
   : true_type
 {};
 
 template<>
-struct is_floating_point<double>
+struct __is_floating_point_helper<double>
   : true_type
 {};
 
 template<>
-struct is_floating_point<long double>
+struct __is_floating_point_helper<long double>
   : true_type
+{};
+
+template<typename _T>
+struct is_floating_point
+  : __is_floating_point_helper<typename remove_cv<_T>::type>
 {};
 
 template<typename>
