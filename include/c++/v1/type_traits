@@ -398,36 +398,6 @@ struct is_abstract
   : integral_constant<bool, __is_abstract(_T)>
 {};
 
-template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_signed_helper
-  : false_type
-{};
-
-template<typename _T>
-struct __is_signed_helper<_T, true>
-  : integral_constant<bool, _T(-1) < _T(0)>
-{};
-
-template<typename _T>
-struct is_signed
-  : __is_signed_helper<_T>
-{};
-
-template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_unsigned_helper
-  : false_type
-{};
-
-template<typename _T>
-struct __is_unsigned_helper<_T, true>
-  : integral_constant<bool, _T(0) < _T(-1)>
-{};
-
-template<typename _T>
-struct is_unsigned
-  : __is_unsigned_helper<_T>
-{};
-
 ///////////////////////// Type classification //////////////////////////
 
 template<typename _T>
@@ -642,11 +612,41 @@ struct is_arithmetic
   : integral_constant<bool, is_integral<_T>::value || is_floating_point<_T>::value>
 {};
 
+template<typename _T, bool = is_arithmetic<_T>::value>
+struct __is_signed_helper
+  : false_type
+{};
+
+template<typename _T>
+struct __is_signed_helper<_T, true>
+  : integral_constant<bool, _T(-1) < _T(0)>
+{};
+
+template<typename _T>
+struct is_signed
+  : __is_signed_helper<_T>
+{};
+
+template<typename _T, bool = is_arithmetic<_T>::value>
+struct __is_unsigned_helper
+  : false_type
+{};
+
+template<typename _T>
+struct __is_unsigned_helper<_T, true>
+  : integral_constant<bool, _T(0) < _T(-1)>
+{};
+
+template<typename _T>
+struct is_unsigned
+  : __is_unsigned_helper<_T>
+{};
+
 template<typename _T>
 struct is_fundamental
   : integral_constant<bool,
         (is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value)
-        && !(is_array<_T>::value || is_union<_T>::value || is_class<_T>::value)>
+        && !__is_aggregate(_T)>
 {};
 
 template<typename _T>
