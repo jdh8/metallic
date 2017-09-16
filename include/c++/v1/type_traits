@@ -514,7 +514,7 @@ struct is_arithmetic
 
 template<typename _T>
 struct is_fundamental
-  : integral_constant<bool, is_arithmetic<_T>::value || is_void<_T>::value>
+  : integral_constant<bool, (is_arithmetic<_T>::value || is_void<_T>::value) && __is_pod(_T)>
 {};
 
 template<>
