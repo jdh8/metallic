@@ -336,6 +336,98 @@ struct is_same<_T, _T>
 template<typename _T>
 typename add_rvalue_reference<_T>::type declval() noexcept;
 
+/////////////////////////// Type properties ////////////////////////////
+
+template<typename>
+struct is_const
+  : false_type
+{};
+
+template<typename _T>
+struct is_const<const _T>
+  : true_type
+{};
+
+template<typename>
+struct is_volatile
+  : false_type
+{};
+
+template<typename _T>
+struct is_volatile<volatile _T>
+  : true_type
+{};
+
+template<typename _T>
+struct is_trivial
+  : integral_constant<bool, __is_trivial(_T)>
+{};
+
+template<typename _T>
+struct is_trivially_copyable
+  : integral_constant<bool, __is_trivially_copyable(_T)>
+{};
+
+template<typename _T>
+struct is_standard_layout
+  : integral_constant<bool, __is_standard_layout(_T)>
+{};
+
+template<typename _T>
+struct is_pod
+  : integral_constant<bool, __is_pod(_T)>
+{};
+
+template<typename _T>
+struct is_literal_type
+  : integral_constant<bool, __is_literal_type(_T)>
+{};
+
+template<typename _T>
+struct is_empty
+  : integral_constant<bool, __is_empty(_T)>
+{};
+
+template<typename _T>
+struct is_polymorphic
+  : integral_constant<bool, __is_polymorphic(_T)>
+{};
+
+template<typename _T>
+struct is_abstract
+  : integral_constant<bool, __is_abstract(_T)>
+{};
+
+template<typename _T, bool = is_arithmetic<_T>::value>
+struct __is_signed_helper
+  : false_type
+{};
+
+template<typename _T>
+struct __is_signed_helper<_T, true>
+  : integral_constant<bool, _T(-1) < _T(0)>
+{};
+
+template<typename _T>
+struct is_signed
+  : __is_signed_helper<_T>
+{};
+
+template<typename _T, bool = is_arithmetic<_T>::value>
+struct __is_unsigned_helper
+  : false_type
+{};
+
+template<typename _T>
+struct __is_unsigned_helper<_T, true>
+  : integral_constant<bool, _T(0) < _T(-1)>
+{};
+
+template<typename _T>
+struct is_unsigned
+  : __is_unsigned_helper<_T>
+{};
+
 ///////////////////////// Type classification //////////////////////////
 
 template<typename _T>
@@ -543,6 +635,8 @@ struct is_member_object_pointer
   : integral_constant<bool, is_member_pointer<_T>::value && !is_function<_T>::value>
 {};
 
+/////////////////////////// Type categories ////////////////////////////
+
 template<typename _T>
 struct is_arithmetic
   : integral_constant<bool, is_integral<_T>::value || is_floating_point<_T>::value>
@@ -552,7 +646,7 @@ template<typename _T>
 struct is_fundamental
   : integral_constant<bool,
         (is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value)
-        && __is_pod(_T)>
+        && !(is_array<_T>::value || is_union<_T>::value || is_class<_T>::value)>
 {};
 
 template<typename _T>
@@ -570,96 +664,6 @@ struct is_object
 template<typename _T>
 struct is_compound
   : integral_constant<bool, !is_fundamental<_T>::value>
-{};
-
-template<typename>
-struct is_const
-  : false_type
-{};
-
-template<typename _T>
-struct is_const<const _T>
-  : true_type
-{};
-
-template<typename>
-struct is_volatile
-  : false_type
-{};
-
-template<typename _T>
-struct is_volatile<volatile _T>
-  : true_type
-{};
-
-template<typename _T>
-struct is_trivial
-  : integral_constant<bool, __is_trivial(_T)>
-{};
-
-template<typename _T>
-struct is_trivially_copyable
-  : integral_constant<bool, __is_trivially_copyable(_T)>
-{};
-
-template<typename _T>
-struct is_standard_layout
-  : integral_constant<bool, __is_standard_layout(_T)>
-{};
-
-template<typename _T>
-struct is_pod
-  : integral_constant<bool, __is_pod(_T)>
-{};
-
-template<typename _T>
-struct is_literal_type
-  : integral_constant<bool, __is_literal_type(_T)>
-{};
-
-template<typename _T>
-struct is_empty
-  : integral_constant<bool, __is_empty(_T)>
-{};
-
-template<typename _T>
-struct is_polymorphic
-  : integral_constant<bool, __is_polymorphic(_T)>
-{};
-
-template<typename _T>
-struct is_abstract
-  : integral_constant<bool, __is_abstract(_T)>
-{};
-
-template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_signed_helper
-  : false_type
-{};
-
-template<typename _T>
-struct __is_signed_helper<_T, true>
-  : integral_constant<bool, _T(-1) < _T(0)>
-{};
-
-template<typename _T>
-struct is_signed
-  : __is_signed_helper<_T>
-{};
-
-template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_unsigned_helper
-  : false_type
-{};
-
-template<typename _T>
-struct __is_unsigned_helper<_T, true>
-  : integral_constant<bool, _T(0) < _T(-1)>
-{};
-
-template<typename _T>
-struct is_unsigned
-  : __is_unsigned_helper<_T>
 {};
 
 ////////////////////////// Special operations //////////////////////////
