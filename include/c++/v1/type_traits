@@ -252,7 +252,8 @@ struct is_base_of : integral_constant<bool, __is_base_of(_Base, _Derived)>
 
 template<typename _From, typename _To, bool = is_void<_From>::value || is_function<_To>::value || is_array<_To>::value>
 struct __is_convertible_helper
-{ typedef typename is_void<_To>::type type; };
+  : is_void<_To>
+{};
 
 template<typename _From, typename _To>
 struct __is_convertible_helper<_From, _To, false>
