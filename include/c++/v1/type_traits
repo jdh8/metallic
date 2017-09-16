@@ -207,105 +207,116 @@ struct remove_all_extents<_T[_N]>
 {};
 
 template<typename _T>
-struct make_signed
+struct __make_signed_helper
 {
     typedef _T type;
 };
 
 template<>
-struct make_signed<bool>;
+struct __make_signed_helper<bool>
+{};
 
 template<>
-struct make_signed<char>
+struct __make_signed_helper<char>
 {
     typedef signed char type;
 };
 
 template<>
-struct make_signed<unsigned char>
+struct __make_signed_helper<unsigned char>
 {
     typedef signed char type;
 };
 
 template<>
-struct make_signed<unsigned short>
+struct __make_signed_helper<unsigned short>
 {
     typedef short type;
 };
 
 template<>
-struct make_signed<unsigned>
+struct __make_signed_helper<unsigned>
 {
     typedef int type;
 };
 
 template<>
-struct make_signed<unsigned long>
+struct __make_signed_helper<unsigned long>
 {
     typedef long type;
 };
 
 template<>
-struct make_signed<unsigned long long>
+struct __make_signed_helper<unsigned long long>
 {
     typedef long long type;
 };
 
 template<typename _T>
-struct make_unsigned
+struct __make_unsigned_helper
 {
     typedef _T type;
 };
 
 template<>
-struct make_unsigned<char>
+struct __make_unsigned_helper<char>
 {
     typedef unsigned char type;
 };
 
 template<>
-struct make_unsigned<signed char>
+struct __make_unsigned_helper<signed char>
 {
     typedef unsigned char type;
 };
 
 template<>
-struct make_unsigned<short>
+struct __make_unsigned_helper<short>
 {
     typedef unsigned short type;
 };
 
 template<>
-struct make_unsigned<int>
+struct __make_unsigned_helper<int>
 {
     typedef unsigned type;
 };
 
 template<>
-struct make_unsigned<long>
+struct __make_unsigned_helper<long>
 {
     typedef unsigned long type;
 };
 
 template<>
-struct make_unsigned<long long>
+struct __make_unsigned_helper<long long>
 {
     typedef unsigned long long type;
 };
 
 #ifdef __SIZEOF_INT128__
 template<>
-struct make_signed<unsigned __int128>
+struct __make_signed_helper<unsigned __int128>
 {
     typedef __int128 type;
 };
 
 template<>
-struct make_unsigned<__int128>
+struct __make_unsigned_helper<__int128>
 {
     typedef unsigned __int128 type;
 };
 #endif
+
+template<typename _T>
+struct make_signed
+  : __make_signed_helper<typename remove_cv<_T>::type>
+{};
+
+template<typename _T>
+struct make_unsigned
+  : __make_unsigned_helper<typename remove_cv<_T>::type>
+{};
 
 template<typename...>
 using __void_t = void;
@@ -339,6 +350,21 @@ struct is_integral
 
 template<>
 struct is_integral<bool>
+  : true_type
+{};
+
+template<>
+struct is_integral<const bool>
+  : true_type
+{};
+
+template<>
+struct is_integral<volatile bool>
+  : true_type
+{};
+
+template<>
+struct is_integral<const volatile bool>
   : true_type
 {};
 
