@@ -735,6 +735,36 @@ struct is_nothrow_assignable
   : __is_nothrow_assignable_base<is_assignable<_T, _U>>
 {};
 
+template<typename _T>
+struct is_copy_assignable
+  : is_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
+{}
+
+template<typename _T>
+struct is_trivially_copy_assignable
+  : is_trivially_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
+{}
+
+template<typename _T>
+struct is_nothrow_copy_assignable
+  : is_nothrow_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
+{}
+
+template<typename _T>
+struct is_move_assignable
+  : is_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
+{}
+
+template<typename _T>
+struct is_trivially_move_assignable
+  : is_trivially_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
+{}
+
+template<typename _T>
+struct is_nothrow_move_assignable
+  : is_nothrow_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
+{}
+
 //////////////////////////// Miscellaneous /////////////////////////////
 
 template<size_t _Length, size_t _Alignment>
