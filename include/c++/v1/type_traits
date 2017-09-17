@@ -1045,6 +1045,28 @@ struct underlying_type
     typedef __underlying_type(_T) type;
 };
 
+template<typename, typename, typename...>
+struct __invoke_result_base;
+
+template<typename _F, typename..._Args>
+struct __invoke_result_base<__void_t<decltype(declval<_F>()(declval<_Args>()...))>, _F, _Args...>
+{
+    typedef decltype(declval<_F>()(declval<_Args>()...)) type;
+};
+
+template<typename _F, typename..._Args>
+struct __invoke_result
+  : __invoke_result_base<void, _F, _Args...>
+{};
+
+template<typename>
+struct result_of;
+
+template<typename _F, typename..._Args>
+struct result_of<_F(_Args...)>
+  : __invoke_result<_F, _Args...>
+{};
+
 } // namespace std
 
 #endif // <type_traits>
