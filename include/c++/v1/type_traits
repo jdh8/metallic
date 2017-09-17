@@ -690,7 +690,7 @@ struct __is_convertible_helper<_From, _To, false>
 
 template<typename _From, typename _To>
 struct is_convertible
-  : typename __is_convertible_helper<_From, _To>::type
+  : __is_convertible_helper<_From, _To>::type
 {};
 
 template<typename, typename, typename...>
@@ -811,32 +811,57 @@ struct is_nothrow_assignable
 template<typename _T>
 struct is_copy_assignable
   : is_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
-{}
+{};
 
 template<typename _T>
 struct is_trivially_copy_assignable
   : is_trivially_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
-{}
+{};
 
 template<typename _T>
 struct is_nothrow_copy_assignable
   : is_nothrow_assignable<typename add_lvalue_reference<_T>::type, typename add_lvalue_reference<const _T>::type>
-{}
+{};
 
 template<typename _T>
 struct is_move_assignable
   : is_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
-{}
+{};
 
 template<typename _T>
 struct is_trivially_move_assignable
   : is_trivially_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
-{}
+{};
 
 template<typename _T>
 struct is_nothrow_move_assignable
   : is_nothrow_assignable<typename add_lvalue_reference<_T>::type, typename add_rvalue_reference<_T>::type>
-{}
+{};
+
+template<typename _T, typename = void>
+struct __is_destructible_base
+  : false_type
+{};
+
+template<typename _T>
+struct __is_destructible_base<_T, __void_t<decltype(declval<_T&>().~_T())>>
+  : true_type
+{};
+
+template<typename _T>
+struct __is_destructible_base<_T&>
+  : true_type
+{};
+
+template<typename _T>
+struct __is_destructible_base<_T&&>
+  : true_type
+{};
+
+template<typename _T>
+struct is_destructible
+  : __is_destructible_base<typename remove_all_extents<_T>::type>
+{};
 
 //////////////////////////// Miscellaneous /////////////////////////////
 
