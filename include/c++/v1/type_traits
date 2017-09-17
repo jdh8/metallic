@@ -898,6 +898,53 @@ struct has_virtual_destructor
   : integral_constant<bool, __has_virtual_destructor(_T)>
 {};
 
+/////////////////////// Quantitative properties ////////////////////////
+
+template<typename _T>
+struct alignment_of
+  : integral_constant<size_t, alignof(_T)>
+{};
+
+template<typename>
+struct rank
+  : integral_constant<size_t, 0>
+{};
+
+template<typename _T>
+struct rank<_T[]>
+  : integral_constant<size_t, rank<_T>::value + 1>
+{};
+
+template<typename _T, size_t _N>
+struct rank<_T[_N]>
+  : integral_constant<size_t, rank<_T>::value + 1>
+{};
+
+template<typename, unsigned _N = 0>
+struct extent
+  : integral_constant<size_t, 0>
+{};
+
+template<typename _T>
+struct extent<_T[]>
+  : integral_constant<size_t, 0>
+{};
+
+template<typename _T, unsigned _N>
+struct extent<_T[], _N>
+  : extent<_T, _N - 1>
+{};
+
+template<typename _T, size_t _I>
+struct extent<_T[_I]>
+  : integral_constant<size_t, _I>
+{};
+
+template<typename _T, size_t _I, unsigned _N>
+struct extent<_T[_I], _N>
+  : extent<_T, _N - 1>
+{};
+
 //////////////////////////// Miscellaneous /////////////////////////////
 
 template<size_t _Length, size_t _Alignment>
