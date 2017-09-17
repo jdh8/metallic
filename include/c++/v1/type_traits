@@ -698,6 +698,41 @@ using is_trivially_move_constructible = is_trivially_constructible<_T, typename 
 template<typename _T>
 using is_nothrow_move_constructible = is_nothrow_constructible<_T, typename add_rvalue_reference<_T>::type>;
 
+template<typename, typename, typename = void>
+struct __is_assignable_base
+  : false_type
+{};
+
+template<typename _T, typename _U>
+struct __is_assignable_base<_T, _U, __void_t<decltype(declval<_T>() = declval<_U>())>>
+  : true_type
+{};
+
+template<typename _T, typename _U>
+struct is_assignable
+  : __is_assignable_base<_T, _U>
+{};
+
+template<typename _T, typename _U>
+struct is_trivially_assignable
+  : integral_constant<bool, __is_trivially_assignable(_T, _U)>
+{};
+
+template<typename _Assignable, bool = _Assignable::value>
+struct __is_nothrow_assignable_base
+  : false_type
+{};
+
+template<typename _T, typename _U>
+struct __is_nothrow_assignable_base<is_assignable<_T, _U>, true>
+  : integral_constant<bool, noexcept(declval<_T>() = declval<_U>())>
+{};
+
+template<typename _T, typename _U>
+struct is_nothrow_assignable
+  : __is_nothrow_assignable_base<is_assignable<_T, _U>>
+{};
+
 //////////////////////////// Miscellaneous /////////////////////////////
 
 template<size_t _Length, size_t _Alignment>
