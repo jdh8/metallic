@@ -632,16 +632,11 @@ template<typename _From, typename _To>
 struct __is_convertible_helper<_From, _To, false>
 {
   private:
-    template<typename _T> static void __convert(_T);
-
-    template<typename _T, typename = decltype(__convert<_T>(declval<_From>()))>
-    static true_type __test(_From);
-
-    template<typename>
-    static false_type __test(...);
+    static true_type __convert(_To);
+    static false_type __convert(...);
 
   public:
-    typedef decltype(__test<_To>(declval<_From>())) type;
+    typedef decltype(__convert(declval<_From>())) type;
 };
 
 template<typename _From, typename _To>
