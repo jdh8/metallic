@@ -658,18 +658,20 @@ using is_constructible = __is_constructible_helper<void, _T, _Args...>;
 template<typename _T, typename..._Args>
 using is_trivially_constructible = integral_constant<bool, __is_trivially_constructible(_T, _Args...)>;
 
-template<bool, typename, typename...>
-struct __is_nothrow_constructible_helper
+template<typename _Assignable, bool = _Assignable::value>
+struct __is_nothrow_constructible_base
   : false_type
 {};
 
 template<typename _T, typename..._Args>
-struct __is_nothrow_constructible_helper<true, _T, _Args...>
+struct __is_nothrow_constructible_base<is_constructible<_T, _Args...>, true>
   : integral_constant<bool, noexcept(_T(declval<_Args>()...))>
 {};
 
 template<typename _T, typename..._Args>
-using is_nothrow_constructible = __is_nothrow_constructible_helper<is_constructible<_T, _Args...>::value, _T, _Args...>;
+struct is_nothrow_constructible
+  : __is_nothrow_constructible_base<is_constructible<_T, _Args...>>
+{};
 
 template<typename _T>
 using is_default_constructible = is_constructible<_T>;
