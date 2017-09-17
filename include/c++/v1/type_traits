@@ -722,11 +722,13 @@ template<typename _T, typename..._Rest>
 struct __aligned_union_helper<_T, _Rest...>
 {
   private:
-    typedef __aligned_union_helper<_Rest...> _R;
+    typedef __aligned_union_helper<_Rest...> _Strictest;
 
   public:
-    static constexpr size_t alignment_value = alignof(_T) > _R::alignment_value ? alignof(_T) : _R::alignment_value;
-    class type { alignas(alignment_value) char _data[sizeof(_T) > sizeof(_R::type) ? sizeof(_T) : sizeof(_R::type)]; };
+    static constexpr size_t alignment_value = alignof(_T) > _Strictest::alignment_value
+        ? alignof(_T) : _Strictest::alignment_value;
+    class type { alignas(alignment_value) char _data[sizeof(_T) > sizeof(_Strictest::type)
+        ? sizeof(_T) : sizeof(_Strictest::type)]; };
 };
 
 template<size_t _Length, typename..._Types>
