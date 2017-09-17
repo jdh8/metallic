@@ -207,102 +207,102 @@ struct remove_all_extents<_T[_N]>
 {};
 
 template<typename _T>
-struct __make_signed_helper
+struct __make_signed_base
 {
     typedef _T type;
 };
 
 template<>
-struct __make_signed_helper<bool>
+struct __make_signed_base<bool>
 {};
 
 template<>
-struct __make_signed_helper<char>
+struct __make_signed_base<char>
 {
     typedef signed char type;
 };
 
 template<>
-struct __make_signed_helper<unsigned char>
+struct __make_signed_base<unsigned char>
 {
     typedef signed char type;
 };
 
 template<>
-struct __make_signed_helper<unsigned short>
+struct __make_signed_base<unsigned short>
 {
     typedef short type;
 };
 
 template<>
-struct __make_signed_helper<unsigned>
+struct __make_signed_base<unsigned>
 {
     typedef int type;
 };
 
 template<>
-struct __make_signed_helper<unsigned long>
+struct __make_signed_base<unsigned long>
 {
     typedef long type;
 };
 
 template<>
-struct __make_signed_helper<unsigned long long>
+struct __make_signed_base<unsigned long long>
 {
     typedef long long type;
 };
 
 template<typename _T>
-struct __make_unsigned_helper
+struct __make_unsigned_base
 {
     typedef _T type;
 };
 
 template<>
-struct __make_unsigned_helper<char>
+struct __make_unsigned_base<char>
 {
     typedef unsigned char type;
 };
 
 template<>
-struct __make_unsigned_helper<signed char>
+struct __make_unsigned_base<signed char>
 {
     typedef unsigned char type;
 };
 
 template<>
-struct __make_unsigned_helper<short>
+struct __make_unsigned_base<short>
 {
     typedef unsigned short type;
 };
 
 template<>
-struct __make_unsigned_helper<int>
+struct __make_unsigned_base<int>
 {
     typedef unsigned type;
 };
 
 template<>
-struct __make_unsigned_helper<long>
+struct __make_unsigned_base<long>
 {
     typedef unsigned long type;
 };
 
 template<>
-struct __make_unsigned_helper<long long>
+struct __make_unsigned_base<long long>
 {
     typedef unsigned long long type;
 };
 
 #ifdef __SIZEOF_INT128__
 template<>
-struct __make_signed_helper<unsigned __int128>
+struct __make_signed_base<unsigned __int128>
 {
     typedef __int128 type;
 };
 
 template<>
-struct __make_unsigned_helper<__int128>
+struct __make_unsigned_base<__int128>
 {
     typedef unsigned __int128 type;
 };
@@ -310,12 +310,12 @@ struct __make_unsigned_helper<__int128>
 
 template<typename _T>
 struct make_signed
-  : __make_signed_helper<typename remove_cv<_T>::type>
+  : __make_signed_base<typename remove_cv<_T>::type>
 {};
 
 template<typename _T>
 struct make_unsigned
-  : __make_unsigned_helper<typename remove_cv<_T>::type>
+  : __make_unsigned_base<typename remove_cv<_T>::type>
 {};
 
 //////////////////////////// Type identity /////////////////////////////
@@ -374,28 +374,28 @@ struct is_integral<const volatile bool>
 {};
 
 template<typename>
-struct __is_floating_point_helper
+struct __is_floating_point_base
   : false_type
 {};
 
 template<>
-struct __is_floating_point_helper<float>
+struct __is_floating_point_base<float>
   : true_type
 {};
 
 template<>
-struct __is_floating_point_helper<double>
+struct __is_floating_point_base<double>
   : true_type
 {};
 
 template<>
-struct __is_floating_point_helper<long double>
+struct __is_floating_point_base<long double>
   : true_type
 {};
 
 template<typename _T>
 struct is_floating_point
-  : __is_floating_point_helper<typename remove_cv<_T>::type>
+  : __is_floating_point_base<typename remove_cv<_T>::type>
 {};
 
 template<typename>
@@ -429,23 +429,23 @@ struct is_class
 {};
 
 template<typename>
-struct __is_function_helper
+struct __is_function_base
   : false_type
 {};
 
 template<typename _R, typename..._Args>
-struct __is_function_helper<_R(_Args...)>
+struct __is_function_base<_R(_Args...)>
   : true_type
 {};
 
 template<typename _R, typename..._Args>
-struct __is_function_helper<_R(_Args..., ...)>
+struct __is_function_base<_R(_Args..., ...)>
   : true_type
 {};
 
 template<typename _T>
 struct is_function
-  : __is_function_helper<typename remove_cv<typename remove_reference<_T>::type>::type>
+  : __is_function_base<typename remove_cv<typename remove_reference<_T>::type>::type>
 {};
 
 template<typename>
@@ -636,33 +636,33 @@ struct is_compound
 ////////////////////////////// Signedness //////////////////////////////
 
 template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_signed_helper
+struct __is_signed_base
   : false_type
 {};
 
 template<typename _T>
-struct __is_signed_helper<_T, true>
+struct __is_signed_base<_T, true>
   : integral_constant<bool, _T(-1) < _T(0)>
 {};
 
 template<typename _T>
 struct is_signed
-  : __is_signed_helper<_T>
+  : __is_signed_base<_T>
 {};
 
 template<typename _T, bool = is_arithmetic<_T>::value>
-struct __is_unsigned_helper
+struct __is_unsigned_base
   : false_type
 {};
 
 template<typename _T>
-struct __is_unsigned_helper<_T, true>
+struct __is_unsigned_base<_T, true>
   : integral_constant<bool, _T(0) < _T(-1)>
 {};
 
 template<typename _T>
 struct is_unsigned
-  : __is_unsigned_helper<_T>
+  : __is_unsigned_base<_T>
 {};
 
 ////////////////////////// Special operations //////////////////////////
@@ -694,18 +694,18 @@ struct is_convertible
 {};
 
 template<typename, typename, typename...>
-struct __is_constructible_helper
+struct __is_constructible_base
   : false_type
 {};
 
 template<typename _T, typename..._Args>
-struct __is_constructible_helper<__void_t<decltype(_T(declval<_Args>()...))>, _T, _Args...>
+struct __is_constructible_base<__void_t<decltype(_T(declval<_Args>()...))>, _T, _Args...>
   : true_type
 {};
 
 template<typename _T, typename..._Args>
 struct is_constructible
-  : __is_constructible_helper<void, _T, _Args...>
+  : __is_constructible_base<void, _T, _Args...>
 {};
 
 template<typename _T, typename..._Args>
@@ -847,17 +847,17 @@ struct aligned_storage
 };
 
 template<typename..._Types>
-struct __aligned_union_helper
+struct __aligned_union_base
 {
     static constexpr size_t alignment_value = 0;
     class type {};
 };
 
 template<typename _T, typename..._Rest>
-struct __aligned_union_helper<_T, _Rest...>
+struct __aligned_union_base<_T, _Rest...>
 {
   private:
-    typedef __aligned_union_helper<_Rest...> _Strictest;
+    typedef __aligned_union_base<_Rest...> _Strictest;
 
   public:
     static constexpr size_t alignment_value = alignof(_T) > _Strictest::alignment_value
@@ -868,12 +868,12 @@ struct __aligned_union_helper<_T, _Rest...>
 
 template<size_t _Length, typename..._Types>
 struct aligned_union
-  : __aligned_union_helper<char[_Length], _Types...>
+  : __aligned_union_base<char[_Length], _Types...>
 {};
 
 template<typename..._Types>
 struct aligned_union<0, _Types...>
-  : __aligned_union_helper<_Types...>
+  : __aligned_union_base<_Types...>
 {};
 
 template<typename _T>
