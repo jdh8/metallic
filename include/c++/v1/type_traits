@@ -102,7 +102,9 @@ struct remove_volatile<volatile _T>
 };
 
 template<typename _T>
-using remove_cv = remove_volatile<typename remove_const<_T>::type>;
+struct remove_cv
+  : remove_volatile<typename remove_const<_T>::type>
+{};
 
 template<typename _T>
 struct remove_reference
@@ -307,10 +309,14 @@ struct __make_unsigned_helper<__int128>
 #endif
 
 template<typename _T>
-using make_signed = __make_signed_helper<typename remove_cv<_T>::type>;
+struct make_signed
+  : __make_signed_helper<typename remove_cv<_T>::type>
+{};
 
 template<typename _T>
-using make_unsigned = __make_unsigned_helper<typename remove_cv<_T>::type>;
+struct make_unsigned
+  : __make_unsigned_helper<typename remove_cv<_T>::type>
+{};
 
 //////////////////////////// Type identity /////////////////////////////
 
@@ -333,10 +339,14 @@ using __void_t = void;
 ///////////////////////// Type classification //////////////////////////
 
 template<typename _T>
-using is_void = is_same<typename remove_cv<_T>::type, void>;
+struct is_void
+  : is_same<typename remove_cv<_T>::type, void>
+{};
 
 template<typename _T>
-using __is_null_pointer = is_same<typename remove_cv<_T>::type, decltype(nullptr)>;
+struct __is_null_pointer
+  : is_same<typename remove_cv<_T>::type, decltype(nullptr)>
+{};
 
 template<typename _T>
 struct is_integral
@@ -384,7 +394,9 @@ struct __is_floating_point_helper<long double>
 {};
 
 template<typename _T>
-using is_floating_point = __is_floating_point_helper<typename remove_cv<_T>::type>;
+struct is_floating_point
+  : __is_floating_point_helper<typename remove_cv<_T>::type>
+{};
 
 template<typename>
 struct is_array
@@ -402,13 +414,19 @@ struct is_array<_T[_N]>
 {};
 
 template<typename _T>
-using is_enum = integral_constant<bool, __is_enum(_T)>;
+struct is_enum
+  : integral_constant<bool, __is_enum(_T)>
+{};
 
 template<typename _T>
-using is_union = integral_constant<bool, __is_union(_T)>;
+struct is_union
+  : integral_constant<bool, __is_union(_T)>
+{};
 
 template<typename _T>
-using is_class = integral_constant<bool, __is_class(_T)>;
+struct is_class
+  : integral_constant<bool, __is_class(_T)>
+{};
 
 template<typename>
 struct __is_function_helper
@@ -426,7 +444,9 @@ struct __is_function_helper<_R(_Args..., ...)>
 {};
 
 template<typename _T>
-using is_function = __is_function_helper<typename remove_cv<typename remove_reference<_T>::type>::type>;
+struct is_function
+  : __is_function_helper<typename remove_cv<typename remove_reference<_T>::type>::type>
+{};
 
 template<typename>
 struct is_lvalue_reference
@@ -514,12 +534,14 @@ struct is_member_pointer<_T _U::* const volatile>
 {};
 
 template<typename _T>
-using is_member_function_pointer = integral_constant<bool,
-    is_member_pointer<_T>::value && is_function<_T>::value>;
+struct is_member_function_pointer
+  : integral_constant<bool, is_member_pointer<_T>::value && is_function<_T>::value>
+{};
 
 template<typename _T>
-using is_member_object_pointer = integral_constant<bool,
-    is_member_pointer<_T>::value && !is_function<_T>::value>;
+struct is_member_object_pointer
+  : integral_constant<bool, is_member_pointer<_T>::value && !is_function<_T>::value>
+{};
 
 /////////////////////////// Type properties ////////////////////////////
 
@@ -544,51 +566,72 @@ struct is_volatile<volatile _T>
 {};
 
 template<typename _T>
-using is_trivial = integral_constant<bool, __is_trivial(_T)>;
+struct is_trivial
+  : integral_constant<bool, __is_trivial(_T)>
+{};
 
 template<typename _T>
-using is_trivially_copyable = integral_constant<bool, __is_trivially_copyable(_T)>;
+struct is_trivially_copyable
+  : integral_constant<bool, __is_trivially_copyable(_T)>
+{};
 
 template<typename _T>
-using is_standard_layout = integral_constant<bool, __is_standard_layout(_T)>;
+struct is_standard_layout
+  : integral_constant<bool, __is_standard_layout(_T)>
+{};
 
 template<typename _T>
-using is_pod = integral_constant<bool, __is_pod(_T)>;
+struct is_pod
+  : integral_constant<bool, __is_pod(_T)>
+{};
 
 template<typename _T>
-using is_literal_type = integral_constant<bool, __is_literal_type(_T)>;
+struct is_literal_type
+  : integral_constant<bool, __is_literal_type(_T)>
+{};
 
 template<typename _T>
-using is_empty = integral_constant<bool, __is_empty(_T)>;
+struct is_empty
+  : integral_constant<bool, __is_empty(_T)>
+{};
 
 template<typename _T>
-using is_polymorphic = integral_constant<bool, __is_polymorphic(_T)>;
+struct is_polymorphic
+  : integral_constant<bool, __is_polymorphic(_T)>
+{};
 
 template<typename _T>
-using is_abstract = integral_constant<bool, __is_abstract(_T)>;
+struct is_abstract
+  : integral_constant<bool, __is_abstract(_T)>
+{};
 
 /////////////////////////// Type categories ////////////////////////////
 
 template<typename _T>
-using is_arithmetic = integral_constant<bool,
-    is_integral<_T>::value || is_floating_point<_T>::value>;
+struct is_arithmetic
+  : integral_constant<bool, is_integral<_T>::value || is_floating_point<_T>::value>
+{};
 
 template<typename _T>
-using is_fundamental = integral_constant<bool,
-    is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value>;
+struct is_fundamental
+  : integral_constant<bool, is_arithmetic<_T>::value || is_void<_T>::value || __is_null_pointer<_T>::value>
+{};
 
 template<typename _T>
-using is_scalar = integral_constant<bool,
-    is_arithmetic<_T>::value || is_enum<_T>::value ||
-    is_pointer<_T>::value || is_member_pointer<_T>::value ||
-    __is_null_pointer<_T>::value>;
+struct is_scalar
+  : integral_constant<bool, is_arithmetic<_T>::value || is_enum<_T>::value
+        || is_pointer<_T>::value || is_member_pointer<_T>::value || __is_null_pointer<_T>::value>
+{};
 
 template<typename _T>
-using is_object = integral_constant<bool,
-    !(is_void<_T>::value || is_function<_T>::value || is_reference<_T>::value)>;
+struct is_object
+  : integral_constant<bool, !(is_void<_T>::value || is_function<_T>::value || is_reference<_T>::value)>
+{};
 
 template<typename _T>
-using is_compound = integral_constant<bool, !is_fundamental<_T>::value>;
+struct is_compound
+  : integral_constant<bool, !is_fundamental<_T>::value>
+{};
 
 ////////////////////////////// Signedness //////////////////////////////
 
@@ -603,7 +646,9 @@ struct __is_signed_helper<_T, true>
 {};
 
 template<typename _T>
-using is_signed = __is_signed_helper<_T>;
+struct is_signed
+  : __is_signed_helper<_T>
+{};
 
 template<typename _T, bool = is_arithmetic<_T>::value>
 struct __is_unsigned_helper
@@ -616,12 +661,16 @@ struct __is_unsigned_helper<_T, true>
 {};
 
 template<typename _T>
-using is_unsigned = __is_unsigned_helper<_T>;
+struct is_unsigned
+  : __is_unsigned_helper<_T>
+{};
 
 ////////////////////////// Special operations //////////////////////////
 
 template<typename _Base, typename _Derived>
-using is_base_of = integral_constant<bool, __is_base_of(_Base, _Derived)>;
+struct is_base_of
+  : integral_constant<bool, __is_base_of(_Base, _Derived)>
+{};
 
 template<typename _From, typename _To, bool = is_void<_From>::value || is_function<_To>::value || is_array<_To>::value>
 struct __is_convertible_helper
@@ -640,7 +689,9 @@ struct __is_convertible_helper<_From, _To, false>
 };
 
 template<typename _From, typename _To>
-using is_convertible = typename __is_convertible_helper<_From, _To>::type;
+struct is_convertible
+  : typename __is_convertible_helper<_From, _To>::type
+{};
 
 template<typename, typename, typename...>
 struct __is_constructible_helper
@@ -653,10 +704,14 @@ struct __is_constructible_helper<__void_t<decltype(_T(declval<_Args>()...))>, _T
 {};
 
 template<typename _T, typename..._Args>
-using is_constructible = __is_constructible_helper<void, _T, _Args...>;
+struct is_constructible
+  : __is_constructible_helper<void, _T, _Args...>
+{};
 
 template<typename _T, typename..._Args>
-using is_trivially_constructible = integral_constant<bool, __is_trivially_constructible(_T, _Args...)>;
+struct is_trivially_constructible
+  : integral_constant<bool, __is_trivially_constructible(_T, _Args...)>
+{};
 
 template<typename _Assignable, bool = _Assignable::value>
 struct __is_nothrow_constructible_base
@@ -674,31 +729,49 @@ struct is_nothrow_constructible
 {};
 
 template<typename _T>
-using is_default_constructible = is_constructible<_T>;
+struct is_default_constructible
+  : is_constructible<_T>
+{};
 
 template<typename _T>
-using is_trivially_default_constructible = is_trivially_constructible<_T>;
+struct is_trivially_default_constructible
+  : is_trivially_constructible<_T>
+{};
 
 template<typename _T>
-using is_nothrow_default_constructible = is_nothrow_constructible<_T>;
+struct is_nothrow_default_constructible
+  : is_nothrow_constructible<_T>
+{};
 
 template<typename _T>
-using is_copy_constructible = is_constructible<_T, typename add_lvalue_reference<const _T>::type>;
+struct is_copy_constructible
+  : is_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
 
 template<typename _T>
-using is_trivially_copy_constructible = is_trivially_constructible<_T, typename add_lvalue_reference<const _T>::type>;
+struct is_trivially_copy_constructible
+  : is_trivially_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
 
 template<typename _T>
-using is_nothrow_copy_constructible = is_nothrow_constructible<_T, typename add_lvalue_reference<const _T>::type>;
+struct is_nothrow_copy_constructible
+  : is_nothrow_constructible<_T, typename add_lvalue_reference<const _T>::type>
+{};
 
 template<typename _T>
-using is_move_constructible = is_constructible<_T, typename add_rvalue_reference<_T>::type>;
+struct is_move_constructible
+  : is_constructible<_T, typename add_rvalue_reference<_T>::type>
+{};
 
 template<typename _T>
-using is_trivially_move_constructible = is_trivially_constructible<_T, typename add_rvalue_reference<_T>::type>;
+struct is_trivially_move_constructible
+  : is_trivially_constructible<_T, typename add_rvalue_reference<_T>::type>
+{};
 
 template<typename _T>
-using is_nothrow_move_constructible = is_nothrow_constructible<_T, typename add_rvalue_reference<_T>::type>;
+struct is_nothrow_move_constructible
+  : is_nothrow_constructible<_T, typename add_rvalue_reference<_T>::type>
+{};
 
 template<typename, typename, typename = void>
 struct __is_assignable_base
