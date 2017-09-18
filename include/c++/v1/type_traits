@@ -715,13 +715,13 @@ struct __is_constructible_base
 {};
 
 template<typename _T, typename..._Args>
-struct __is_constructible_base<decltype(_T(declval<_Args>()...)), _T, _Args...>
+struct __is_constructible_base<__void_t<_T&, decltype(_T(declval<_Args>()...))>, _T, _Args...>
   : true_type
 {};
 
 template<typename _T, typename..._Args>
 struct is_constructible
-  : __is_constructible_base<_T, _T, _Args...>
+  : __is_constructible_base<void, _T, _Args...>
 {};
 
 template<typename _T, typename..._Args>
