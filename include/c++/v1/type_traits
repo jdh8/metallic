@@ -59,6 +59,9 @@ struct conditional<false, _T, _F>
 
 typedef __SIZE_TYPE__ size_t;
 
+template<typename...>
+using __void_t = void;
+
 template<typename _T>
 struct add_const
 {
@@ -124,16 +127,16 @@ struct remove_reference<_T&&>
     typedef _T type;
 };
 
-template<typename _T, typename = typename remove_cv<_T>::type>
+template<typename _T, typename = void>
 struct __add_lvalue_reference_base
 {
-    typedef typename remove_reference<_T>::type& type;
+    typedef _T type;
 };
 
 template<typename _T>
-struct __add_lvalue_reference_base<_T, void>
+struct __add_lvalue_reference_base<_T, __void_t<_T&>>
 {
-    typedef void type;
+    typedef _T& type;
 };
 
 template<typename _T>
@@ -141,16 +144,16 @@ struct add_lvalue_reference
   : __add_lvalue_reference_base<_T>
 {};
 
-template<typename _T, typename = typename remove_cv<_T>::type>
+template<typename _T, typename = void>
 struct __add_rvalue_reference_base
 {
-    typedef typename remove_reference<_T>::type&& type;
+    typedef _T type;
 };
 
 template<typename _T>
-struct __add_rvalue_reference_base<_T, void>
+struct __add_rvalue_reference_base<_T, __void_t<_T&&>>
 {
-    typedef void type;
+    typedef _T&& type;
 };
 
 template<typename _T>
@@ -354,9 +357,6 @@ struct is_same<_T, _T>
 
 template<typename _T>
 typename add_rvalue_reference<_T>::type declval() noexcept;
-
-template<typename...>
-using __void_t = void;
 
 ///////////////////////// Type classification //////////////////////////
 
