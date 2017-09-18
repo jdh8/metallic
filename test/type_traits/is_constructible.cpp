@@ -9,3 +9,15 @@
 #include <type_traits>
 
 static_assert(!std::is_constructible<void>::value, "False positive");
+static_assert(!std::is_constructible<int*, int>::value, "False positive");
+
+class Base {};
+class Derived : public Base {};
+
+static_assert(std::is_constructible<Base, Derived>::value, "Bug with inheritance");
+static_assert(std::is_constructible<Base*, Derived*>::value, "Bug with inheritance");
+static_assert(std::is_constructible<Base&, Derived&>::value, "Bug with inheritance");
+
+static_assert(!std::is_constructible<Derived, Base>::value, "Bug with inheritance");
+static_assert(!std::is_constructible<Derived*, Base*>::value, "Bug with inheritance");
+static_assert(!std::is_constructible<Derived&, Base&>::value, "Bug with inheritance");

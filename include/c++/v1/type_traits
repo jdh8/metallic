@@ -719,9 +719,34 @@ struct __is_constructible_base<__void_t<_T&, decltype(_T(declval<_Args>()...))>,
   : true_type
 {};
 
+template<typename _T, typename, typename = _T*>
+struct __is_constructible_unary
+  : false_type
+{};
+
+template<typename _T, typename _U>
+struct __is_constructible_unary<_T, _U, decltype(::new _T(declval<_U>()))>
+  : true_type
+{};
+
 template<typename _T, typename..._Args>
 struct is_constructible
   : __is_constructible_base<void, _T, _Args...>
+{};
+
+template<typename _T, typename _U>
+struct is_constructible<_T, _U>
+  : __is_constructible_unary<_T, _U>
+{};
+
+template<typename _T, typename _U>
+struct is_constructible<_T&, _U>
+  : is_convertible<_U, _T&>
+{};
+
+template<typename _T, typename _U>
+struct is_constructible<_T&&, _U>
+  : is_convertible<_U, _T&&>
 {};
 
 template<typename _T, typename..._Args>
