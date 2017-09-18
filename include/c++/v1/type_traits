@@ -860,7 +860,7 @@ struct __is_destructible_base
 {};
 
 template<typename _T>
-struct __is_destructible_base<_T, __void_t<decltype(declval<_T&>().~_T())>>
+struct __is_destructible_base<_T, decltype(declval<_T&>().~_T())>
   : true_type
 {};
 
