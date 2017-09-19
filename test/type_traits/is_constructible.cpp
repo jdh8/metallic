@@ -8,22 +8,22 @@
 
 #include <type_traits>
 
-static_assert(!std::is_constructible<void>::value, "False positive");
-static_assert(!std::is_constructible<int*, int>::value, "False positive");
+static_assert(!std::is_constructible<void>::value, "`void` shall be unconstructible.");
+static_assert(!std::is_constructible<int*, int>::value, "Pointer shall be unconstructible from an integer");
 
 typedef int Main();
 
-static_assert(!std::is_constructible<Main, Main>::value, "Function is unconstructible");
-static_assert(std::is_constructible<Main*, Main>::value, "Function pointer is constructible");
-static_assert(std::is_constructible<Main&, Main>::value, "Function reference is constructible");
+static_assert(!std::is_constructible<Main, Main>::value, "Function shall be unconstructible.");
+static_assert(std::is_constructible<Main*, Main>::value, "Function pointer shall be constructible.");
+static_assert(std::is_constructible<Main&, Main>::value, "Function reference shall be constructible.");
 
 class Base {};
 class Derived : public Base {};
 
-static_assert(std::is_constructible<Base, Derived>::value, "Bug with inheritance");
-static_assert(std::is_constructible<Base*, Derived*>::value, "Bug with inheritance");
-static_assert(std::is_constructible<Base&, Derived&>::value, "Bug with inheritance");
+static_assert(std::is_constructible<Base, Derived>::value, "Upcasting shall be allowed.");
+static_assert(std::is_constructible<Base*, Derived*>::value, "Upcasting shall be allowed.");
+static_assert(std::is_constructible<Base&, Derived&>::value, "Upcasting shall be allowed.");
 
-static_assert(!std::is_constructible<Derived, Base>::value, "Bug with inheritance");
-static_assert(!std::is_constructible<Derived*, Base*>::value, "Bug with inheritance");
-static_assert(!std::is_constructible<Derived&, Base&>::value, "Bug with inheritance");
+static_assert(!std::is_constructible<Derived, Base>::value, "Downcasting shall be disallowed.");
+static_assert(!std::is_constructible<Derived*, Base*>::value, "Downcasting shall be disallowed.");
+static_assert(!std::is_constructible<Derived&, Base&>::value, "Downcasting shall be disallowed.");
