@@ -11,6 +11,12 @@
 static_assert(!std::is_constructible<void>::value, "False positive");
 static_assert(!std::is_constructible<int*, int>::value, "False positive");
 
+typedef int Main();
+
+static_assert(!std::is_constructible<Main, Main>::value, "Function is unconstructible");
+static_assert(std::is_constructible<Main*, Main>::value, "Function pointer is constructible");
+static_assert(std::is_constructible<Main&, Main>::value, "Function reference is constructible");
+
 class Base {};
 class Derived : public Base {};
 
