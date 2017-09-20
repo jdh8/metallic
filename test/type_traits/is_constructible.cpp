@@ -8,8 +8,36 @@
 
 #include <type_traits>
 
-static_assert(!std::is_constructible<void>::value, "`void` shall be unconstructible.");
-static_assert(!std::is_constructible<int*, int>::value, "Pointer shall be unconstructible from an integer");
+static_assert(!std::is_constructible<void>::value, "");
+static_assert(!std::is_constructible<void, void>::value, "");
+static_assert(!std::is_constructible<void, int>::value, "");
+static_assert(!std::is_constructible<void, int, int>::value, "");
+
+static_assert(std::is_constructible<int, double>::value, "");
+static_assert(std::is_constructible<float, double>::value, "");
+
+static_assert(!std::is_constructible<int*, int>::value, "");
+static_assert(!std::is_constructible<int, void*>::value, "");
+
+static_assert(std::is_constructible<void*, double*>::value, "");
+static_assert(std::is_constructible<const void*, double*>::value, "");
+static_assert(!std::is_constructible<double*, void*>::value, "");
+static_assert(!std::is_constructible<void*, const double*>::value, "");
+
+static_assert(std::is_constructible<int&&, int>::value, "");
+static_assert(std::is_constructible<const int&, const int>::value, "");
+static_assert(std::is_constructible<const int&, const int&&>::value, "");
+
+static_assert(!std::is_constructible<const int&>::value, "");
+static_assert(!std::is_constructible<int&, int>::value, "");
+static_assert(!std::is_constructible<int&, int&&>::value, "");
+static_assert(!std::is_constructible<int&&, const int>::value, "");
+
+enum List {};
+
+static_assert(std::is_constructible<List>::value, "Enumerator shall be default-constructible.");
+static_assert(std::is_constructible<List, List>::value, "Enumerator shall be copy-constructible.");
+static_assert(!std::is_constructible<List, int>::value, "Enumerator construction from integer requires casting.");
 
 typedef int Main();
 
@@ -27,3 +55,13 @@ static_assert(std::is_constructible<Base&, Derived&>::value, "Upcasting shall be
 static_assert(!std::is_constructible<Derived, Base>::value, "Downcasting shall be disallowed.");
 static_assert(!std::is_constructible<Derived*, Base*>::value, "Downcasting shall be disallowed.");
 static_assert(!std::is_constructible<Derived&, Base&>::value, "Downcasting shall be disallowed.");
+
+template<typename Scalar>
+struct Pair
+{
+    Pair(Scalar, Scalar);
+};
+
+static_assert(std::is_constructible<Pair<int>, int, int>::value, "User-defined construction");
+static_assert(std::is_constructible<Pair<int>, Pair<int>>::value, "Copy construction");
+static_assert(!std::is_constructible<Pair<int>>::value, "Deleted default construction");
