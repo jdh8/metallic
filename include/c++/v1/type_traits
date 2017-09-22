@@ -1057,27 +1057,26 @@ struct __common_type_binary
 
 template<typename _T, typename _U>
 struct __common_type_binary<_T, _U, __void_t<decltype(true ? declval<_T>() : declval<_U>())>>
-{
-    typedef typename decay<decltype(true ? declval<_T>() : declval<_U>())>::type type;
-};
+  : decay<decltype(true ? declval<_T>() : declval<_U>())>
+{};
 
 template<typename _T, typename _U>
 struct common_type<_T, _U>
   : __common_type_binary<typename decay<_T>::type, typename decay<_U>::type>
 {};
 
-template<typename, typename = void>
+template<typename...>
 struct __common_type_multiary
 {};
 
 template<typename _T, typename _U, typename..._V>
-struct __common_type_multiary<common_type<_T, _U, _V...>, __void_t<typename common_type<_T, _U>::type>>
+struct __common_type_multiary<__void_t<typename common_type<_T, _U>::type>, _T, _U, _V...>
   : common_type<typename common_type<_T, _U>::type, _V...>
 {};
 
 template<typename _T, typename _U, typename..._V>
 struct common_type<_T, _U, _V...>
-  : __common_type_multiary<common_type<_T, _U, _V...>>
+  : __common_type_multiary<void, _T, _U, _V...>
 {};
 
 template<typename _T>
