@@ -1025,22 +1025,23 @@ struct aligned_union<0, _Types...>
 {};
 
 template<typename _T>
-class decay
-{
-  private:
-    typedef typename remove_reference<_T>::type _U;
+_T __decay(_T);
 
-  public:
-    typedef typename conditional<
-        is_array<_U>::value,
-        typename remove_extent<_U>::type*,
-        typename conditional<
-            is_function<_U>::value,
-            typename add_pointer<_U>::type,
-            typename remove_cv<_U>::type
-        >::type
-    >::type type;
+template<typename _T, typename = void>
+struct __decay_base
+  : remove_cv<typename remove_reference<_T>::type>
+{};
+
+template<typename _T>
+struct __decay_base<_T, __void_t<decltype(__decay(declval<_T>()))>>
+{
+    typedef decltype(__decay(declval<_T>())) type;
 };
+
+template<typename _T>
+struct decay
+  : __decay_base<_T>
+{};
 
 template<typename..._T>
 struct common_type
