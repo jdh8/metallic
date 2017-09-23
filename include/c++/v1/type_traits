@@ -356,7 +356,10 @@ struct is_same<_T, _T>
 {};
 
 template<typename _T>
-typename add_rvalue_reference<_T>::type declval() noexcept;
+typename add_rvalue_reference<_T>::type declval() noexcept
+{
+    static_assert(!is_same<_T, _T>::value, "Evaluating std::declval is ill-formed C++.");
+}
 
 ///////////////////////// Type classification //////////////////////////
 
