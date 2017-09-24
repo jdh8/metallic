@@ -1,0 +1,325 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef _METALLIC_ITERATOR
+#define _METALLIC_ITERATOR
+
+#if __cplusplus >= 201103L
+#include <type_traits>
+#endif
+
+namespace std {
+
+struct input_iterator_tag
+{};
+
+struct output_iterator_tag
+{};
+
+struct forward_iterator_tag
+  : input_iterator_tag
+{};
+
+struct bidirectional_iterator_tag
+  : forward_iterator_tag
+{};
+
+struct random_access_iterator_tag
+  : bidirectional_iterator_tag
+{};
+
+template<typename _Iterator, typename = void>
+struct __iterator_traits_base
+#if __cplusplus >= 201103L
+{};
+
+template<typename _Iterator>
+struct __iterator_traits_base<_Iterator, __void_t<
+    typename _Iterator::difference_type,
+    typename _Iterator::value_type,
+    typename _Iterator::pointer,
+    typename _Iterator::reference,
+    typename _Iterator::iterator_category>>
+#endif
+{
+    typedef typename _Iterator::difference_type difference_type;
+    typedef typename _Iterator::value_type value_type;
+    typedef typename _Iterator::pointer pointer;
+    typedef typename _Iterator::reference reference;
+    typedef typename _Iterator::iterator_category iterator_category;
+};
+
+template<typename _Iterator>
+struct iterator_traits
+  : __iterator_traits_base<_Iterator>
+{};
+
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
+
+template<typename _T>
+struct iterator_traits<_T*>
+{
+    typedef ptrdiff_t difference_type;
+    typedef _T value_type;
+    typedef _T* pointer;
+    typedef _T& reference;
+    typedef random_access_iterator_tag iterator_category;
+};
+
+template<typename _T>
+struct iterator_traits<const _T*>
+{
+    typedef ptrdiff_t difference_type;
+    typedef _T value_type;
+    typedef const _T* pointer;
+    typedef const _T& reference;
+    typedef random_access_iterator_tag iterator_category;
+};
+
+template<typename _Iterator>
+_Iterator __unwrap(_Iterator __it)
+{
+    return __it;
+}
+
+template<typename _Iterator>
+class __wrapped
+{
+  private:
+    _Iterator __it;
+
+    __wrapped(_Iterator __x)
+      : __it(__x)
+    {}
+
+  public:
+    typedef typename iterator_traits<_Iterator>::difference_type difference_type;
+    typedef typename iterator_traits<_Iterator>::value_type value_type;
+    typedef _Iterator pointer;
+    typedef typename iterator_traits<_Iterator>::reference reference;
+    typedef typename iterator_traits<_Iterator>::iterator_category iterator_category;
+
+    __wrapped()
+    {}
+
+    _Iterator base() const
+    {
+        return __it;
+    }
+
+    reference operator*() const
+    {
+        return *__it;
+    }
+
+    pointer operator->() const
+    {
+        return __it;
+    }
+
+    reference operator[](difference_type __n) const
+    {
+        return __it[__n];
+    }
+
+    __wrapped operator+(difference_type __n) const
+    {
+        return __it + __n;
+    }
+
+    __wrapped operator-(difference_type __n) const
+    {
+        return __it - __n;
+    }
+
+    __wrapped& operator++()
+    {
+        ++__it;
+        return *this;
+    }
+
+    __wrapped operator++(int)
+    {
+        return __it++;
+    }
+
+    __wrapped& operator--()
+    {
+        --__it;
+        return *this;
+    }
+
+    __wrapped operator--(int)
+    {
+        return __it--;
+    }
+
+    __wrapped& operator+=(difference_type __n)
+    {
+        __it += __n;
+        return *this;
+    }
+
+    __wrapped& operator-=(difference_type __n)
+    {
+        __it -= __n;
+        return *this;
+    }
+
+    template<typename, typename, typename>
+    friend class basic_string;
+
+    template<typename, typename>
+    friend class vector;
+};
+
+template<typename _Iterator>
+_Iterator __unwrap(__wrapped<_Iterator> __it)
+{
+    return __it.base();
+}
+
+template<typename _Iterator>
+class reverse_iterator
+{
+  protected:
+    _Iterator current;
+
+  public:
+    typedef typename iterator_traits<_Iterator>::difference_type difference_type;
+    typedef typename iterator_traits<_Iterator>::value_type value_type;
+    typedef typename iterator_traits<_Iterator>::pointer pointer;
+    typedef typename iterator_traits<_Iterator>::reference reference;
+    typedef typename iterator_traits<_Iterator>::iterator_category iterator_category;
+
+    reverse_iterator()
+    {}
+
+    explicit reverse_iterator(_Iterator __x)
+      : current(__x)
+    {}
+
+    template<typename _Other>
+    reverse_iterator(const reverse_iterator<_Other>& __other)
+      : current(__other.base())
+    {}
+
+    template<typename _Other>
+    reverse_iterator& operator=(const reverse_iterator<_Other>& __other)
+    {
+        current = __other.base();
+    }
+
+    _Iterator base() const
+    {
+        return current;
+    }
+
+    reference operator*() const
+    {
+        _Iterator __base = current;
+        return *--__base;
+    }
+
+    _Iterator operator->() const
+    {
+        _Iterator __base = current;
+        return --__base;
+    }
+
+    reference operator[](difference_type __n) const
+    {
+        return current[-__n - 1];
+    }
+
+    reverse_iterator operator+(difference_type __n) const
+    {
+        return current - __n;
+    }
+
+    reverse_iterator operator-(difference_type __n) const
+    {
+        return current + __n;
+    }
+
+    reverse_iterator& operator++()
+    {
+        --current;
+        return *this;
+    }
+
+    reverse_iterator operator++(int)
+    {
+        return current--;
+    }
+
+    reverse_iterator& operator--()
+    {
+        --current;
+        return *this;
+    }
+
+    reverse_iterator operator--(int)
+    {
+        return current++;
+    }
+
+    reverse_iterator& operator+=(difference_type __n)
+    {
+        current -= __n;
+        return *this;
+    }
+
+    reverse_iterator& operator-=(difference_type __n)
+    {
+        current += __n;
+        return *this;
+    }
+};
+
+template<typename _T, typename _U>
+bool operator==(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() == __y.base();
+}
+
+template<typename _T, typename _U>
+bool operator!=(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() != __y.base();
+}
+
+template<typename _T, typename _U>
+bool operator<(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() > __y.base();
+}
+
+template<typename _T, typename _U>
+bool operator<=(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() >= __y.base();
+}
+
+template<typename _T, typename _U>
+bool operator>(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() < __y.base();
+}
+
+template<typename _T, typename _U>
+bool operator>=(const reverse_iterator<_T>& __x, const reverse_iterator<_U>& __y)
+{
+    return __x.base() <= __y.base();
+}
+
+} // namespace std
+
+#endif // <iterator>
+
+// vim: ft=cpp
