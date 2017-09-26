@@ -26,6 +26,7 @@ void* memcpy(void* restrict destination, const void* restrict source, size_t len
         length -= 4;
     }
 
+#ifdef __SSE__
     if ((uintptr_t)output & 8 && length >= 8) {
         __builtin_memcpy(__builtin_assume_aligned(output, 8), input, 8);
         output += 8;
@@ -40,6 +41,7 @@ void* memcpy(void* restrict destination, const void* restrict source, size_t len
             input += 16;
         }
     }
+#endif
 
     for (; length >= 8; length -= 8) {
         __builtin_memcpy(__builtin_assume_aligned(output, 8), input, 8);

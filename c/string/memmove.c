@@ -23,6 +23,7 @@ static void forward(unsigned char* output, const unsigned char* input, size_t le
         length -= 4;
     }
 
+#ifdef __SSE__
     if ((uintptr_t) output & 8 && length >= 8) {
         __builtin_memmove(__builtin_assume_aligned(output, 8), input, 8);
         output += 8;
@@ -37,6 +38,7 @@ static void forward(unsigned char* output, const unsigned char* input, size_t le
             input += 16;
         }
     }
+#endif
 
     for (; length >= 8; length -= 8) {
         __builtin_memmove(__builtin_assume_aligned(output, 8), input, 8);
@@ -75,6 +77,7 @@ static void backward(unsigned char* output, const unsigned char* input, size_t l
         length -= 4;
     }
 
+#ifdef __SSE__
     if ((uintptr_t) output & 8 && length >= 8) {
         __builtin_memmove(__builtin_assume_aligned(output -= 8, 8), input -= 8, 8);
         length -= 8;
@@ -83,6 +86,7 @@ static void backward(unsigned char* output, const unsigned char* input, size_t l
     if ((uintptr_t) input % 16 == 0)
         for (; length >= 16; length -= 16)
             *(Vector*)(output -= 16) = *(const Vector*)(input -= 16);
+#endif
 
     for (; length >= 8; length -= 8)
         __builtin_memmove(__builtin_assume_aligned(output -= 8, 8), input -= 8, 8);
