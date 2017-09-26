@@ -11,38 +11,29 @@
 
 void* memset(void* destination, int c, size_t length)
 {
-    typedef uint64_t Vector __attribute__((vector_size(16)));
-    const uint64_t word = 0x0101010101010101u * (unsigned char) c;
-    const Vector vector = { word, word };
-    unsigned char* dst = destination;
+    const uint64_t vector = 0x0101010101010101u * (unsigned char) c;
+    unsigned char* output = destination;
 
-    for (; length && (uintptr_t) dst % sizeof(Vector); --length)
-        *dst++ = c;
+    for (; (uintptr_t) output % 8 && length; --length)
+        *output++ = c;
 
-    Vector* vdst = (Vector*) destination;
+    for (; length >= 8; length -= 8) {
+        *(uint64_t*) output = vector;
+        output += 8;
+    }
 
-    for (; length >= sizeof(Vector); length -= sizeof(Vector))
-        *vdst++ = vector;
+    if (length & 4) {
+        *(uint32_t*) output = vector;
+        output += 4;
+    }
 
-    uint64_t* dst64 = (uint64_t*) vdst;
-
-    if (length & sizeof(uint64_t))
-        *dst64++ = word;
-
-    uint32_t* dst32 = (uint32_t*) dst64;
-
-    if (length & sizeof(uint32_t))
-        *dst32++ = word;
-
-    uint16_t* dst16 = (uint16_t*) dst32;
-
-    if (length & sizeof(uint16_t))
-        *dst16++ = word;
-
-    dst = (unsigned char*) dst16;
+    if (length & 2) {
+        *(uint16_t*) output = vector;
+        output += 2;
+    }
 
     if (length & 1)
-        *dst = c;
+        *output = c;
 
     return destination;
 }
