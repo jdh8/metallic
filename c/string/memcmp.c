@@ -6,16 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "compare.h"
 #include <stddef.h>
 
 int memcmp(const void* lhs, const void* rhs, size_t length)
 {
     const unsigned char* a = lhs;
     const unsigned char* b = rhs;
+    int sign;
 
-    for (int sign; length; --length)
-        if ((sign = compare(*a++, *b++)))
+    while (length--)
+        if ((sign = *a++ - *b++))
             return sign;
 
     return 0;
