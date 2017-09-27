@@ -6,9 +6,29 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "frexpf.h"
+#include <stdint.h>
 
 float frexpf(float x, int* exp)
 {
-    return __frexpf(x, exp);
+    uint32_t word = *(uint32_t*)&x;
+    uint32_t wabs = word << 1;
+
+    if (wabs >= 0xFF000000 || wabs == 0) {
+        *exp = 0;
+        return x;
+    }
+
+    int shift = __builtin_clz(wabs);
+
+    if (shift > 7) {
+        *exp = -(118 + shift);
+        word <<= (shift - 7);
+    }
+    else {
+        *exp = (wabs >> 24) - 126;
+    }
+
+    word = (word & 0x807FFFFF) | 0x3F000000;
+
+    return *(float*)&word;
 }
