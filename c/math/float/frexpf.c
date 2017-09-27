@@ -8,4 +8,7 @@
  */
 #include "frexpf.h"
 
-float frexpf(float x, int* exp);
+float frexpf(float x, int* exp)
+{
+    return __frexpf(x, exp);
+}

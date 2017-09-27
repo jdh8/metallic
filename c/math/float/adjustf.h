@@ -10,7 +10,7 @@
 
 static float adjustf(float bottom, float x, int* exp)
 {
-    x = frexpf(x, exp);
+    x = __frexpf(x, exp);
 
     uint32_t a = *(uint32_t*)&x;
     uint32_t b = *(uint32_t*)&bottom;

@@ -8,7 +8,7 @@
  */
 #include <math.h>
 
-static float kernel(float x)
+static float __expm1f(float x)
 {
     const int b[] = { 30240, 15120, 3360, 420, 30, 1 };
 
@@ -25,5 +25,5 @@ float expm1f(float x)
 {
     const float ln3 = 1.0986123085021973;
 
-    return fabsf(x) <= ln3 ? kernel(x) : expf(x) - 1;
+    return fabsf(x) <= ln3 ? __expm1f(x) : expf(x) - 1;
 }

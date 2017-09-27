@@ -8,7 +8,7 @@
  */
 #include <stdint.h>
 
-inline float frexpf(float x, int* exp)
+static float __frexpf(float x, int* exp)
 {
     uint32_t word = *(uint32_t*)&x;
     uint32_t wabs = word << 1;
