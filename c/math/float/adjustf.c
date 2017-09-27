@@ -8,16 +8,17 @@
  */
 #include "frexpf.h"
 
-static float reducef(float x, int* exp)
+static float adjustf(float bottom, float x, int* exp)
 {
-    x = __frexpf(x, exp);
+    x = frexpf(x, exp);
 
-    uint32_t word = *(uint32_t*)&x;
+    uint32_t a = *(uint32_t*)&x;
+    uint32_t b = *(uint32_t*)&bottom;
 
-    if (word << 1 <= 0x7E6A09E6) {
-        word |= 0x00800000;
+    if ((a & 0x7FFFFFFF) <= b) {
+        a |= 0x00800000;
         --*exp;
     }
 
-    return *(float*)&word;
+    return *(float*)&a;
 }
