@@ -11,5 +11,8 @@
 
 float log1pf(float x)
 {
-    return fabsf(x) < 1 ? __log1pf(x) : logf(1 + x);
+    if (fabsf(x) < 1)
+        return __log1pf(x);
+    else
+        return logf(1 + x);
 }
