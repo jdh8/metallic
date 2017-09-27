@@ -42,9 +42,6 @@ _Scalar _MATHCALL(ldexp)(_Scalar, int);
 _Scalar _MATHCALL(remainder)(_Scalar, _Scalar);
 _Scalar _MATHCALL(remquo)(_Scalar, _Scalar, int*);
 _Scalar _MATHCALL(fma)(_Scalar, _Scalar, _Scalar);
-_Scalar _MATHCALL(fmax)(_Scalar, _Scalar);
-_Scalar _MATHCALL(fmin)(_Scalar, _Scalar);
-_Scalar _MATHCALL(fdim)(_Scalar, _Scalar);
 _Scalar _MATHCALL(nan)(const char*);
 
 _Scalar _MATHCALL(exp2)(_Scalar);
@@ -82,6 +79,21 @@ _Scalar _MATHCALL(logb)(_Scalar);
 _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
 _Scalar _MATHCALL(nexttoward)(_Scalar, _Scalar);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
+
+inline _Scalar _MATHCALL(fmax)(_Scalar __x, _Scalar __y)
+{
+    return __x >= __y || __y != __y ? __x : __y;
+}
+
+inline _Scalar _MATHCALL(fmin)(_Scalar __x, _Scalar __y)
+{
+    return __x <= __y || __y != __y ? __x : __y;
+}
+
+inline _Scalar _MATHCALL(fdim)(_Scalar __x, _Scalar __y)
+{
+    return !(__x <= __y) * (__x - __y);
+}
 
 inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar* __i)
 {
