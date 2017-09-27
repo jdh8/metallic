@@ -18,8 +18,10 @@ int ilogbf(float x)
     if (word == 0)
         return FP_ILOGB0;
 
-    if (word < 0x00800000)
-        return -(118 + __builtin_clz(word));
+    int shift = __builtin_clz(word);
+
+    if (shift > 8)
+        return -(118 + shift);
 
     if (word < 0x7F800000)
         return (word >> 23) - 127;
