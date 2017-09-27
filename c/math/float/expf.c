@@ -24,7 +24,7 @@ float expf(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    int n = nearbyintf(x * log2e);
+    float n = nearbyintf(x * log2e);
 
     double a = x - n * ln2;
     double a2 = a * a;
