@@ -74,6 +74,8 @@ extern "C" {
 #include "bits/mathcalls.h"
 #undef _Scalar
 #undef _SUFFIX
+
+#include "bits/mathinline.h"
 #endif
 
 #ifdef __cplusplus
