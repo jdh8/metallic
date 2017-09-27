@@ -6,7 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "nearbyintf.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -25,7 +24,7 @@ float expf(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    int n = __nearbyintf(x * log2e);
+    int n = nearbyintf(x * log2e);
 
     double a = x - n * ln2;
     double a2 = a * a;
