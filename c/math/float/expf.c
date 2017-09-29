@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "expf/pade.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -16,7 +17,6 @@ float expf(float x)
 
     const float log2e = 1.44269502163;
     const double ln2 = 0.6931471805599452862;
-    const int b[] = { 120, 60, 12, 1 };
 
     if (x < minimum)
         return 0;
@@ -25,13 +25,7 @@ float expf(float x)
         return x * HUGE_VALF;
 
     float n = nearbyintf(x * log2e);
-
-    double a = x - n * ln2;
-    double a2 = a * a;
-    double u = a * (b[3] * a2 + b[1]);
-    double v = b[2] * a2 + b[0];
-    double y = (v + u) / (v - u);
-
+    double y = expf_pade(x - n * ln2);
     int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
 
     return *(double*)&shifted;

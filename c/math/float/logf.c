@@ -10,11 +10,27 @@
 #include "quietf.h"
 #include <math.h>
 
-float logf(float x)
+static float finite(double x)
 {
     const double ln2 = 0.6931471805599452862;
     const int64_t mantissa = 0x000FFFFFFFFFFFFF;
     const int64_t sqrt2 = 0x3FF6A09E667F3BCD;
+
+    int64_t word = *(int64_t*)&x;
+    int exponent = (word >> 52) - 1023;
+
+    word = (word & mantissa) | 0x3FF0000000000000;
+
+    if (word >= sqrt2) {
+        word &= 0xFFEFFFFFFFFFFFFF;
+        ++exponent;
+    }
+
+    return ln1pf(*(double*)&word - 1) + exponent * ln2;
+}
+
+float logf(float x)
+{
     const int32_t inf = 0x7F800000;
     
     if (x == 0)
@@ -28,16 +44,5 @@ float logf(float x)
     if (i >= inf)
         return x;
 
-    double y = x;
-    int64_t word = *(int64_t*)&y;
-    int exponent = (word >> 52) - 1023;
-
-    word = (word & mantissa) | 0x3FF0000000000000;
-
-    if (word >= sqrt2) {
-        word &= 0xFFEFFFFFFFFFFFFF;
-        ++exponent;
-    }
-
-    return ln1pf(*(double*)&word - 1) + exponent * ln2;
+    return finite(x);
 }

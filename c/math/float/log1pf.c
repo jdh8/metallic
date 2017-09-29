@@ -10,26 +10,11 @@
 #include "quietf.h"
 #include <math.h>
 
-float log1pf(float x)
+static float normal(float x)
 {
     const double ln2 = 0.6931471805599452862;
-    const uint32_t n1 = 0xBF800000;
-    const int32_t inf = 0x7F800000;
-    const int32_t eps = 0x34000000;
     const int32_t mantissa = 0x007FFFFF;
     const int32_t sqrt2 = 0x3FB504F3;
-
-    int32_t i = *(int32_t*)&x;
-    uint32_t j = *(uint32_t*)&x;
-
-    if (j == n1)
-        return -HUGE_VALF;
-
-    if (j > n1)
-        return quietf(x);
-
-    if (i >= inf || j << 1 < eps << 1)
-        return x;
 
     float y = x + 1;
     int32_t word = *(int32_t*)&y;
@@ -46,4 +31,25 @@ float log1pf(float x)
         return ln1pf(*(float*)&word - 1) + exponent * ln2;
     else
         return ln1pf(x);
+}
+
+float log1pf(float x)
+{
+    const uint32_t n1 = 0xBF800000;
+    const int32_t inf = 0x7F800000;
+    const int32_t eps = 0x34000000;
+
+    int32_t i = *(int32_t*)&x;
+    uint32_t j = *(uint32_t*)&x;
+
+    if (j == n1)
+        return -HUGE_VALF;
+
+    if (j > n1)
+        return quietf(x);
+
+    if (i >= inf || j << 1 < eps << 1)
+        return x;
+
+    return normal(x);
 }
