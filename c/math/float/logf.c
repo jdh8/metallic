@@ -28,16 +28,15 @@ float logf(float x)
         return x;
 
     double y = x;
-    int64_t j = *(int64_t*)&y;
-    int exponent = (j >> 52) - 1023;
+    int64_t word = *(int64_t*)&y;
+    int exponent = (word >> 52) - 1023;
 
-    j = (j & 0x000FFFFFFFFFFFFF) | 0x3FF0000000000000;
+    word = (word & 0x000FFFFFFFFFFFFF) | 0x3FF0000000000000;
 
-
-    if (j >= sqrt2) {
-        j &= 0xFFEFFFFFFFFFFFFF;
+    if (word >= sqrt2) {
+        word &= 0xFFEFFFFFFFFFFFFF;
         ++exponent;
     }
 
-    return __log1pf(*(double*)&j - 1) + exponent * ln2;
+    return __log1pf(*(double*)&word - 1) + exponent * ln2;
 }

@@ -16,7 +16,7 @@ float expm1f(float x)
 
     const float log2e = 1.44269502163;
     const double ln2 = 0.6931471805599452862;
-    const int b[] = { 30240, 15120, 3360, 420, 30, 1 };
+    const int b[] = { 1680, 840, 180, 20, 1 };
 
     if (x < minimum)
         return 0;
@@ -28,7 +28,7 @@ float expm1f(float x)
 
     double a = x - n * ln2;
     double a2 = a * a;
-    double u = a * ((b[5] * a2 + b[3]) * a2 + b[1]);
+    double u = a * (b[3] * a2 + b[1]);
     double v = (b[4] * a2 + b[2]) * a2 + b[0];
 
     if (n == 0)
