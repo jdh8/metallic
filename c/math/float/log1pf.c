@@ -6,9 +6,35 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "ln1pf.h"
+#include "log1pf/quadrature.h"
 #include "quietf.h"
 #include <math.h>
+
+static double quadrature(double x)
+{
+    const int degree = 4;
+
+    const double nodes[] = {
+        0.0694318442029737124,
+        0.3300094782075718676,
+        0.6699905217924281324,
+        0.9305681557970262876
+    };
+
+    const double weights[] = {
+        0.1739274225687269287,
+        0.3260725774312730713,
+        0.3260725774312730713,
+        0.1739274225687269287
+    };
+
+    double result = -0.0;
+
+    for (int k = 0; k < degree; ++k)
+        result += weights[k] * x / (1 + nodes[k] * x);
+
+    return result;
+}
 
 static float normal(float x)
 {
@@ -28,9 +54,9 @@ static float normal(float x)
     }
 
     if (exponent)
-        return ln1pf(*(float*)&word - 1) + exponent * ln2;
+        return log1pf_quadrature(*(float*)&word - 1) + exponent * ln2;
     else
-        return ln1pf(x);
+        return quadrature(x);
 }
 
 float log1pf(float x)

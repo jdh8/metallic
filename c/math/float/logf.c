@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "ln1pf.h"
+#include "log1pf/quadrature.h"
 #include "quietf.h"
 #include <math.h>
 
@@ -26,7 +26,7 @@ static float finite(double x)
         ++exponent;
     }
 
-    return ln1pf(*(double*)&word - 1) + exponent * ln2;
+    return log1pf_quadrature(*(double*)&word - 1) + exponent * ln2;
 }
 
 float logf(float x)
