@@ -6,25 +6,25 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-static double __log1pf(double x)
+static float ln1pf(float x)
 {
     const int degree = 4;
 
-    const double nodes[] = {
+    const float nodes[] = {
         0.0694318442029737124,
         0.3300094782075718676,
         0.6699905217924281324,
         0.9305681557970262876
     };
 
-    const double weights[] = {
+    const float weights[] = {
         0.1739274225687269287,
         0.3260725774312730713,
         0.3260725774312730713,
         0.1739274225687269287
     };
 
-    double result = -0.0;
+    float result = -0.0;
 
     for (int k = 0; k < degree; ++k)
         result += weights[k] * x / (1 + nodes[k] * x);
