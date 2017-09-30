@@ -27,9 +27,9 @@ float expm1f(float x)
     float n = nearbyintf(x * log2e);
 
     double a = x - n * ln2;
-    double a2 = a * a;
-    double u = a * (b[3] * a2 + b[1]);
-    double v = (b[4] * a2 + b[2]) * a2 + b[0];
+    double aa = a * a;
+    double u = a * (b[3] * aa + b[1]);
+    double v = (b[4] * aa + b[2]) * aa + b[0];
 
     if (n == 0)
         return 2 * u / (v - u);
