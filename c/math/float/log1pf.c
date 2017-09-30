@@ -10,7 +10,7 @@
 #include "quietf.h"
 #include <math.h>
 
-static float normal(float x)
+static float _normal(float x)
 {
     const double ln2 = 0.6931471805599452862;
     const int32_t mantissa = 0x007FFFFF;
@@ -53,5 +53,5 @@ float log1pf(float x)
     if (i >= inf || j << 1 < eps << 1)
         return x;
 
-    return normal(x);
+    return _normal(x);
 }

@@ -10,7 +10,7 @@
 #include "quietf.h"
 #include <math.h>
 
-static float finite(double x)
+static float _finite(double x)
 {
     const double ln2 = 0.6931471805599452862;
     const int64_t mantissa = 0x000FFFFFFFFFFFFF;
@@ -46,5 +46,5 @@ float logf(float x)
     if (i >= inf)
         return x;
 
-    return finite(x);
+    return _finite(x);
 }
