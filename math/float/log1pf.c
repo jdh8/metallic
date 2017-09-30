@@ -12,7 +12,7 @@
 
 static float _normal(float x)
 {
-    const double ln2 = 0.6931471805599452862;
+    const float ln2 = 0.69314718056;
     const int32_t mantissa = 0x007FFFFF;
     const int32_t sqrt2 = 0x3FB504F3;
 
@@ -28,11 +28,17 @@ static float _normal(float x)
     }
 
     y = *(float*)&word;
-    
-    if (exponent)
-        return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
-    else
-        return 2 * atanhf_taylor(x / (2 + x));
+
+    switch (exponent) {
+        case 0:
+            return 2 * atanhf_taylor(x / (2 + x));
+        case 1:
+            return 2 * atanhf_taylor((x - 1) / (x + 3)) + ln2;
+        case -1:
+            return 2 * atanhf_taylor((2*x + 1) / (2*x + 3)) - ln2;
+    }
+
+    return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
 }
 
 float log1pf(float x)
