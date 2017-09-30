@@ -22,10 +22,10 @@ float _positive(double x)
     y = *(float*)&word;
 
     switch (exponent) {
-      case 0:
-        return atanhf_taylor(x);
-      case 1:
-        return atanhf_taylor((1 - 3 * x) / (x - 3)) + ln2_2;
+        case 0:
+            return atanhf_taylor(x);
+        case 1:
+            return atanhf_taylor((1 - 3*x) / (x - 3)) + ln2_2;
     }
     
     return atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2_2;
