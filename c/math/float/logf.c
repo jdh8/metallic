@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "log1pf/quadrature.h"
+#include "atanhf/taylor.h"
 #include "quietf.h"
 #include <math.h>
 
@@ -26,7 +26,9 @@ static float finite(double x)
         ++exponent;
     }
 
-    return log1pf_quadrature(*(double*)&word - 1) + exponent * ln2;
+    x = *(double*)&word;
+
+    return 2 * atanhf_taylor((x - 1) / (x + 1)) + exponent * ln2;
 }
 
 float logf(float x)
