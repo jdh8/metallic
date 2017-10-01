@@ -10,8 +10,20 @@
 #define _MATH_H
 
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
+#define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
+
+#if FLT_EVAL_METHOD == 0
 typedef float float_t;
 typedef double double_t;
+#elif FLT_EVAL_METHOD == 1
+typedef double float_t;
+typedef double double_t;
+#elif FLT_EVAL_METHOD == 2
+typedef long double float_t;
+typedef long double double_t;
+#else
+#error Unknown FLT_EVAL_METHOD
+#endif
 
 #define NAN      __builtin_nanf("")
 #define INFINITY __builtin_inff()
