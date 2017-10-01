@@ -7,38 +7,21 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "atanhf/taylor.h"
+#include "logf/reduce.h"
 #include "quietf.h"
 #include <math.h>
 
-static float _normal(float x)
+static double _normal(double x)
 {
-    const float ln2 = 0.69314718056;
-    const int32_t mantissa = 0x007FFFFF;
-    const int32_t sqrt2 = 0x3FB504F3;
+    const double ln2 = 0.6931471805599452862;
 
-    float y = x + 1;
-    int32_t word = *(int32_t*)&y;
-    int exponent = (word >> 23) - 127;
+    int exponent;
+    double y = logf_reduce(x + 1, &exponent);
 
-    word = (word & mantissa) | 0x3F800000;
-
-    if (word >= sqrt2) {
-        word &= 0xFF7FFFFF;
-        ++exponent;
-    }
-
-    y = *(float*)&word;
-
-    switch (exponent) {
-        case 0:
-            return 2 * atanhf_taylor(x / (2 + x));
-        case 1:
-            return 2 * atanhf_taylor((x - 1) / (x + 3)) + ln2;
-        case -1:
-            return 2 * atanhf_taylor((2*x + 1) / (2*x + 3)) - ln2;
-    }
-
-    return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
+    if (exponent)
+        return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
+    else
+        return 2 * atanhf_taylor(x / (2 + x));
 }
 
 float log1pf(float x)

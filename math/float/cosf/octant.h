@@ -6,17 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-static float cosf_octant(float x)
+static double cosf_octant(double x)
 {
-    const float c[] = {
-        1.00000000e+0f,
-        5.00000000e-1f, /* 1 / 2! */
-        4.16666667e-2f, /* 1 / 4! */
-        1.38888889e-3f, /* 1 / 6! */
-        2.48015873e-5f  /* 1 / 8! */
-    };
+    const double c2 = 5.0000000000000000000e-1; /* 1 / 2! */
+    const double c4 = 4.1666666666666666667e-2; /* 1 / 4! */
+    const double c6 = 1.3888888888888888889e-3; /* 1 / 6! */
+    const double c8 = 2.4801587301587301587e-5; /* 1 / 8! */
 
-    float xx = x * x;
+    x *= x;
 
-    return c[0] - xx * (c[1] - xx * (c[2] - xx * (c[3] - xx * (c[4]))));
+    return 1 - x * (c2 - x * (c4 - x * (c6 - x * c8)));
 }

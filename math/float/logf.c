@@ -7,26 +7,16 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "atanhf/taylor.h"
+#include "logf/reduce.h"
 #include "quietf.h"
 #include <math.h>
 
-static float _finite(double x)
+static double _finite(double x)
 {
     const double ln2 = 0.6931471805599452862;
-    const int64_t mantissa = 0x000FFFFFFFFFFFFF;
-    const int64_t sqrt2 = 0x3FF6A09E667F3BCD;
+    int exponent;
 
-    int64_t word = *(int64_t*)&x;
-    int exponent = (word >> 52) - 1023;
-
-    word = (word & mantissa) | 0x3FF0000000000000;
-
-    if (word >= sqrt2) {
-        word &= 0xFFEFFFFFFFFFFFFF;
-        ++exponent;
-    }
-
-    x = *(double*)&word;
+    x = logf_reduce(x, &exponent);
 
     return 2 * atanhf_taylor((x - 1) / (x + 1)) + exponent * ln2;
 }
@@ -43,8 +33,8 @@ float logf(float x)
     if (i < 0)
         return quietf(x);
 
-    if (i >= inf)
-        return x;
+    if (i < inf)
+        return _finite(x);
 
-    return _finite(x);
+    return x;
 }

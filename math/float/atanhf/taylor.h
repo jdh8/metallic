@@ -6,14 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-static float atanhf_taylor(float x)
+static double atanhf_taylor(double x)
 {
-    const float c3 = 0.333333333333;
-    const float c5 = 0.2;
-    const float c7 = 0.142857142857;
-    const float c9 = 0.111111111111;
+    const double c3 = 0.333333333333333333;
+    const double c5 = 0.2;
+    const double c7 = 0.142857142857142857;
 
-    float xx = x * x;
+    double xx = x * x;
 
-    return x + x * xx * (c3 + xx * (c5 + xx * (c7 + xx * c9)));
+    return x + x * xx * (c3 + xx * (c5 + xx * c7));
 }

@@ -11,10 +11,10 @@
 
 float atanf(float x)
 {
-    const float pi_2 = 1.570796326795;
+    const double pi_2 = 1.5707963267948966192;
 
     if (fabsf(x) > 1)
-        return pi_2 - atanf_octant(1 / x);
+        return pi_2 - atanf_octant(1.0 / x);
     else
         return atanf_octant(x);
 }
