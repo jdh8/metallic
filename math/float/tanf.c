@@ -22,13 +22,11 @@ float tanf(float x)
     const float _2_pi = 0.6366197723676;
     const uint32_t thresh = 0x4F000000; /* 2 ** 31 */
 
-    float q = __builtin_nearbyintf(x * _2_pi);
+    float q = nearbyintf(x * _2_pi);
     double r = x - pi_2 * q;
     double p = _pade(r);
 
-    uint32_t i = *(uint32_t*)&q;
-    int shift = 150 - (i << 1 >> 24);
-    int qisodd = shift >= 0 && i >> shift & 1;
+    q /= 2;
 
-    return qisodd ? -1 / p : p;
+    return nearbyintf(q) == q ? p : -1 / p;
 }
