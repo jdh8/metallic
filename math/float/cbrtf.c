@@ -11,12 +11,10 @@
 
 static int32_t _normalize(int32_t i)
 {
-#ifndef __FAST_MATH__
     int shift = __builtin_clz(i) - 8;
 
     if (shift > 0)
         return (i << shift) - (shift << 23);
-#endif
 
     return i;
 }
@@ -27,10 +25,8 @@ static float _fast(float x)
 
     int32_t i = *(int32_t*)&x;
 
-#ifndef __FINITE_MATH_ONLY__
     if (i >= 0x7F800000)
        return a;
-#endif
 
     i = magic + _normalize(i) / 3;
 
