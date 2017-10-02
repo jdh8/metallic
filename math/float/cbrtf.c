@@ -9,24 +9,41 @@
 #include <math.h>
 #include <stdint.h>
 
+static int32_t _normalize(int32_t i)
+{
+#ifndef __FAST_MATH__
+    int shift = __builtin_clz(i) - 8;
+
+    if (shift > 0)
+        return (i << shift) - (shift << 23);
+#endif
+
+    return i;
+}
+
+static float _fast(float x)
+{
+    const int32_t magic = 0x2A555555; // 0x3F800000 * 2 / 3
+
+    int32_t i = *(int32_t*)&x;
+
+#ifndef __FINITE_MATH_ONLY__
+    if (i >= 0x7F800000)
+       return a;
+#endif
+
+    i = magic + _normalize(i) / 3;
+
+    return *(float*)&i;
+}
+
 float cbrtf(float a)
 {
-    const double c3 = 0.333333333333333333;
-    const uint64_t inf = 0x7FF0000000000000;
-    const uint64_t magic = 0x2AA0000000000000; // *(uint64_t*)&(1.0) * 2 / 3
+    float b = fabsf(a);
+    double x = _fast(b);
 
-    double b = fabsf(a);
-    uint64_t i = *(uint64_t*)&b;
-
-    if (i >= inf)
-       return a; 
-
-    i = magic + i / 3;
-
-    double x = *(double*)&i;
-
-    x += c3 * (b / (x * x) - x);
-    x *= 0.5 + 1.5 * b / (2*x*x*x + b);
+    x += (1.0 / 3) * (b / (x * x) - x);
+    x *= 0.5 + 1.5 * b / (2 * x * x * x + b);
 
     return copysignf(x, a);
 }
