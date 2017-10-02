@@ -11,17 +11,26 @@
 #include <math.h>
 #include <stdint.h>
 
-float sinf(float x)
+float cosf(float x)
 {
-    const float pi_2 = 1.570796326795;
-    float q = nearbyintf(x / pi_2);
-    float r = x - pi_2 * q;
+    const double pi_2 = 1.57079632679489662;
+    const float _2_pi = 0.6366197723676;
+    const uint32_t thresh = 0x4F000000; /* 2 ** 31 */
 
+    float q = nearbyintf(x * _2_pi);
+    double r = x - pi_2 * q;
     uint32_t i = *(uint32_t*)&q;
-    int shift = 150 - (i << 1 >> 24);
 
-    if (shift >= 0 && i & 1 << shift)
-        return sinf_octant(r);
-    else
-        return cosf_octant(r);
+    if (i << 1 < thresh << 1) {
+        switch (3 & (unsigned)(int_least32_t) q) {
+            case 1:
+                return sinf_octant(-r);
+            case 2:
+                return -cosf_octant(r);
+            case 3:
+                return sinf_octant(r);
+        }
+    }
+
+    return cosf_octant(r);
 }
