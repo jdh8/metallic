@@ -11,7 +11,7 @@
 
 float cbrtf(float a)
 {
-    const double coeff = 0.333333333333333333;
+    const double c3 = 0.333333333333333333;
     const uint64_t inf = 0x7FF0000000000000;
     const uint64_t magic = 0x2AA0000000000000; // *(uint64_t*)&(1.0) * 2 / 3
 
@@ -25,9 +25,8 @@ float cbrtf(float a)
 
     double x = *(double*)&i;
 
-    x += coeff * (b / (x * x) - x);
-    x += coeff * (b / (x * x) - x);
-    x += coeff * (b / (x * x) - x);
+    x += c3 * (b / (x * x) - x);
+    x *= 0.5 + 1.5 * b / (2*x*x*x + b);
 
     return copysignf(x, a);
 }
