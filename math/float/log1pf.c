@@ -13,7 +13,7 @@
 
 static double _normal(double x)
 {
-    const double ln2 = 0.6931471805599452862;
+    const double ln2 = 0.6931471805599453094;
 
     int exponent;
     double y = logf_reduce(x + 1, &exponent);

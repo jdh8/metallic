@@ -12,7 +12,7 @@
 
 float exp2f(float x)
 {
-    const double ln2 = 0.6931471805599452862;
+    const double ln2 = 0.6931471805599453094;
 
     if (x < -150)
         return 0;

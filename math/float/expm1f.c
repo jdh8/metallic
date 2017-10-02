@@ -15,7 +15,7 @@ float expm1f(float x)
     const float maximum = 88.72283935546875;
 
     const float log2e = 1.44269502163;
-    const double ln2 = 0.6931471805599452862;
+    const double ln2 = 0.6931471805599453094;
     const int b[] = { 1680, 840, 180, 20, 1 };
 
     if (x < minimum)
