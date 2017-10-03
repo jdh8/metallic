@@ -13,18 +13,13 @@
 #include <complex.h>
 
 #if __STDC_VERSION__ >= 201112L
-#define _TGMATH(x, function) _Generic(x,         \
-    float: function##f,                          \
-    default: function,                           \
-    long double: function##l,                    \
-    float _Complex: c##function##f,              \
-    double _Complex: c##function,                \
-    long double _Complex: c##function##l         \
-)
-#define _TGMATH_REAL(x, function) _Generic(x,    \
-    float: function##f,                          \
-    default: function,                           \
-    long double: function##l                     \
+#define _TGMATH(x, function) _Generic(x, \
+    float: function##f,                  \
+    default: function,                   \
+    long double: function##l,            \
+    float _Complex: c##function##f,      \
+    double _Complex: c##function,        \
+    long double _Complex: c##function##l \
 )
 #define _TGMATH_COMPLEX(x, function) _Generic((x + _Complex_I), \
     float _Complex: function##f,                                \
@@ -47,10 +42,6 @@
     __builtin_types_compatible_p(__typeof__(x), double _Complex), c##function, __builtin_choose_expr(   \
     __builtin_types_compatible_p(__typeof__(x), long double _Complex), c##function##l, function         \
 )))))
-#define _TGMATH_REAL(x, function) __builtin_choose_expr(                                    \
-    __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr( \
-    __builtin_types_compatible_p(__typeof__(x), long double), function##l, function         \
-))
 #define _TGMATH_COMPLEX(x, function) __builtin_choose_expr(                                                       \
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), float _Complex), function##f, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), long double _Complex), function##l, function         \

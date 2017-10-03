@@ -49,13 +49,26 @@ typedef long double double_t;
 #endif
 #endif /* C99 or C++11 */
 
+#if __STDC_VERSION__ >= 201112L
+#define _TGMATH_REAL(x, function) _Generic(x, \
+    float: function##f,                       \
+    default: function,                        \
+    long double: function##l                  \
+)
+#else
+#define _TGMATH_REAL(x, function) __builtin_choose_expr(                                    \
+    __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr( \
+    __builtin_types_compatible_p(__typeof__(x), long double), function##l, function         \
+))
+#endif
+
 #if __STDC_VERSION__ >= 199901L
 #define fpclassify(x) __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, x)
 #define isfinite(x)   __builtin_isfinite(x)
 #define isinf(x)      __builtin_isinf(x)
 #define isnan(x)      __builtin_isnan(x)
 #define isnormal(x)   __builtin_isnormal(x)
-#define signbit(x)    __builtin_signbit(x)
+#define signbit(x)    _TGMATH_REAL(x, __builtin_signbit)(x)
 #define isgreater(x, y)      __builtin_isgreater(x, y)
 #define isgreaterequal(x, y) __builtin_isgreaterequal(x, y)
 #define isless(x, y)         __builtin_isless(x, y)
