@@ -39,8 +39,8 @@ float log1pf(float x)
     if (j > n1)
         return quietf(x);
 
-    if (i >= inf || j << 1 < eps << 1)
-        return x;
+    if (i < inf)
+        return _normal(x);
 
-    return _normal(x);
+    return x;
 }
