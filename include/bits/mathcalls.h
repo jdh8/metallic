@@ -77,7 +77,7 @@ _Scalar _MATHCALL(scalbln)(_Scalar, long);
 int     _MATHCALL(ilogb)(_Scalar);
 _Scalar _MATHCALL(logb)(_Scalar);
 _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
-_Scalar _MATHCALL(nexttoward)(_Scalar, _Scalar);
+_Scalar _MATHCALL(nexttoward)(_Scalar, long double);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
 
 inline _Scalar _MATHCALL(fmax)(_Scalar __x, _Scalar __y)
