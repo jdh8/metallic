@@ -8,21 +8,20 @@
  */
 #include "atanhf/taylor.h"
 #include "logf/reduce.h"
-#include "quietf.h"
 #include <math.h>
 
-static double _finite(double x)
+static double _finite(double s)
 {
     const double ln2 = 0.6931471805599453094;
 
     int exponent;
-    double cosh = sqrt(x * x + 1);
-    double y = logf_reduce(x + cosh, &exponent);
+    double c = sqrt(s * s + 1);
+    double y = logf_reduce(c + s, &exponent);
 
     if (exponent)
         return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return atanhf_taylor(x / cosh); /* TODO not precise enough */
+        return 2 * atanhf_taylor(s / (c + 1));
 }
 
 float asinhf(float x)
