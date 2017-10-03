@@ -26,7 +26,7 @@ static float _fast(float x)
     int32_t i = *(int32_t*)&x;
 
     if (i >= 0x7F800000)
-       return a;
+       return x;
 
     i = magic + _normalize(i) / 3;
 
