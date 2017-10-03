@@ -28,7 +28,6 @@ float log1pf(float x)
 {
     const uint32_t n1 = 0xBF800000;
     const int32_t inf = 0x7F800000;
-    const int32_t eps = 0x34000000;
 
     int32_t i = *(int32_t*)&x;
     uint32_t j = *(uint32_t*)&x;
