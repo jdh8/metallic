@@ -11,21 +11,24 @@
 
 static int32_t _normalize(int32_t i)
 {
-    int shift = __builtin_clz(i) - 8;
+    const int32_t normal = 0x00800000;
 
-    if (shift > 0)
+    if (i < normal) {
+        int shift = __builtin_clz(i) - 8;
         return (i << shift) - (shift << 23);
+    }
 
     return i;
 }
 
 static float _fast(float x)
 {
+    const int32_t inf = 0x7F800000;
     const int32_t magic = 0x2A555555; // 0x3F800000 * 2 / 3
 
     int32_t i = *(int32_t*)&x;
 
-    if (i >= 0x7F800000)
+    if (i >= inf)
        return x;
 
     i = magic + _normalize(i) / 3;

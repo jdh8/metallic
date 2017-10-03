@@ -17,10 +17,8 @@ float logbf(float x)
     if (word == 0)
         return -HUGE_VALF;
 
-    int shift = __builtin_clz(word);
-
-    if (shift > 8)
-        return -(118 + shift);
+    if (word < 0x00800000)
+        return -(118 + __builtin_clz(word));
 
     if (word < 0x7F800000)
         return (word >> 23) - 127;

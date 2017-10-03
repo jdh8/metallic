@@ -18,9 +18,8 @@ float frexpf(float x, int* exp)
         return x;
     }
 
-    int shift = __builtin_clz(wabs);
-
-    if (shift > 7) {
+    if (wabs < 0x01000000) {
+        int shift = __builtin_clz(wabs);
         *exp = -(118 + shift);
         word <<= (shift - 7);
     }
