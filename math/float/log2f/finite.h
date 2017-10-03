@@ -6,24 +6,17 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "log2f/finite.h"
-#include "quietf.h"
+#include "../atanhf/taylor.h"
+#include "../logf/reduce.h"
 #include <math.h>
 
-float log2f(float x)
+static double log2f_finite(double x)
 {
-    const int32_t inf = 0x7F800000;
-    
-    if (x == 0)
-        return -HUGE_VALF;
+    const double log2_e2 = 2.8853900817779268147;
 
-    int32_t i = *(int32_t*)&x;
+    int exponent;
 
-    if (i < 0)
-        return quietf(x);
+    x = logf_reduce(x, &exponent);
 
-    if (i < inf)
-        return log2f_finite(x);
-
-    return x;
+    return log2_e2 * atanhf_taylor((x - 1) / (x + 1)) + exponent;
 }
