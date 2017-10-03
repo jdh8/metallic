@@ -20,7 +20,6 @@ float tanf(float x)
 {
     const double pi_2 = 1.57079632679489662;
     const float _2_pi = 0.6366197723676;
-    const uint32_t thresh = 0x4F000000; /* 2 ** 31 */
 
     float q = nearbyintf(x * _2_pi);
     double r = x - pi_2 * q;

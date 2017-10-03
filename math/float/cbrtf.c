@@ -23,7 +23,6 @@ static int32_t _normalize(int32_t i)
 
 static float _fast(float x)
 {
-    const int32_t inf = 0x7F800000;
     const int32_t magic = 0x2A555555; // 0x3F800000 * 2 / 3
 
     int32_t i = magic + _normalize(*(int32_t*)&x) / 3;
