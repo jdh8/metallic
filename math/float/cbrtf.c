@@ -26,18 +26,16 @@ static float _fast(float x)
     const int32_t inf = 0x7F800000;
     const int32_t magic = 0x2A555555; // 0x3F800000 * 2 / 3
 
-    int32_t i = *(int32_t*)&x;
-
-    if (i >= inf)
-       return x;
-
-    i = magic + _normalize(i) / 3;
+    int32_t i = magic + _normalize(*(int32_t*)&x) / 3;
 
     return *(float*)&i;
 }
 
 float cbrtf(float a)
 {
+    if (a - a)
+        return a;
+
     float b = fabsf(a);
     double x = _fast(b);
 
