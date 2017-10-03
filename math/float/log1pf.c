@@ -11,7 +11,7 @@
 #include "quietf.h"
 #include <math.h>
 
-static double _normal(double x)
+static double _finite(double x)
 {
     const double ln2 = 0.6931471805599453094;
 
@@ -40,7 +40,7 @@ float log1pf(float x)
         return quietf(x);
 
     if (i < inf)
-        return _normal(x);
+        return _finite(x);
 
     return x;
 }
