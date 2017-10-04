@@ -8,16 +8,19 @@
  */
 #include <math.h>
 
-static double atanf_taylor(double x)
+static double atanf_pade(double x)
 {
-    const double c3 = 0.333333333333333333;
-    const double c5 = 0.2;
-    const double c7 = 0.142857142857142857;
-    const double c9 = 0.111111111111111111;
+    double c[] = {
+        14.765625,
+        14.765625,
+        16.40625,
+        11.484375,
+         3.515625,
+    };
 
     double xx = x * x;
 
-    return x - x * xx * (c3 - xx * (c5 - xx * (c7 - xx * c9)));
+    return x * ((xx + c[3]) * xx + c[1]) / ((c[4] * xx + c[2]) * xx + c[0]);
 }
 
 static double atanf_octant(double x)
@@ -26,7 +29,7 @@ static double atanf_octant(double x)
     const double pi_6 = 0.52359877559829887308;
 
     if (fabs(x) > 2 - sqrt3)
-        return pi_6 + atanf_taylor((sqrt3 * x - 1) / (x + sqrt3));
+        return pi_6 + atanf_pade((sqrt3 * x - 1) / (x + sqrt3));
     else
-        return atanf_taylor(x);
+        return atanf_pade(x);
 }
