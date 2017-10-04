@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanhf/pade.h"
-#include "logf/reduce.h"
+#include "atanhf_pade.h"
+#include "logf_reduce.h"
 #include "quietf.h"
 #include <math.h>
 
