@@ -6,13 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanf/octant.h"
-#include <math.h>
+#include "asinfd.h"
 
 float acosf(float x)
 {
-    double c = x;
-    double s = sqrt(1 - c * c);
+    const double pi_2 = 1.5707963267948966192;
 
-    return 2 * atanf_octant((1 - c) / s);
+    return pi_2 - asinfd(x);
 }
