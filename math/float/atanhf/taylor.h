@@ -11,8 +11,9 @@ static double atanhf_taylor(double x)
     const double c3 = 0.333333333333333333;
     const double c5 = 0.2;
     const double c7 = 0.142857142857142857;
+    const double c9 = 0.111111111111111111;
 
     double xx = x * x;
 
-    return x + x * xx * (c3 + xx * (c5 + xx * c7));
+    return x + x * xx * (c3 + xx * (c5 + xx * (c7 + xx * c9)));
 }
