@@ -9,12 +9,17 @@
 #include "atanf/octant.h"
 #include <math.h>
 
-float atanf(float x)
+static float _positive(float x)
 {
     const double pi_2 = 1.5707963267948966192;
 
-    if (fabsf(x) > 1)
+    if (x > 1)
         return pi_2 - atanf_octant(1.0 / x);
     else
         return atanf_octant(x);
+}
+
+float atanf(float x)
+{
+    return copysignf(_positive(fabsf(x)), x);
 }

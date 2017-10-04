@@ -28,7 +28,7 @@ static double atanf_octant(double x)
     const double sqrt3 = 1.7320508075688772935;
     const double pi_6 = 0.52359877559829887308;
 
-    if (fabs(x) > 2 - sqrt3)
+    if (x > 2 - sqrt3)
         return pi_6 + atanf_pade((sqrt3 * x - 1) / (x + sqrt3));
     else
         return atanf_pade(x);
