@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanhf/taylor.h"
+#include "atanhf/pade.h"
 #include "logf/reduce.h"
 #include "quietf.h"
 #include <math.h>
@@ -19,9 +19,9 @@ static double _finite(double x)
     double y = logf_reduce(x + 1, &exponent);
 
     if (exponent)
-        return 2 * atanhf_taylor((y - 1) / (y + 1)) + exponent * ln2;
+        return 2 * atanhf_pade((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return 2 * atanhf_taylor(x / (2 + x));
+        return 2 * atanhf_pade(x / (2 + x));
 }
 
 float log1pf(float x)

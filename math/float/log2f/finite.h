@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../atanhf/taylor.h"
+#include "../atanhf/pade.h"
 #include "../logf/reduce.h"
 #include <math.h>
 
@@ -18,5 +18,5 @@ static double log2f_finite(double x)
 
     x = logf_reduce(x, &exponent);
 
-    return log2_e2 * atanhf_taylor((x - 1) / (x + 1)) + exponent;
+    return log2_e2 * atanhf_pade((x - 1) / (x + 1)) + exponent;
 }
