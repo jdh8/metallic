@@ -8,7 +8,6 @@
  */
 #include "atanhf_pade.h"
 #include "logf_reduce.h"
-#include <math.h>
 
 static double log2f_finite(double x)
 {
