@@ -64,14 +64,6 @@ _Scalar _MATHCALL(lgamma)(_Scalar);
 _Scalar _MATHCALL(trunc)(_Scalar);
 _Scalar _MATHCALL(nearbyint)(_Scalar);
 
-_Scalar   _MATHCALL(round)(_Scalar);
-long      _MATHCALL(lround)(_Scalar);
-long long _MATHCALL(llround)(_Scalar);
-
-_Scalar   _MATHCALL(rint)(_Scalar);
-long      _MATHCALL(lrint)(_Scalar);
-long long _MATHCALL(llrint)(_Scalar);
-
 _Scalar _MATHCALL(scalbn)(_Scalar, int);
 _Scalar _MATHCALL(scalbln)(_Scalar, long);
 int     _MATHCALL(ilogb)(_Scalar);
@@ -93,6 +85,36 @@ inline _Scalar _MATHCALL(fmin)(_Scalar __x, _Scalar __y)
 inline _Scalar _MATHCALL(fdim)(_Scalar __x, _Scalar __y)
 {
     return !(__x <= __y) * (__x - __y);
+}
+
+inline _Scalar _MATHCALL(round)(_Scalar __x)
+{
+    return _MATHCALL(copysign)(_MATHCALL(floor)(_MATHCALL(fabs)(__x) + (_Scalar) 0.5), __x);
+}
+
+inline long _MATHCALL(lround)(_Scalar __x)
+{
+    return _MATHCALL(round)(__x);
+}
+
+inline long long _MATHCALL(llround)(_Scalar __x)
+{
+    return _MATHCALL(round)(__x);
+}
+
+inline _Scalar _MATHCALL(rint)(_Scalar __x)
+{
+    return _MATHCALL(nearbyint)(__x);
+}
+
+inline long _MATHCALL(lrint)(_Scalar __x)
+{
+    return _MATHCALL(rint)(__x);
+}
+
+inline long long _MATHCALL(llrint)(_Scalar __x)
+{
+    return _MATHCALL(rint)(__x);
 }
 
 inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar* __i)
