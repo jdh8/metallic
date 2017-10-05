@@ -8,6 +8,7 @@
  */
 #include "gamma.h"
 #include "logf_finite.h"
+#include "sinpif.h"
 #include <math.h>
 
 static double lgammaf_prod(float z)
@@ -29,7 +30,7 @@ float lgammaf(float z)
         return z;
 
     if (z < 0.5f)
-        return logf_finite(pi / (sinf(pi * z) * gamma_sum(1 - z))) - lgammaf_prod(1 - z);
+        return logf_finite(pi / (sinpif(z) * gamma_sum(1 - z))) - lgammaf_prod(1 - z);
 
     return lgammaf_prod(z) + logf_finite(gamma_sum(z));
 }
