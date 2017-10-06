@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#define nearbyintf __builtin_nearbyintf
 #include "exp2fd.h"
 #include "gamma.h"
 #include "log2f.h"
@@ -38,8 +39,15 @@ float tgammaf(float z)
 {
     const double pi = 3.14159265358979324;
 
-    if (z < 0.5f)
+    if (z == 0)
+        return 1 / z;
+
+    if (z < 0.5f) {
+        if (nearbyintf(z) == z)
+            return (z - z) / (z - z);
+
         return pi / (sinpif(z) * _right(1 - z));
+    }
 
     return _right(z);
 }
