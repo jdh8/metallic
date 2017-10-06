@@ -6,28 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "expf.h"
+#include "exp2fd.h"
 #include "log2f.h"
 #include "quietf.h"
 #include <math.h>
 #include <stdint.h>
-
-static float _exp2fd(double x)
-{
-    const double ln2 = 0.6931471805599453094;
-
-    if (x < -150)
-        return 0;
-
-    if (x > 128)
-        return x * HUGE_VALF;
-
-    double n = nearbyint(x);
-    double y = kernel_expf((x - n) * ln2);
-    int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
-
-    return *(double*)&shifted;
-}
 
 static float _unsigned(float x, float y)
 {
@@ -41,7 +24,7 @@ static float _unsigned(float x, float y)
         return signbit(y) ? 0 : HUGE_VALF;
 
     if (x > 0)
-        return _exp2fd(y * finite_log2f(x));
+        return exp2fd(y * finite_log2f(x));
 
     return quietf(x);
 }
