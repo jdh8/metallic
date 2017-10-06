@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanf_octant.h"
+#include "atanf.h"
 #include <math.h>
 
 static float _positive(float x)
@@ -14,9 +14,9 @@ static float _positive(float x)
     const double pi_2 = 1.5707963267948966192;
 
     if (x > 1)
-        return pi_2 - atanf_octant(1.0 / x);
+        return pi_2 - octant_atanf(1.0 / x);
     else
-        return atanf_octant(x);
+        return octant_atanf(x);
 }
 
 float atanf(float x)

@@ -6,15 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanhf_pade.h"
-#include "logf_reduce.h"
+#include "atanhf.h"
+#include "reducef.h"
 
-static double logf_finite(double x)
+static double finite_log2f(double x)
 {
-    const double ln2 = 0.6931471805599453094;
+    const double log2_e2 = 2.8853900817779268147;
+
     int exponent;
 
-    x = logf_reduce(x, &exponent);
+    x = reducef(x, &exponent);
 
-    return 2 * atanhf_pade((x - 1) / (x + 1)) + exponent * ln2;
+    return log2_e2 * kernel_atanhf((x - 1) / (x + 1)) + exponent;
 }

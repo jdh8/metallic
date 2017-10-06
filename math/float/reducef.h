@@ -8,7 +8,7 @@
  */
 #include <stdint.h>
 
-static double logf_reduce(double x, int* exp)
+static double reducef(double x, int* exp)
 {
     const int64_t mantissa = 0x000FFFFFFFFFFFFF;
     const int64_t sqrt2 = 0x3FF6A09E667F3BCD;

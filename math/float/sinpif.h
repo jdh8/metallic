@@ -8,7 +8,7 @@
  */
 #include <math.h>
 
-static double sinpif_octant(double x)
+static double quadrant_sinpif(double x)
 {
     const double c[] = {
         3.14159265358979324,  /* pi         */
@@ -23,7 +23,7 @@ static double sinpif_octant(double x)
     return x * (c[0] - xx * (c[1] - xx * (c[2] - xx * (c[3] - xx * c[4]))));
 }
 
-static double cospif_octant(double x)
+static double quadrant_cospif(double x)
 {
     const double c[] = {
         1,
@@ -47,13 +47,13 @@ static double sinpif(float x)
 
     switch (3u & (int) q) {
         case 0:
-            return sinpif_octant(r);
+            return quadrant_sinpif(r);
         case 1:
-            return cospif_octant(r);
+            return quadrant_cospif(r);
         case 2:
-            return sinpif_octant(-r);
+            return quadrant_sinpif(-r);
         case 3:
-            return -cospif_octant(r);
+            return -quadrant_cospif(r);
     }
 
     __builtin_unreachable();

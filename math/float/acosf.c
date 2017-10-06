@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanf_octant.h"
+#include "atanf.h"
 #include <math.h>
 
 static double asinfd(double x)
@@ -14,7 +14,7 @@ static double asinfd(double x)
     double s = fabs(x);
     double c = sqrt(1 - s * s);
 
-    return copysign(2 * atanf_octant(s / (1 + c)), x);
+    return copysign(2 * octant_atanf(s / (1 + c)), x);
 }
 
 float f(float x)

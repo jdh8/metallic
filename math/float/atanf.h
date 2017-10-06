@@ -8,7 +8,7 @@
  */
 #include <math.h>
 
-static double atanf_pade(double x)
+static double pade_atanf(double x)
 {
     double c[] = {
         14.765625,
@@ -23,13 +23,13 @@ static double atanf_pade(double x)
     return x * ((xx + c[3]) * xx + c[1]) / ((c[4] * xx + c[2]) * xx + c[0]);
 }
 
-static double atanf_octant(double x)
+static double octant_atanf(double x)
 {
     const double sqrt3 = 1.7320508075688772935;
     const double pi_6 = 0.52359877559829887308;
 
     if (x > 2 - sqrt3)
-        return pi_6 + atanf_pade((sqrt3 * x - 1) / (x + sqrt3));
+        return pi_6 + pade_atanf((sqrt3 * x - 1) / (x + sqrt3));
     else
-        return atanf_pade(x);
+        return pade_atanf(x);
 }

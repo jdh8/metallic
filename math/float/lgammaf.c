@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "gamma.h"
-#include "logf_finite.h"
+#include "logf.h"
 #include "sinpif.h"
 #include <math.h>
 
@@ -19,7 +19,7 @@ static double lgammaf_prod(float z)
     double shifted = z - 0.5;
     double base = shifted + g;
 
-    return lnsqrt2pi + shifted * logf_finite(base) - base;
+    return lnsqrt2pi + shifted * finite_logf(base) - base;
 }
 
 float lgammaf(float z)
@@ -30,7 +30,7 @@ float lgammaf(float z)
         return z;
 
     if (z < 0.5f)
-        return logf_finite(pi / (sinpif(z) * gamma_sum(1 - z))) - lgammaf_prod(1 - z);
+        return finite_logf(pi / (sinpif(z) * gamma_sum(1 - z))) - lgammaf_prod(1 - z);
 
-    return lgammaf_prod(z) + logf_finite(gamma_sum(z));
+    return lgammaf_prod(z) + finite_logf(gamma_sum(z));
 }

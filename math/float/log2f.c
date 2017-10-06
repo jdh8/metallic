@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "log2f_finite.h"
+#include "log2f.h"
 #include "quietf.h"
 #include <math.h>
 
@@ -23,7 +23,7 @@ float log2f(float x)
         return quietf(x);
 
     if (i < inf)
-        return log2f_finite(x);
+        return finite_log2f(x);
 
     return x;
 }
