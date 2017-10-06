@@ -11,7 +11,7 @@
 #include "sinpif.h"
 #include <math.h>
 
-static double lgammaf_prod(float z)
+static double _lnproduct(float z)
 {
     const double lnsqrt2pi = 0.918938533204672742;
     const int g = 7;
@@ -26,11 +26,11 @@ float lgammaf(float z)
 {
     const double pi = 3.14159265358979324;
 
-    if (z >= HUGE_VALF)
-        return z;
+    if (isinf(z))
+        return HUGE_VALF;
 
     if (z < 0.5f)
-        return finite_logf(pi / (sinpif(z) * gamma_sum(1 - z))) - lgammaf_prod(1 - z);
+        return finite_logf(pi / (sinpif(z) * gamma_sum(1 - z))) - _lnproduct(1 - z);
 
-    return lgammaf_prod(z) + finite_logf(gamma_sum(z));
+    return _lnproduct(z) + finite_logf(gamma_sum(z));
 }
