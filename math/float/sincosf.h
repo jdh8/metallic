@@ -8,24 +8,28 @@
  */
 static double quadrant_sinf(double x)
 {
-    const double c3 = 1.6666666666666666667e-1; /* 1 / 3! */
-    const double c5 = 8.3333333333333333333e-3; /* 1 / 5! */
-    const double c7 = 1.9841269841269841270e-4; /* 1 / 7! */
-    const double c9 = 2.7557319223985890653e-6; /* 1 / 9! */
+    const double c[] = {
+        9.9999999692634277740e-1,
+       -1.6666650699202422675e-1,
+        8.3320368751598070196e-3,
+       -1.9504022000675618505e-4
+    };
 
     double xx = x * x;
 
-    return x - x * xx * (c3 - xx * (c5 - xx * (c7 - xx * c9)));
+    return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
 static double quadrant_cosf(double x)
 {
-    const double c2 = 5.0000000000000000000e-1; /* 1 / 2! */
-    const double c4 = 4.1666666666666666667e-2; /* 1 / 4! */
-    const double c6 = 1.3888888888888888889e-3; /* 1 / 6! */
-    const double c8 = 2.4801587301587301587e-5; /* 1 / 8! */
+    const double c[] = {
+        9.9999997242332292107e-1,
+       -4.9999856695848847717e-1,
+        4.1655026884251524438e-2,
+       -1.3585908510113298585e-3
+    };
 
     x *= x;
 
-    return 1 - x * (c2 - x * (c4 - x * (c6 - x * c8)));
+    return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
