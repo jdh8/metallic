@@ -8,9 +8,6 @@
  */
 static double kernel_atanhf(double x)
 {
-    double xx = x * x;
-    double num = 10.6182142303856372 - 5.82312460767683371 * xx;
-    double den = 10.6182148483364447 + (xx - 9.36263404254862304) * xx;
-
-    return x * num / den;
+    return x * (3.707126273856395376 - xx)
+        / (3.707126202965120879 - 2.235666074879315124 * xx);
 }
