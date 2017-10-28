@@ -8,14 +8,9 @@
  */
 static double kernel_atanhf(double x)
 {
-    const double c[] = {
-        11.66666666666666666,
-        11.66666666666666666,
-        10,
-         6.11111111111111111
-    };
-
     double xx = x * x;
+    double num = 10.6182142303856372 - 5.82312460767683371 * xx;
+    double den = 10.6182148483364447 + (xx - 9.36263404254862304) * xx;
 
-    return x * (c[1] - c[3] * xx) / ((xx - c[2]) * xx + c[0]);
+    return x * num / den;
 }
