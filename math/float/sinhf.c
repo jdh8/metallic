@@ -6,19 +6,21 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "expf.h"
+#include "expm1f.h"
 #include <math.h>
 #include <stdint.h>
 
-static double _taylor(double x)
+static double _kernel(double x)
 {
-    const double c3 = 1.6666666666666666667e-1; /* 1 / 3! */
-    const double c5 = 8.3333333333333333333e-3; /* 1 / 5! */
-    const double c7 = 1.9841269841269841270e-4; /* 1 / 7! */
+    const double c[] = {
+        1.0000000107805563820,
+        1.6666505200553427403e-1,
+        8.3691534741249721668e-3
+    };
 
     double xx = x * x;
 
-    return x + x * xx * (c3 + xx * (c5 + xx * c7));
+    return x * (c[0] + c[1] * xx + c[2] * (xx * xx));
 }
 
 float sinhf(float x)
@@ -33,9 +35,9 @@ float sinhf(float x)
     float n = nearbyintf(x * log2e);
 
     if (n == 0)
-        return _taylor(x);
+        return _kernel(x);
 
-    double y = kernel_expf(x - n * ln2);
+    double y = 1 + kernel_expm1f(x - n * ln2);
     int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
 
     y = *(double*)&shifted;
