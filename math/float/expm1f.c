@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "expm1f.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -16,7 +17,6 @@ float expm1f(float x)
 
     const float log2e = 1.44269502163;
     const double ln2 = 0.6931471805599453094;
-    const int b[] = { 1680, 840, 180, 20, 1 };
 
     if (x < minimum)
         return 0;
@@ -25,16 +25,13 @@ float expm1f(float x)
         return x * HUGE_VALF;
 
     float n = nearbyintf(x * log2e);
-
-    double a = x - n * ln2;
-    double aa = a * a;
-    double u = a * (b[3] * aa + b[1]);
-    double v = (b[4] * aa + b[2]) * aa + b[0];
+    double y = kernel_expm1f(x - n * ln2);
 
     if (n == 0)
-        return 2 * u / (v - u);
+        return y;
 
-    double y = (v + u) / (v - u);
+    y += 1;
+
     int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
 
     return *(double*)&shifted - 1;

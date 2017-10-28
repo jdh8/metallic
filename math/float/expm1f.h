@@ -6,13 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-static double kernel_expf(double a)
+static double kernel_expm1f(double x)
 {
-    const double b[] = { 120, 60, 12, 1 };
+    const double c[] = {
+        2.000000003560133861,
+        1.666661326163883623e-1,
+       -2.765904870177422290e-3
+    };
 
-    double aa = a * a;
-    double u = a * (b[3] * aa + b[1]);
-    double v = b[2] * aa + b[0];
+    double xx = x * x;
+    double xcothx_2 = c[0] + c[1] * xx + c[2] * (xx * xx);
 
-    return (v + u) / (v - u);
+    return 2 * x / (xcothx_2 - x);
 }

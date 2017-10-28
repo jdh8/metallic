@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "expf.h"
+#include "expm1f.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -21,7 +21,7 @@ static double exp2fd(double x)
         return x * HUGE_VALF;
 
     double n = nearbyint(x);
-    double y = kernel_expf((x - n) * ln2);
+    double y = 1 + kernel_expm1f((x - n) * ln2);
     int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
 
     return *(double*)&shifted;
