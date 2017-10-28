@@ -8,6 +8,8 @@
  */
 static double kernel_atanhf(double x)
 {
+    double xx = x * x;
+
     return x * (3.707126273856395376 - xx)
         / (3.707126202965120879 - 2.235666074879315124 * xx);
 }
