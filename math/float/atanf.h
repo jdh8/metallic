@@ -6,30 +6,25 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <math.h>
-
-static double pade_atanf(double x)
-{
-    double c[] = {
-        14.765625,
-        14.765625,
-        16.40625,
-        11.484375,
-         3.515625,
-    };
-
-    double xx = x * x;
-
-    return x * ((xx + c[3]) * xx + c[1]) / ((c[4] * xx + c[2]) * xx + c[0]);
-}
-
 static double octant_atanf(double x)
 {
-    const double sqrt3 = 1.7320508075688772935;
-    const double pi_6 = 0.52359877559829887308;
+    double n[] = {
+        80.3271869581482272,
+        72.2722811622844352,
+        11.0979939649070095
+    };
 
-    if (x > 2 - sqrt3)
-        return pi_6 + pade_atanf((sqrt3 * x - 1) / (x + sqrt3));
-    else
-        return pade_atanf(x);
+    double d[] = {
+        80.3271884011195215,
+        99.0478590867740213,
+        28.0510393790794482,
+         1
+    };
+
+    double x2 = x * x;
+    double x4 = x2 * x2;
+    double num = n[0] + n[1] * x2 + n[2] * x4;
+    double den = d[0] + d[1] * x2 + (d[2] + d[3] * x2) * x4;
+
+    return x * num / den;
 }
