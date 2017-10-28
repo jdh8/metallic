@@ -13,7 +13,7 @@
 float logf(float x)
 {
     const int32_t inf = 0x7F800000;
-    
+
     if (x == 0)
         return -HUGE_VALF;
 
