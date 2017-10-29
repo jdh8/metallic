@@ -584,6 +584,34 @@ isnormal(_T __x)
 {
     return true;
 }
+
+inline bool signbit(float __x)
+{
+    return __builtin_signbitf(__x);
+}
+
+inline bool signbit(double __x)
+{
+    return __builtin_signbit(__x);
+}
+
+inline bool signbit(long double __x)
+{
+    return __builtin_signbitl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, bool>::type
+signbit(_T __x)
+{
+    const _T __c0 = ~_T();
+    const _T __n1 = -1;
+
+    if (__c0 == __n1)
+        return __x < 0;
+    else
+        return signbit(static_cast<double>(__x));
+}
 #endif // C++11
 
 } // namespace std
