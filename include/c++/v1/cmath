@@ -1,0 +1,479 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef _METALLIC_CMATH
+#define _METALLIC_CMATH
+
+#include <math.h>
+
+#if __cplusplus >= 201103L
+#include <type_traits>
+#endif
+
+namespace std {
+
+using ::fabs;
+using ::fmod;
+
+using ::exp;
+using ::log;
+using ::log10;
+
+using ::pow;
+using ::sqrt;
+
+using ::sin;
+using ::cos;
+using ::tan;
+using ::asin;
+using ::acos;
+using ::atan;
+using ::atan2;
+
+using ::sinh;
+using ::cosh;
+using ::tanh;
+
+using ::ceil;
+using ::floor;
+
+using ::frexp;
+using ::ldexp;
+using ::modf;
+
+inline float fabs(float __x)
+{
+    return ::fabsf(__x);
+}
+
+inline long double fabs(long double __x)
+{
+    return ::fabsl(__x);
+}
+
+inline float abs(float __x)
+{
+    return ::fabsf(__x);
+}
+
+inline double abs(double __x)
+{
+    return ::fabs(__x);
+}
+
+inline long double abs(long double __x)
+{
+    return ::fabsl(__x);
+}
+
+inline float fmod(float __x, float __y)
+{
+    return ::fmodf(__x, __y);
+}
+
+inline long double fmod(long double __x, long double __y)
+{
+    return ::fmodl(__x, __y);
+}
+
+inline float exp(float __x)
+{
+    return ::expf(__x);
+}
+
+inline long double exp(long double __x)
+{
+    return ::expl(__x);
+}
+
+inline float log(float __x)
+{
+    return ::logf(__x);
+}
+
+inline long double log(long double __x)
+{
+    return ::logl(__x);
+}
+
+inline float log10(float __x)
+{
+    return ::log10f(__x);
+}
+
+inline long double log10(long double __x)
+{
+    return ::log10l(__x);
+}
+
+inline float pow(float __x, float __y)
+{
+    return ::powf(__x, __y);
+}
+
+inline long double pow(long double __x, long double __y)
+{
+    return ::powl(__x, __y);
+}
+
+inline float sqrt(float __x)
+{
+    return ::sqrtf(__x);
+}
+
+inline long double sqrt(long double __x)
+{
+    return ::sqrtl(__x);
+}
+
+inline float sin(float __x)
+{
+    return ::sinf(__x);
+}
+
+inline long double sin(long double __x)
+{
+    return ::sinl(__x);
+}
+
+inline float cos(float __x)
+{
+    return ::cosf(__x);
+}
+
+inline long double cos(long double __x)
+{
+    return ::cosl(__x);
+}
+
+inline float tan(float __x)
+{
+    return ::tanf(__x);
+}
+
+inline long double tan(long double __x)
+{
+    return ::tanl(__x);
+}
+
+inline float asin(float __x)
+{
+    return ::asinf(__x);
+}
+
+inline long double asin(long double __x)
+{
+    return ::asinl(__x);
+}
+
+inline float acos(float __x)
+{
+    return ::acosf(__x);
+}
+
+inline long double acos(long double __x)
+{
+    return ::acosl(__x);
+}
+
+inline float atan(float __x)
+{
+    return ::atanf(__x);
+}
+
+inline long double atan(long double __x)
+{
+    return ::atanl(__x);
+}
+
+inline float atan2(float __y, float __x)
+{
+    return ::atan2f(__y, __x);
+}
+
+inline long double atan2(long double __y, long double __x)
+{
+    return ::atan2l(__y, __x);
+}
+
+inline float sinh(float __x)
+{
+    return ::sinhf(__x);
+}
+
+inline long double sinh(long double __x)
+{
+    return ::sinhl(__x);
+}
+
+inline float cosh(float __x)
+{
+    return ::coshf(__x);
+}
+
+inline long double cosh(long double __x)
+{
+    return ::coshl(__x);
+}
+
+inline float tanh(float __x)
+{
+    return ::tanhf(__x);
+}
+
+inline long double tanh(long double __x)
+{
+    return ::tanhl(__x);
+}
+
+inline float ceil(float __x)
+{
+    return ::ceilf(__x);
+}
+
+inline long double ceil(long double __x)
+{
+    return ::ceill(__x);
+}
+
+inline float floor(float __x)
+{
+    return ::floorf(__x);
+}
+
+inline long double floor(long double __x)
+{
+    return ::floorl(__x);
+}
+
+inline float frexp(float __x, int* __exp)
+{
+    return ::frexpf(__x, __exp);
+}
+
+inline long double frexp(long double __x, int* __exp)
+{
+    return ::frexpl(__x, __exp);
+}
+
+inline float ldexp(float __x, int __exp)
+{
+    return ::ldexpf(__x, __exp);
+}
+
+inline long double ldexp(long double __x, int __exp)
+{
+    return ::ldexpl(__x, __exp);
+}
+
+inline float modf(float __x, float* __i)
+{
+    return ::modff(__x, __i);
+}
+
+inline long double modf(long double __x, long double* __i)
+{
+    return ::modfl(__x, __i);
+}
+
+#if __cplusplus >= 201103L
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+fabs(_T __x)
+{
+    return ::fabs(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+fmod(_T __x, long double __y)
+{
+    return ::fmodl(__x, __y);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+fmod(long double __x, _T __y)
+{
+    return ::fmodl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+fmod(_T __x, _U __y)
+{
+    return ::fmod(__x, __y);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+exp(_T __x)
+{
+    return ::exp(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+log(_T __x)
+{
+    return ::log(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+log10(_T __x)
+{
+    return ::log10(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+pow(_T __x, long double __y)
+{
+    return ::powl(__x, __y);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+pow(long double __x, _T __y)
+{
+    return ::powl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+pow(_T __x, _U __y)
+{
+    return ::pow(__x, __y);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+sqrt(_T __x)
+{
+    return ::sqrt(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+sin(_T __x)
+{
+    return ::sin(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+cos(_T __x)
+{
+    return ::cos(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+tan(_T __x)
+{
+    return ::tan(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+asin(_T __x)
+{
+    return ::asin(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+acos(_T __x)
+{
+    return ::acos(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+atan(_T __x)
+{
+    return ::atan(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+atan2(_T __y, long double __x)
+{
+    return ::atan2l(__y, __x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long double>::type
+atan2(long double __y, _T __x)
+{
+    return ::atan2l(__y, __x);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+atan2(_T __y, _U __x)
+{
+    return ::atan2(__y, __x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+sinh(_T __x)
+{
+    return ::sinh(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+cosh(_T __x)
+{
+    return ::cosh(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+tanh(_T __x)
+{
+    return ::tanh(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+ceil(_T __x)
+{
+    return __x;
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+floor(_T __x)
+{
+    return __x;
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+frexp(_T __x, int* __exp)
+{
+    return ::frexp(__x, __exp);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+ldexp(_T __x, int __exp)
+{
+    return ::ldexp(__x, __exp);
+}
+#endif // C++11
+
+} // namespace std
+
+#endif // <cmath>
+
+// vim: ft=cpp
