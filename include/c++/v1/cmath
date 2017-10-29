@@ -515,6 +515,75 @@ using ::nextafter;
 using ::nexttoward;
 using ::copysign;
 
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, int>::type
+fpclassify(_T __x)
+{
+    return __builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, FP_SUBNORMAL, FP_ZERO, __x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, int>::type
+fpclassify(_T __x)
+{
+    return __x ? FP_NORMAL : FP_ZERO;
+}
+
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, bool>::type
+isfinite(_T __x)
+{
+    return __builtin_isfinite(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, bool>::type
+isfinite(_T __x)
+{
+    return true;
+}
+
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, bool>::type
+isinf(_T __x)
+{
+    return __builtin_isinf(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, bool>::type
+isinf(_T __x)
+{
+    return false;
+}
+
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, bool>::type
+isnan(_T __x)
+{
+    return __builtin_isnan(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, bool>::type
+isnan(_T __x)
+{
+    return false;
+}
+
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, bool>::type
+isnormal(_T __x)
+{
+    return __builtin_isnormal(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, bool>::type
+isnormal(_T __x)
+{
+    return true;
+}
 #endif // C++11
 
 } // namespace std
