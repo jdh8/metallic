@@ -1,0 +1,56 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef _METALLIC_CSTDINT
+#define _METALLIC_CSTDINT
+
+#include <stdint.h>
+
+namespace std {
+
+using ::int8_t;
+using ::int16_t;
+using ::int32_t;
+using ::int64_t;
+
+using ::uint8_t;
+using ::uint16_t;
+using ::uint32_t;
+using ::uint64_t;
+
+using ::int_least8_t;
+using ::int_least16_t;
+using ::int_least32_t;
+using ::int_least64_t;
+
+using ::uint_least8_t;
+using ::uint_least16_t;
+using ::uint_least32_t;
+using ::uint_least64_t;
+
+using ::int_fast8_t;
+using ::int_fast16_t;
+using ::int_fast32_t;
+using ::int_fast64_t;
+
+using ::uint_fast8_t;
+using ::uint_fast16_t;
+using ::uint_fast32_t;
+using ::uint_fast64_t;
+
+using ::intptr_t;
+using ::uintptr_t;
+
+using ::intmax_t;
+using ::uintmax_t;
+
+} // namespace std
+
+#endif // <cstdint>
+
+// vim: ft=cpp
