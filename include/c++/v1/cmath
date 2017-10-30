@@ -578,6 +578,465 @@ fdim(_T __x, _U __y)
     return ::fdim(__x, __y);
 }
 
+inline float exp2(float __x)
+{
+    return ::exp2f(__x);
+}
+
+inline long double exp2(long double __x)
+{
+    return ::exp2l(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+exp2(_T __x)
+{
+    return ::exp2(__x);
+}
+
+inline float expm1(float __x)
+{
+    return ::expm1f(__x);
+}
+
+inline long double expm1(long double __x)
+{
+    return ::expm1l(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+expm1(_T __x)
+{
+    return ::expm1(__x);
+}
+
+inline float log2(float __x)
+{
+    return ::log2f(__x);
+}
+
+inline long double log2(long double __x)
+{
+    return ::log2l(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+log2(_T __x)
+{
+    return ::log2(__x);
+}
+
+inline float log1p(float __x)
+{
+    return ::log1pf(__x);
+}
+
+inline long double log1p(long double __x)
+{
+    return ::log1pl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+log1p(_T __x)
+{
+    return ::log1p(__x);
+}
+
+inline float cbrt(float __x)
+{
+    return ::cbrtf(__x);
+}
+
+inline long double cbrt(long double __x)
+{
+    return ::cbrtl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+cbrt(_T __x)
+{
+    return ::cbrt(__x);
+}
+
+inline float hypot(float __x, float __y)
+{
+    return ::hypotf(__x, __y);
+}
+
+inline long double hypot(long double __x, long double __y)
+{
+    return ::hypotl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+hypot(_T __x, _U __y)
+{
+    return ::hypot(__x, __y);
+}
+
+inline float asinh(float __x)
+{
+    return ::asinhf(__x);
+}
+
+inline long double asinh(long double __x)
+{
+    return ::asinhl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+asinh(_T __x)
+{
+    return ::asinh(__x);
+}
+
+inline float acosh(float __x)
+{
+    return ::acoshf(__x);
+}
+
+inline long double acosh(long double __x)
+{
+    return ::acoshl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+acosh(_T __x)
+{
+    return ::acosh(__x);
+}
+
+inline float atanh(float __x)
+{
+    return ::atanhf(__x);
+}
+
+inline long double atanh(long double __x)
+{
+    return ::atanhl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+atanh(_T __x)
+{
+    return ::atanh(__x);
+}
+
+inline float erf(float __x)
+{
+    return ::erff(__x);
+}
+
+inline long double erf(long double __x)
+{
+    return ::erfl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+erf(_T __x)
+{
+    return ::erf(__x);
+}
+
+inline float erfc(float __x)
+{
+    return ::erfcf(__x);
+}
+
+inline long double erfc(long double __x)
+{
+    return ::erfcl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+erfc(_T __x)
+{
+    return ::erfc(__x);
+}
+
+inline float tgamma(float __x)
+{
+    return ::tgammaf(__x);
+}
+
+inline long double tgamma(long double __x)
+{
+    return ::tgammal(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+tgamma(_T __x)
+{
+    return ::tgamma(__x);
+}
+
+inline float lgamma(float __x)
+{
+    return ::lgammaf(__x);
+}
+
+inline long double lgamma(long double __x)
+{
+    return ::lgammal(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+lgamma(_T __x)
+{
+    return ::lgamma(__x);
+}
+
+inline float trunc(float __x)
+{
+    return ::truncf(__x);
+}
+
+inline long double trunc(long double __x)
+{
+    return ::truncl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+trunc(_T __x)
+{
+    return __x;
+}
+
+inline float nearbyint(float __x)
+{
+    return ::nearbyintf(__x);
+}
+
+inline long double nearbyint(long double __x)
+{
+    return ::nearbyintl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+nearbyint(_T __x)
+{
+    return __x;
+}
+
+inline float round(float __x)
+{
+    return ::roundf(__x);
+}
+
+inline long double round(long double __x)
+{
+    return ::roundl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+round(_T __x)
+{
+    return __x;
+}
+
+inline long lround(float __x)
+{
+    return ::lroundf(__x);
+}
+
+inline long lround(long double __x)
+{
+    return ::lroundl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long>::type
+lround(_T __x)
+{
+    return __x;
+}
+
+inline long long llround(float __x)
+{
+    return ::llroundf(__x);
+}
+
+inline long long llround(long double __x)
+{
+    return ::llroundl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long long>::type
+llround(_T __x)
+{
+    return __x;
+}
+
+inline float rint(float __x)
+{
+    return ::rintf(__x);
+}
+
+inline long double rint(long double __x)
+{
+    return ::rintl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+rint(_T __x)
+{
+    return __x;
+}
+
+inline long lrint(float __x)
+{
+    return ::lrintf(__x);
+}
+
+inline long lrint(long double __x)
+{
+    return ::lrintl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long>::type
+lrint(_T __x)
+{
+    return __x;
+}
+
+inline long long llrint(float __x)
+{
+    return ::llrintf(__x);
+}
+
+inline long long llrint(long double __x)
+{
+    return ::llrintl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, long long>::type
+llrint(_T __x)
+{
+    return __x;
+}
+
+inline float scalbn(float __x, int __exp)
+{
+    return ::scalbnf(__x, __exp);
+}
+
+inline long double scalbn(long double __x, int __exp)
+{
+    return ::scalbnl(__x, __exp);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+scalbn(_T __x, int __exp)
+{
+    return ::scalbn(__x, __exp);
+}
+
+inline int ilogb(float __x)
+{
+    return ::ilogbf(__x);
+}
+
+inline int ilogb(long double __x)
+{
+    return ::ilogbl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, int>::type
+ilogb(_T __x)
+{
+    return ::ilogb(__x);
+}
+
+inline float logb(float __x)
+{
+    return ::logbf(__x);
+}
+
+inline long double logb(long double __x)
+{
+    return ::logbl(__x);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+logb(_T __x)
+{
+    return ::logb(__x);
+}
+
+inline float nextafter(float __x, float __y)
+{
+    return ::nextafterf(__x, __y);
+}
+
+inline long double nextafter(long double __x, long double __y)
+{
+    return ::nextafterl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+nextafter(_T __x, _U __y)
+{
+    return ::nextafter(__x, __y);
+}
+
+inline float nexttoward(float __x, long double __y)
+{
+    return ::nexttowardf(__x, __y);
+}
+
+inline long double nexttoward(long double __x, long double __y)
+{
+    return ::nexttowardl(__x, __y);
+}
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+nexttoward(_T __x, long double __y)
+{
+    return ::nexttoward(__x, __y);
+}
+
+inline float copysign(float __x, float __y)
+{
+    return ::copysignf(__x, __y);
+}
+
+inline long double copysign(long double __x, long double __y)
+{
+    return ::copysignl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+copysign(_T __x, _U __y)
+{
+    return ::copysign(__x, __y);
+}
+
 template<typename _T>
 typename enable_if<is_floating_point<_T>::value, int>::type
 fpclassify(_T __x)
