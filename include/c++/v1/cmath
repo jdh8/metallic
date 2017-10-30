@@ -289,22 +289,8 @@ fabs(_T __x)
     return ::fabs(__x);
 }
 
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-fmod(_T __x, long double __y)
-{
-    return ::fmodl(__x, __y);
-}
-
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-fmod(long double __x, _T __y)
-{
-    return ::fmodl(__x, __y);
-}
-
 template<typename _T, typename _U>
-typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
 fmod(_T __x, _U __y)
 {
     return ::fmod(__x, __y);
@@ -331,22 +317,8 @@ log10(_T __x)
     return ::log10(__x);
 }
 
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-pow(_T __x, long double __y)
-{
-    return ::powl(__x, __y);
-}
-
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-pow(long double __x, _T __y)
-{
-    return ::powl(__x, __y);
-}
-
 template<typename _T, typename _U>
-typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
 pow(_T __x, _U __y)
 {
     return ::pow(__x, __y);
@@ -401,22 +373,8 @@ atan(_T __x)
     return ::atan(__x);
 }
 
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-atan2(_T __y, long double __x)
-{
-    return ::atan2l(__y, __x);
-}
-
-template<typename _T>
-typename enable_if<is_integral<_T>::value, long double>::type
-atan2(long double __y, _T __x)
-{
-    return ::atan2l(__y, __x);
-}
-
 template<typename _T, typename _U>
-typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, double>::type
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
 atan2(_T __y, _U __x)
 {
     return ::atan2(__y, __x);
