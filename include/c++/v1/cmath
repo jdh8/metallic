@@ -1134,6 +1134,62 @@ signbit(_T __x)
     else
         return signbit(static_cast<double>(__x));
 }
+
+template<typename _T>
+typename enable_if<is_integral<_T>::value, double>::type
+__promote(_T __x)
+{
+    return __x;
+}
+
+template<typename _T>
+typename enable_if<is_floating_point<_T>::value, _T>::type
+__promote(_T __x)
+{
+    return __x;
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+isgreater(_T __x, _U __y)
+{
+    return __builtin_isgreater(__promote(__x), __promote(__y));
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+isgreaterequal(_T __x, _U __y)
+{
+    return __builtin_isgreaterequal(__promote(__x), __promote(__y));
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+isless(_T __x, _U __y)
+{
+    return __builtin_isless(__promote(__x), __promote(__y));
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+islessequal(_T __x, _U __y)
+{
+    return __builtin_islessequal(__promote(__x), __promote(__y));
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+islessgreater(_T __x, _U __y)
+{
+    return __builtin_islessgreater(__promote(__x), __promote(__y));
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_arithmetic<_T>::value && is_arithmetic<_U>::value, bool>::type
+isunordered(_T __x, _U __y)
+{
+    return __builtin_isunordered(__promote(__x), __promote(__y));
+}
 #endif // C++11
 
 } // namespace std
