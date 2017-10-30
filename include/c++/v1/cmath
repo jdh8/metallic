@@ -477,7 +477,10 @@ using ::fma;
 using ::fmax;
 using ::fmin;
 using ::fdim;
+
+using ::nanf;
 using ::nan;
+using ::nanl;
 
 using ::exp2;
 using ::expm1;
@@ -514,6 +517,108 @@ using ::logb;
 using ::nextafter;
 using ::nexttoward;
 using ::copysign;
+
+inline float remainder(float __x, float __y)
+{
+    return ::remainderf(__x, __y);
+}
+
+inline long double remainder(long double __x, long double __y)
+{
+    return ::remainderl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+remainder(_T __x, _U __y)
+{
+    return ::remainder(__x, __y);
+}
+
+inline float remquo(float __x, float __y, int* __q)
+{
+    return ::remquof(__x, __y, __q);
+}
+
+inline long double remquo(long double __x, long double __y, int* __q)
+{
+    return ::remquol(__x, __y, __q);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+remquo(_T __x, _U __y, int* __q)
+{
+    return ::remquo(__x, __y, __q);
+}
+
+inline float fma(float __x, float __y, float __a)
+{
+    return ::fmaf(__x, __y, __a);
+}
+
+inline long double fma(long double __x, long double __y, long double __a)
+{
+    return ::fmal(__x, __y, __a);
+}
+
+template<typename _T, typename _U, typename _V>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value && is_integral<_V>::value, double>::type
+fma(_T __x, _U __y, _V __a)
+{
+    return ::fma(__x, __y, __a);
+}
+
+inline float fmax(float __x, float __y)
+{
+    return ::fmaxf(__x, __y);
+}
+
+inline long double fmax(long double __x, long double __y)
+{
+    return ::fmaxl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+fmax(_T __x, _U __y)
+{
+    return ::fmax(__x, __y);
+}
+
+inline float fmin(float __x, float __y)
+{
+    return ::fminf(__x, __y);
+}
+
+inline long double fmin(long double __x, long double __y)
+{
+    return ::fminl(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+fmin(_T __x, _U __y)
+{
+    return ::fmin(__x, __y);
+}
+
+inline float fdim(float __x, float __y)
+{
+    return ::fdimf(__x, __y);
+}
+
+inline long double fdim(long double __x, long double __y)
+{
+    return ::fdiml(__x, __y);
+}
+
+template<typename _T, typename _U>
+typename enable_if<is_integral<_T>::value && is_integral<_U>::value, double>::type
+fdim(_T __x, _U __y)
+{
+    return ::fdim(__x, __y);
+}
 
 template<typename _T>
 typename enable_if<is_floating_point<_T>::value, int>::type
