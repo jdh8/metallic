@@ -21,7 +21,7 @@ namespace __internal {
  * If \f$ x > 1 \f$, this function returns NaN to indicate complex result.
  * If \f$ x < 0 \f$, the result is inaccurate.
  *
- * \param x - The argument in \f$ [0, 1] \f$
+ * \param x - The argument in \f$ [0, \infty] \f$
  * \return  Approximate \f$ \arccos x \f$ as precise as \c float.
  */
 static double _kernel(double x)
