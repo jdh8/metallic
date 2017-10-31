@@ -1,0 +1,36 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef METALLIC_INTERNAL_CONSTANT
+#define METALLIC_INTERNAL_CONSTANT
+
+namespace std {
+namespace __internal {
+namespace constant {
+
+const double e         = 2.71828182845904523536;
+const double log2e     = 1.44269504088896340736;
+const double log10e    = 0.43429448190325182765;
+const double ln2       = 0.69314718055994530942;
+const double ln10      = 2.30258509299404568402;
+const double pi        = 3.14159265358979323846;
+const double pi_2      = 1.57079632679489661923;
+const double pi_4      = 0.78539816339744830962;
+const double _1_pi     = 0.31830988618379067154;
+const double _2_pi     = 0.63661977236758134308;
+const double _2_sqrtpi = 1.12837916709551257390;
+const double sqrt2     = 1.41421356237309504880;
+const double sqrt1_2   = 0.70710678118654752440;
+
+} // namespace constant
+} // namespace __internal
+} // namespace std
+
+#endif
+
+// vim: ft=cpp
