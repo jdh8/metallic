@@ -51,7 +51,7 @@ float acosf(float x)
 {
     double y = _kernel(std::abs(x));
 
-    return std::signbit(x) ? constant::pi_2 - y : y;
+    return std::signbit(x) ? constant::pi - y : y;
 }
 
 } // namespace __internal
