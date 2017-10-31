@@ -6,12 +6,11 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+#include <internal/constant>
 #include <cmath>
 
 namespace std {
 namespace __internal {
-namespace kernel {
-
 /*!
  * \brief Kernel of acosf
  *
@@ -22,7 +21,7 @@ namespace kernel {
  * \param x - The argument in \f$ [0, 1] \f$
  * \return  Approximate \f$ \arccos x \f$ as precise as \c float.
  */
-inline double acosf(double x)
+static double _kernel(double x)
 {
     const double n[] = {
         368.534560209700479,
@@ -44,8 +43,13 @@ inline double acosf(double x)
     return std::sqrt(1 - x) * num / den;
 }
 
-} // namespace kernel
+extern "C"
+float acosf(float x)
+{
+    double y = _kernel(std::abs(x));
+
+    return std::signbit(x) ? constant::pi_2 - y : y;
+}
+
 } // namespace __internal
 } // namespace std
-
-// vim: ft=cpp
