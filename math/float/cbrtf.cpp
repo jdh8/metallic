@@ -25,7 +25,9 @@ static float _kernel(float x)
         i = (i << shift) - (shift << 23);
     }
 
-    double y = reinterpret<float>(0x2A512CE3 + i / 3);
+    i = 0x2A512CE3 + i / 3;
+
+    double y = reinterpret<float>(i);
 
     y *= 0.5 + 1.5 * x / (2 * y * (y * y) + x);
     y += 0.33333333333333333333 * (x / (y * y) - y);

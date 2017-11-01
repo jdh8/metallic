@@ -15,6 +15,8 @@ float nextafterf(float from, float to)
 {
     using std::__internal::reinterpret;
 
+    const std::int32_t mini = 1;
+
     if (from == to || to != to)
         return to;
 
@@ -22,7 +24,7 @@ float nextafterf(float from, float to)
         return from;
 
     if (from == 0)
-        return std::copysign(reinterpret<float>(1), to);
+        return std::copysign(reinterpret<float>(mini), to);
 
     std::int32_t d = reinterpret<std::int32_t>(from);
     std::int32_t a = reinterpret<std::int32_t>(to);
