@@ -13,7 +13,7 @@ namespace std {
 namespace __internal {
 
 template<typename To, typename From>
-To reinterpret(From&& from)
+To reinterpret(const From& from)
 {
     unsigned char to[sizeof(To)];
     __builtin_memcpy(to, &from, sizeof(To));
