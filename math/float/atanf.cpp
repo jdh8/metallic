@@ -6,10 +6,11 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+#include <internal/constant>
+#include <cmath>
+
 namespace std {
 namespace __internal {
-namespace kernel {
-
 /*!
  * \brief Kernel of atanf
  *
@@ -20,7 +21,7 @@ namespace kernel {
  * \param x - The argument in \f$ [-1, 1] \f$
  * \return  Approximate \f$ \arctan x \f$ as precise as \c float.
  */
-inline double atanf(double x)
+static double _atan23(double x)
 {
     const double n[] = {
         80.3271869581482272,
@@ -43,8 +44,11 @@ inline double atanf(double x)
     return x * num / den;
 }
 
-} // namespace kernel
+extern "C"
+float atanf(float x)
+{
+    return std::abs(x) > 1 ? constant::pi_2 - _atan23(1.0 / x) : _atan23(x);
+}
+
 } // namespace __internal
 } // namespace std
-
-// vim: ft=cpp
