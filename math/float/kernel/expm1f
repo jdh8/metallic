@@ -1,0 +1,43 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+namespace std {
+namespace __internal {
+namespace kernel {
+/*!
+ * \brief Kernel of expm1f
+ *
+ * This computes exponential functon in a domain of \f$ [1 - \sqrt 2,
+ * \sqrt 2 - 1] \f$.  The result is guaranteed to be faithfully rounded in
+ * \c float, whose relative error is controlled within 1.034965e-8.
+ *
+ * If \a x is outside of \f$ [1 - \sqrt 2, \sqrt 2 - 1 ] \f$,
+ * the result is inaccurate.
+ *
+ * \param x - The argument in \f$ [1 - \sqrt 2, \sqrt 2 - 1 ] \f$
+ * \return  Approximate \f$ \exp x \f$ as precise as \c float.
+ */
+inline double expm1f(double x)
+{
+    const double c[] = {
+        2.000000003560133861,
+        1.666661326163883623e-1,
+       -2.765904870177422290e-3
+    };
+
+    double xx = x * x;
+    double xcothx_2 = c[0] + c[1] * xx + c[2] * (xx * xx);
+
+    return 2 * x / (xcothx_2 - x);
+}
+
+} // namespace kernel
+} // namespace __internal
+} // namespace std
+
+// vim: ft=cpp
