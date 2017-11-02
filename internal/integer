@@ -1,0 +1,50 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef METALLIC_INTERNAL_INTEGER
+#define METALLIC_INTERNAL_INTEGER
+
+namespace std {
+namespace __internal {
+
+inline int clz(unsigned x)
+{
+    return __builtin_clz(x);
+}
+
+inline int clz(unsigned long x)
+{
+    return __builtin_clzl(x);
+}
+
+inline int clz(unsigned long long x)
+{
+    return __builtin_clzll(x);
+}
+
+inline int clz(int x)
+{
+    return clz(*reinterpret_cast<unsigned*>(&x));
+}
+
+inline int clz(long x)
+{
+    return clz(*reinterpret_cast<unsigned long*>(&x));
+}
+
+inline int clz(long long x)
+{
+    return clz(*reinterpret_cast<unsigned long long*>(&x));
+}
+
+} // namespace __internal
+} // namespace std
+
+#endif
+
+// vim: ft=cpp
