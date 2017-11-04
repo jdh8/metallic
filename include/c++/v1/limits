@@ -1,0 +1,257 @@
+// This file is part of Metallic, a runtime library for WebAssembly.
+//
+// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+//
+// This Source Code Form is subject to the terms of the Mozilla
+// Public License v. 2.0. If a copy of the MPL was not distributed
+// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+
+#ifndef _METALLIC_LIMITS
+#define _METALLIC_LIMITS
+
+#include <bits/attributes>
+
+namespace std {
+
+enum float_denorm_style
+{
+    denorm_indeterminate = -1,
+    denorm_absent        =  0,
+    denorm_present       =  1
+};
+
+enum float_round_style
+{
+    round_indeterminate       = -1,
+    round_toward_zero         =  0,
+    round_to_nearest          =  1,
+    round_toward_infinity     =  2,
+    round_toward_neg_infinity =  3
+};
+
+template<typename>
+struct __limits_base;
+
+template<typename _T>
+struct numeric_limits
+  : __limits_base<_T>
+{};
+
+template<typename _T>
+struct __basic_limits
+{
+    static _METALLIC_CONST bool is_specialized = false;
+
+    static _METALLIC_CONST bool is_signed = false;
+    static _METALLIC_CONST bool is_integer = false;
+    static _METALLIC_CONST bool is_exact = false;
+
+    static _METALLIC_CONST bool has_infinity = false;
+    static _METALLIC_CONST bool has_quiet_NaN = false;
+    static _METALLIC_CONST bool has_signaling_NaN = false;
+
+    static _METALLIC_CONST float_denorm_style has_denorm = denorm_absent;
+    static _METALLIC_CONST bool has_denorm_loss = false;
+
+    static _METALLIC_CONST float_round_style round_style = round_toward_zero;
+
+    static _METALLIC_CONST bool is_iec559 = false;
+    static _METALLIC_CONST bool is_bounded = false;
+    static _METALLIC_CONST bool is_modulo = false;
+
+    static _METALLIC_CONST int digits = 0;
+    static _METALLIC_CONST int digits10 = 0;
+#if __cplusplus >= 201103L
+    static constexpr int max_digits10 = 0;
+#endif
+
+    static _METALLIC_CONST int radix = 0;
+
+    static _METALLIC_CONST int min_exponent = 0;
+    static _METALLIC_CONST int min_exponent10 = 0;
+    static _METALLIC_CONST int max_exponent = 0;
+    static _METALLIC_CONST int max_exponent10 = 0;
+
+    static _METALLIC_CONST bool traps = false;
+    static _METALLIC_CONST bool tinyness_before = false;
+
+    static _METALLIC_CONSTEXPR _T min() { return _T(); }
+#if __cplusplus >= 201103L
+    static constexpr _T lowest() { return _T(); }
+#endif
+    static _METALLIC_CONSTEXPR _T max() { return _T(); }
+    static _METALLIC_CONSTEXPR _T epsilon() { return _T(); }
+    static _METALLIC_CONSTEXPR _T round_error() { return _T(); }
+    static _METALLIC_CONSTEXPR _T infinity() { return _T(); }
+    static _METALLIC_CONSTEXPR _T quiet_NaN() { return _T(); }
+    static _METALLIC_CONSTEXPR _T signaling_NaN() { return _T(); }
+    static _METALLIC_CONSTEXPR _T denorm_min() { return _T(); }
+};
+
+template<typename _T>
+struct __integral_limits
+  : __basic_limits<_T>
+{
+    static _METALLIC_CONST bool is_specialized = true;
+
+    static _METALLIC_CONST bool is_signed = _T(-1) < 0;
+    static _METALLIC_CONST bool is_integer = true;
+    static _METALLIC_CONST bool is_exact = true;
+
+    static _METALLIC_CONST bool is_bounded = true;
+    static _METALLIC_CONST bool is_modulo = !is_signed;
+
+    static _METALLIC_CONST int radix = 2;
+
+    static _METALLIC_CONST bool traps = _T(2) == 2;
+
+    static _METALLIC_CONSTEXPR _T min()
+    {
+        return is_signed * (-numeric_limits<_T>::max() - !~_T(-1));
+    }
+#if __cplusplus >= 201103L
+    static constexpr _T lowest()
+    {
+        return numeric_limits<_T>::min();
+    }
+#endif
+    static _METALLIC_CONSTEXPR _T max()
+    {
+        return -1;
+    }
+};
+
+template<typename _T>
+struct __limits_base
+  : __basic_limits<_T>
+{};
+
+template<typename _T>
+struct __limits_base<const _T>
+  : __limits_base<_T>
+{};
+
+template<typename _T>
+struct __limits_base<volatile _T>
+  : __limits_base<_T>
+{};
+
+template<typename _T>
+struct __limits_base<const volatile _T>
+  : __limits_base<_T>
+{};
+
+template<>
+struct __limits_base<bool>
+  : __integral_limits<bool>
+{};
+
+template<>
+struct __limits_base<unsigned char>
+  : __integral_limits<unsigned char>
+{};
+
+#if __cplusplus >= 201103L
+template<>
+struct __limits_base<char16_t>
+  : __integral_limits<char16_t>
+{};
+
+template<>
+struct __limits_base<char32_t>
+  : __integral_limits<char32_t>
+{};
+#endif
+
+template<>
+struct __limits_base<unsigned short>
+  : __integral_limits<unsigned short>
+{};
+
+template<>
+struct __limits_base<unsigned>
+  : __integral_limits<unsigned>
+{};
+
+template<>
+struct __limits_base<unsigned long>
+  : __integral_limits<unsigned long>
+{};
+
+__extension__
+template<>
+struct __limits_base<unsigned long long>
+  : __integral_limits<unsigned long long>
+{};
+
+template<>
+struct __limits_base<signed char>
+  : __integral_limits<signed char>
+{
+    static _METALLIC_CONSTEXPR signed char max()
+    {
+        return __SCHAR_MAX__;
+    }
+};
+
+template<>
+struct __limits_base<char>
+  : __integral_limits<char>
+{
+    static _METALLIC_CONSTEXPR char max()
+    {
+        return is_signed ? numeric_limits<signed char>::max() : -1;
+    }
+};
+
+template<>
+struct __limits_base<short>
+  : __integral_limits<short>
+{
+    static _METALLIC_CONSTEXPR short max()
+    {
+        return __SHRT_MAX__;
+    }
+};
+
+template<>
+struct __limits_base<int>
+  : __integral_limits<int>
+{
+    static _METALLIC_CONSTEXPR int max()
+    {
+        return __INT_MAX__;
+    }
+};
+
+template<>
+struct __limits_base<long>
+  : __integral_limits<long>
+{
+    static _METALLIC_CONSTEXPR long max()
+    {
+        return __LONG_MAX__;
+    }
+};
+
+__extension__
+template<>
+struct __limits_base<long long>
+  : __integral_limits<long long>
+{
+    static _METALLIC_CONSTEXPR long long max()
+    {
+        return __LONG_LONG_MAX__;
+    }
+};
+
+template<>
+struct __limits_base<wchar_t>
+  : __limits_base<__WCHAR_TYPE__>
+{};
+
+} // namespace std
+
+#endif // <limits>
+
+// vim: ft=cpp
