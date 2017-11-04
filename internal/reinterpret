@@ -15,6 +15,7 @@ namespace __internal {
 template<typename To, typename From>
 To reinterpret(const From& from)
 {
+    static_assert(sizeof(To) == sizeof(From));
     unsigned char to[sizeof(To)];
     __builtin_memcpy(to, &from, sizeof(To));
     return *reinterpret_cast<To*>(to);
