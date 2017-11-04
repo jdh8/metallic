@@ -75,17 +75,50 @@ struct __basic_limits
     static _METALLIC_CONST bool traps = false;
     static _METALLIC_CONST bool tinyness_before = false;
 
-    static _METALLIC_CONSTEXPR _T min() { return _T(); }
+    static _METALLIC_CONSTEXPR _T min() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
 #if __cplusplus >= 201103L
-    static constexpr _T lowest() { return _T(); }
+    static constexpr _T lowest() noexcept
+    {
+        return _T();
+    }
 #endif
-    static _METALLIC_CONSTEXPR _T max() { return _T(); }
-    static _METALLIC_CONSTEXPR _T epsilon() { return _T(); }
-    static _METALLIC_CONSTEXPR _T round_error() { return _T(); }
-    static _METALLIC_CONSTEXPR _T infinity() { return _T(); }
-    static _METALLIC_CONSTEXPR _T quiet_NaN() { return _T(); }
-    static _METALLIC_CONSTEXPR _T signaling_NaN() { return _T(); }
-    static _METALLIC_CONSTEXPR _T denorm_min() { return _T(); }
+    static _METALLIC_CONSTEXPR _T max() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T epsilon() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T round_error() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T infinity() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T quiet_NaN() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T signaling_NaN() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
+
+    static _METALLIC_CONSTEXPR _T denorm_min() _METALLIC_NOEXCEPT
+    {
+        return _T();
+    }
 };
 
 template<typename _T>
@@ -105,17 +138,17 @@ struct __integral_limits
 
     static _METALLIC_CONST bool traps = _T(2) == 2;
 
-    static _METALLIC_CONSTEXPR _T min()
+    static _METALLIC_CONSTEXPR _T min() _METALLIC_NOEXCEPT
     {
         return is_signed * (-numeric_limits<_T>::max() - !~_T(-1));
     }
 #if __cplusplus >= 201103L
-    static constexpr _T lowest()
+    static constexpr _T lowest() noexcept
     {
         return numeric_limits<_T>::min();
     }
 #endif
-    static _METALLIC_CONSTEXPR _T max()
+    static _METALLIC_CONSTEXPR _T max() _METALLIC_NOEXCEPT
     {
         return -1;
     }
@@ -140,8 +173,6 @@ struct __float_limits
     }
 
 #if __cplusplus >= 201103L
-    static constexpr int max_digits10 = 0.30102999566398119521 * numeric_limits<_T>::digits + 2;
-
     static constexpr _T lowest() noexcept
     {
         return -numeric_limits<_T>::max();
@@ -216,7 +247,7 @@ template<>
 struct __limits_base<signed char>
   : __integral_limits<signed char>
 {
-    static _METALLIC_CONSTEXPR signed char max()
+    static _METALLIC_CONSTEXPR signed char max() _METALLIC_NOEXCEPT
     {
         return __SCHAR_MAX__;
     }
@@ -226,7 +257,7 @@ template<>
 struct __limits_base<char>
   : __integral_limits<char>
 {
-    static _METALLIC_CONSTEXPR char max()
+    static _METALLIC_CONSTEXPR char max() _METALLIC_NOEXCEPT
     {
         return is_signed ? numeric_limits<signed char>::max() : -1;
     }
@@ -236,7 +267,7 @@ template<>
 struct __limits_base<short>
   : __integral_limits<short>
 {
-    static _METALLIC_CONSTEXPR short max()
+    static _METALLIC_CONSTEXPR short max() _METALLIC_NOEXCEPT
     {
         return __SHRT_MAX__;
     }
@@ -246,7 +277,7 @@ template<>
 struct __limits_base<int>
   : __integral_limits<int>
 {
-    static _METALLIC_CONSTEXPR int max()
+    static _METALLIC_CONSTEXPR int max() _METALLIC_NOEXCEPT
     {
         return __INT_MAX__;
     }
@@ -256,7 +287,7 @@ template<>
 struct __limits_base<long>
   : __integral_limits<long>
 {
-    static _METALLIC_CONSTEXPR long max()
+    static _METALLIC_CONSTEXPR long max() _METALLIC_NOEXCEPT
     {
         return __LONG_MAX__;
     }
@@ -267,7 +298,7 @@ template<>
 struct __limits_base<long long>
   : __integral_limits<long long>
 {
-    static _METALLIC_CONSTEXPR long long max()
+    static _METALLIC_CONSTEXPR long long max() _METALLIC_NOEXCEPT
     {
         return __LONG_LONG_MAX__;
     }
@@ -290,6 +321,9 @@ struct __limits_base<float>
 
     static _METALLIC_CONST int digits = __FLT_MANT_DIG__;
     static _METALLIC_CONST int digits10 = __FLT_DIG__;
+#if __cplusplus >= 201103L
+    static constexpr int max_digits10 = 0.30102999566398119521 * digits + 2;
+#endif
 
     static _METALLIC_CONST int min_exponent = __FLT_MIN_EXP__;
     static _METALLIC_CONST int min_exponent10 = __FLT_MIN_10_EXP__;
@@ -350,6 +384,9 @@ struct __limits_base<double>
 
     static _METALLIC_CONST int digits = __DBL_MANT_DIG__;
     static _METALLIC_CONST int digits10 = __DBL_DIG__;
+#if __cplusplus >= 201103L
+    static constexpr int max_digits10 = 0.30102999566398119521 * digits + 2;
+#endif
 
     static _METALLIC_CONST int min_exponent = __DBL_MIN_EXP__;
     static _METALLIC_CONST int min_exponent10 = __DBL_MIN_10_EXP__;
@@ -410,6 +447,9 @@ struct __limits_base<long double>
 
     static _METALLIC_CONST int digits = __LDBL_MANT_DIG__;
     static _METALLIC_CONST int digits10 = __LDBL_DIG__;
+#if __cplusplus >= 201103L
+    static constexpr int max_digits10 = 0.30102999566398119521 * digits + 2;
+#endif
 
     static _METALLIC_CONST int min_exponent = __LDBL_MIN_EXP__;
     static _METALLIC_CONST int min_exponent10 = __LDBL_MIN_10_EXP__;
