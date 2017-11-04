@@ -21,6 +21,12 @@
 #define _METALLIC_CONSTEXPR
 #endif
 
+#if __cplusplus >= 201103L
+#define _METALLIC_NOEXCEPT noexcept
+#else
+#define _METALLIC_NOEXCEPT
+#endif
+
 #endif // <bits/attributes>
 
 // vim: ft=cpp

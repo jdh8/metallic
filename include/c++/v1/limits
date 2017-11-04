@@ -121,6 +121,34 @@ struct __integral_limits
     }
 };
 
+template<typename _T, typename _Derived = numeric_limits<_T> >
+struct __float_limits
+  : __basic_limits<_T>
+{
+    static _METALLIC_CONST bool is_specialized = true;
+    static _METALLIC_CONST bool is_signed = _T(-1) < 0;
+
+    static _METALLIC_CONST float_round_style round_style = round_to_nearest;
+
+    static _METALLIC_CONST bool is_bounded = true;
+
+    static _METALLIC_CONST int radix = __FLT_RADIX__;
+
+    static _METALLIC_CONSTEXPR _T round_error() _METALLIC_NOEXCEPT
+    {
+        return 0.5;
+    }
+
+#if __cplusplus >= 201103L
+    static constexpr int max_digits10 = 0.30102999566398119521 * numeric_limits<_T>::digits + 2;
+
+    static constexpr _T lowest() noexcept
+    {
+        return -numeric_limits<_T>::max();
+    }
+#endif
+};
+
 template<typename _T>
 struct __limits_base
   : __basic_limits<_T>
@@ -249,6 +277,186 @@ template<>
 struct __limits_base<wchar_t>
   : __limits_base<__WCHAR_TYPE__>
 {};
+
+template<>
+struct __limits_base<float>
+  : __float_limits<float>
+{
+    static _METALLIC_CONST bool has_infinity = __FLT_HAS_INFINITY__;
+    static _METALLIC_CONST bool has_quiet_NaN = __FLT_HAS_QUIET_NAN__;
+    static _METALLIC_CONST bool has_signaling_NaN = has_quiet_NaN;
+
+    static _METALLIC_CONST float_denorm_style has_denorm = float_denorm_style(__FLT_HAS_DENORM__);
+
+    static _METALLIC_CONST int digits = __FLT_MANT_DIG__;
+    static _METALLIC_CONST int digits10 = __FLT_DIG__;
+
+    static _METALLIC_CONST int min_exponent = __FLT_MIN_EXP__;
+    static _METALLIC_CONST int min_exponent10 = __FLT_MIN_10_EXP__;
+    static _METALLIC_CONST int max_exponent = __FLT_MAX_EXP__;
+    static _METALLIC_CONST int max_exponent10 = __FLT_MAX_10_EXP__;
+
+    static _METALLIC_CONST bool is_iec559 =
+        is_signed && has_infinity && has_quiet_NaN &&
+        has_denorm == denorm_present &&
+        (radix == 2 || radix == 10) &&
+        min_exponent + max_exponent == 1;
+
+    static _METALLIC_CONSTEXPR float min() _METALLIC_NOEXCEPT
+    {
+        return __FLT_MIN__;
+    }
+
+    static _METALLIC_CONSTEXPR float max() _METALLIC_NOEXCEPT
+    {
+        return __FLT_MAX__;
+    }
+
+    static _METALLIC_CONSTEXPR float epsilon() _METALLIC_NOEXCEPT
+    {
+        return __FLT_EPSILON__;
+    }
+
+    static _METALLIC_CONSTEXPR float infinity() _METALLIC_NOEXCEPT
+    {
+        return __builtin_huge_valf();
+    }
+
+    static _METALLIC_CONSTEXPR float quiet_NaN() _METALLIC_NOEXCEPT
+    {
+        return  __builtin_nanf("");
+    }
+
+    static _METALLIC_CONSTEXPR float signaling_NaN() _METALLIC_NOEXCEPT
+    {
+        return __builtin_nansf("");
+    }
+
+    static _METALLIC_CONSTEXPR float denorm_min() _METALLIC_NOEXCEPT
+    {
+        return __FLT_DENORM_MIN__;
+    }
+};
+
+template<>
+struct __limits_base<double>
+  : __float_limits<double>
+{
+    static _METALLIC_CONST bool has_infinity = __DBL_HAS_INFINITY__;
+    static _METALLIC_CONST bool has_quiet_NaN = __DBL_HAS_QUIET_NAN__;
+    static _METALLIC_CONST bool has_signaling_NaN = has_quiet_NaN;
+
+    static _METALLIC_CONST float_denorm_style has_denorm = float_denorm_style(__DBL_HAS_DENORM__);
+
+    static _METALLIC_CONST int digits = __DBL_MANT_DIG__;
+    static _METALLIC_CONST int digits10 = __DBL_DIG__;
+
+    static _METALLIC_CONST int min_exponent = __DBL_MIN_EXP__;
+    static _METALLIC_CONST int min_exponent10 = __DBL_MIN_10_EXP__;
+    static _METALLIC_CONST int max_exponent = __DBL_MAX_EXP__;
+    static _METALLIC_CONST int max_exponent10 = __DBL_MAX_10_EXP__;
+
+    static _METALLIC_CONST bool is_iec559 =
+        is_signed && has_infinity && has_quiet_NaN &&
+        has_denorm == denorm_present &&
+        (radix == 2 || radix == 10) &&
+        min_exponent + max_exponent == 1;
+
+    static _METALLIC_CONSTEXPR double min() _METALLIC_NOEXCEPT
+    {
+        return __DBL_MIN__;
+    }
+
+    static _METALLIC_CONSTEXPR double max() _METALLIC_NOEXCEPT
+    {
+        return __DBL_MAX__;
+    }
+
+    static _METALLIC_CONSTEXPR double epsilon() _METALLIC_NOEXCEPT
+    {
+        return __DBL_EPSILON__;
+    }
+
+    static _METALLIC_CONSTEXPR double infinity() _METALLIC_NOEXCEPT
+    {
+        return __builtin_huge_val();
+    }
+
+    static _METALLIC_CONSTEXPR double quiet_NaN() _METALLIC_NOEXCEPT
+    {
+        return  __builtin_nan("");
+    }
+
+    static _METALLIC_CONSTEXPR double signaling_NaN() _METALLIC_NOEXCEPT
+    {
+        return __builtin_nans("");
+    }
+
+    static _METALLIC_CONSTEXPR double denorm_min() _METALLIC_NOEXCEPT
+    {
+        return __DBL_DENORM_MIN__;
+    }
+};
+
+template<>
+struct __limits_base<long double>
+  : __float_limits<long double>
+{
+    static _METALLIC_CONST bool has_infinity = __LDBL_HAS_INFINITY__;
+    static _METALLIC_CONST bool has_quiet_NaN = __LDBL_HAS_QUIET_NAN__;
+    static _METALLIC_CONST bool has_signaling_NaN = has_quiet_NaN;
+
+    static _METALLIC_CONST float_denorm_style has_denorm = float_denorm_style(__LDBL_HAS_DENORM__);
+
+    static _METALLIC_CONST int digits = __LDBL_MANT_DIG__;
+    static _METALLIC_CONST int digits10 = __LDBL_DIG__;
+
+    static _METALLIC_CONST int min_exponent = __LDBL_MIN_EXP__;
+    static _METALLIC_CONST int min_exponent10 = __LDBL_MIN_10_EXP__;
+    static _METALLIC_CONST int max_exponent = __LDBL_MAX_EXP__;
+    static _METALLIC_CONST int max_exponent10 = __LDBL_MAX_10_EXP__;
+
+    static _METALLIC_CONST bool is_iec559 =
+        is_signed && has_infinity && has_quiet_NaN &&
+        has_denorm == denorm_present &&
+        (radix == 2 || radix == 10) &&
+        min_exponent + max_exponent == 1;
+
+    static _METALLIC_CONSTEXPR long double min() _METALLIC_NOEXCEPT
+    {
+        return __LDBL_MIN__;
+    }
+
+    static _METALLIC_CONSTEXPR long double max() _METALLIC_NOEXCEPT
+    {
+        return __LDBL_MAX__;
+    }
+
+    static _METALLIC_CONSTEXPR long double epsilon() _METALLIC_NOEXCEPT
+    {
+        return __LDBL_EPSILON__;
+    }
+
+    static _METALLIC_CONSTEXPR long double infinity() _METALLIC_NOEXCEPT
+    {
+        return __builtin_huge_vall();
+    }
+
+    static _METALLIC_CONSTEXPR long double quiet_NaN() _METALLIC_NOEXCEPT
+    {
+        return  __builtin_nanl("");
+    }
+
+    static _METALLIC_CONSTEXPR long double signaling_NaN() _METALLIC_NOEXCEPT
+    {
+        return __builtin_nansl("");
+    }
+
+    static _METALLIC_CONSTEXPR long double denorm_min() _METALLIC_NOEXCEPT
+    {
+        return __LDBL_DENORM_MIN__;
+    }
+};
 
 } // namespace std
 
