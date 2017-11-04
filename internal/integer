@@ -27,21 +27,6 @@ inline int clz(unsigned long long x)
     return __builtin_clzll(x);
 }
 
-inline int clz(int x)
-{
-    return clz(*reinterpret_cast<unsigned*>(&x));
-}
-
-inline int clz(long x)
-{
-    return clz(*reinterpret_cast<unsigned long*>(&x));
-}
-
-inline int clz(long long x)
-{
-    return clz(*reinterpret_cast<unsigned long long*>(&x));
-}
-
 } // namespace __internal
 } // namespace std
 
