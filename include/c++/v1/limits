@@ -154,7 +154,7 @@ struct __integral_limits
     }
 };
 
-template<typename _T, typename _Derived = numeric_limits<_T> >
+template<typename _T>
 struct __float_limits
   : __basic_limits<_T>
 {
