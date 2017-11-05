@@ -6,6 +6,7 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+#include <internal/ieee754>
 #include <internal/reinterpret>
 #include <cmath>
 #include <cstdint>
@@ -20,12 +21,7 @@ static float _kernel(float x)
     if (i == 0 || i >= 0x7F800000)
         return x;
 
-    if (i < 0x00800000) {
-        int shift = __builtin_clz(i) - 8;
-        i = (i << shift) - (shift << 23);
-    }
-
-    i = 0x2A512CE3 + i / 3;
+    i = 0x2A512CE3 + magnitude::normalize(i) / 3;
 
     double y = reinterpret<float>(i);
 
