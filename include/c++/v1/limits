@@ -159,7 +159,7 @@ struct __float_limits
   : __basic_limits<_T>
 {
     static _METALLIC_CONST bool is_specialized = true;
-    static _METALLIC_CONST bool is_signed = _T(-1) < 0;
+    static _METALLIC_CONST bool is_signed = true;
 
     static _METALLIC_CONST float_round_style round_style = round_to_nearest;
 
