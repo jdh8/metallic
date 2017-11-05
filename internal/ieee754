@@ -10,6 +10,8 @@
 #define METALLIC_INTERNAL_IEEE754
 
 #include "integer"
+#include <limits>
+#include <type_traits>
 #include <cstdint>
 
 namespace std {
@@ -24,12 +26,12 @@ namespace __internal {
  *
  * Bit-pattern results may be negative though.
  *
- * \sa magnitude::normalize(std::int32_t) on how negative integers
+ * \sa magnitude::normalize on how negative integers
  *     represent subnormal numbers
  */
 namespace magnitude {
 /*!
- * \brief Normalize nonzero \c float magnitude
+ * \brief Normalize nonzero magnitude
  *
  * Notation of subnormal numbers is a space-saving technique in IEEE 754.
  * However, processing subnormal numbers requires an extra step to get correct
@@ -40,39 +42,57 @@ namespace magnitude {
  * since exponent bias is preserved.  The exponent representation of a
  * subnormal number becomes 0 or negative to preserve exponent bias.
  *
- * Zero is excluded from the domain of this function because 0x00400000 is
- * already mapped to 0 and there is no other suitable result for 0.
+ * Zero is excluded from the domain of this function because one half of the
+ * smallest normal number is already mapped to 0 and there is no other suitable
+ * result for 0.
+ *
+ * \param i - Representation of a nonzero magnitude
+ * \return  Normalized magnitude
+ */
+template<typename Float, typename Representation>
+Representation normalize(Representation i)
+{
+    static_assert(sizeof(Float) == sizeof(Representation), "Representation must have the same size as Float");
+    static_assert(Representation(-1) < 0, "Representation must be signed integer");
+
+    const int SignificandBits = numeric_limits<Float>::digits - 1;
+    const int MagnitudeBits = numeric_limits<Representation>::digits;
+
+    typename std::make_unsigned<Representation>::type j = i;
+
+    if (i < Representation(1) << SignificandBits) {
+        Representation shift = clz(j) - (MagnitudeBits - SignificandBits);
+        return (i << shift) - (shift << SignificandBits);
+    }
+    return i;
+}
+
+/*!
+ * \brief Normalize nonzero \c float magnitude
+ *
+ * This function simply calls normalize<float> in order to omit template
+ * parameter.
  *
  * \param i - Representation of a nonzero \c float magnitude
  * \return  Normalized magnitude
  */
 inline std::int32_t normalize(std::int32_t i)
 {
-    if (i < 0x00800000) {
-        std::int32_t shift = clz(i) - 8;
-        return (i << shift) - (shift << 23);
-    }
-    return i;
+    return normalize<float>(i);
 }
 
 /*!
  * \brief Normalize nonzero \c double magnitude
  *
- * Zero is excluded from the domain of this function because 0x0008000000000000
- * is already mapped to 0 and there is no other suitable result for 0.
- *
- * \sa normalize(std::int32_t) on other details
+ * This function simply calls normalize<double> in order to omit template
+ * parameter.
  *
  * \param i - Representation of a nonzero \c double magnitude
  * \return  Normalized magnitude
  */
 inline std::int64_t normalize(std::int64_t i)
 {
-    if (i < 0x0010000000000000) {
-        std::int64_t shift = clz(i) - 11;
-        return (i << shift) - (shift << 52);
-    }
-    return i;
+    return normalize<double>(i);
 }
 
 } // namespace magnitude
