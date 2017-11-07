@@ -6,6 +6,9 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+#ifndef METALLIC_KERNEL_EXPM1F
+#define METALLIC_KERNEL_EXPM1F
+
 namespace std {
 namespace __internal {
 namespace kernel {
@@ -39,5 +42,7 @@ inline double expm1f(double x)
 } // namespace kernel
 } // namespace __internal
 } // namespace std
+
+#endif
 
 // vim: ft=cpp
