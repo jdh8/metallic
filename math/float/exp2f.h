@@ -8,7 +8,19 @@
  */
 #include <math.h>
 #include <stdint.h>
-
+/*!
+ * \brief Kernel of exp2f
+ *
+ * This computes exponential functon in a domain of \f$ [-0.5,
+ * 0.5] \f$.  The result is guaranteed to be faithfully rounded in
+ * \c float, whose relative error is controlled within 5.136187e-9.
+ *
+ * If \a x is outside of \f$ [-0.5, 0.5] \f$,
+ * the result is inaccurate.
+ *
+ * \param x - The argument in \f$ [-0.5, 0.5] \f$
+ * \return  Approximate \f$ 2^x - 1 \f$ as precise as \c float.
+ */
 static double _kernel(double x)
 {
     const double c[] = {

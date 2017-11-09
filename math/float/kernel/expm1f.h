@@ -11,22 +11,22 @@
 /*!
  * \brief Kernel of expm1f
  *
- * This computes exponential functon in a domain of \f$ [-\frac13,
- * \frac13] \f$.  The result is guaranteed to be faithfully rounded in
- * \c float, whose relative error is controlled within 2.819428e-9.
+ * This computes exponential functon in a domain of \f$ [-0.5,
+ * 0.5] \f$.  The result is guaranteed to be faithfully rounded in
+ * \c float, whose relative error is controlled within 3.189370e-8.
  *
- * If \a x is outside of \f$ [-\frac13, \frac13 ] \f$,
+ * If \a x is outside of \f$ [-0.5, 0.5] \f$,
  * the result is inaccurate.
  *
- * \param x - The argument in \f$ [-\frac13, \frac13 ] \f$
+ * \param x - The argument in \f$ [-0.5, 0.5] \f$
  * \return  Approximate \f$ \exp x - 1 \f$ as precise as \c float.
  */
 inline double __kernel_expm1f(double x)
 {
     const double c[] = {
-        2.000000002806476762,
-        1.666662104301108501e-1,
-       -2.766800136235738314e-3
+        2.000000031893695369,
+        1.666643655421171822e-1,
+       -2.753162177947982655e-3
     };
 
     double xx = x * x;
