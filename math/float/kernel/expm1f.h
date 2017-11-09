@@ -35,3 +35,5 @@ inline double __kernel_expm1f(double x)
     return 2 * x / (xcothx_2 - x);
 }
 #endif
+
+/* vim: set ft=c: */

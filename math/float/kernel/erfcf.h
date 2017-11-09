@@ -37,3 +37,5 @@ inline double __kernel_erfcf(double x)
 }
 
 #endif
+
+/* vim: set ft=c: */

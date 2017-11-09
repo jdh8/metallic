@@ -40,3 +40,5 @@ inline int64_t __bits(double from)
 }
 
 #endif
+
+/* vim: set ft=c: */

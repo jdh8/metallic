@@ -36,3 +36,5 @@ inline double __prec_expf(double x)
 }
 
 #endif
+
+/* vim: set ft=c: */

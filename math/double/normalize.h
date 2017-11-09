@@ -40,3 +40,5 @@ inline int64_t __normalize(int64_t i)
 }
 
 #endif
+
+/* vim: set ft=c: */
