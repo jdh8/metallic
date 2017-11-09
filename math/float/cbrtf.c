@@ -7,24 +7,28 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../reinterpret.h"
+#include "normalizef.h"
 #include <math.h>
 #include <stdint.h>
 
-double nextafter(double from, double to)
+static float _kernel(float x)
 {
-    if (from == to || to != to)
-        return to;
+    int32_t i = __bitsf(x);
 
-    if (from != from)
-        return from;
+    if (i == 0 || i >= 0x7F800000)
+        return x;
 
-    if (from == 0)
-        return copysign(__reinterpret(1), to);
+    i = 0x2A512CE3 + __normalizef(i) / 3;
 
-    int64_t d = __bits(from);
-    int64_t a = __bits(to);
+    double y = __reinterpretf(i);
 
-    a < d || (a ^ d) < 0 ? --d : ++d;
+    y *= 0.5 + 1.5 * x / (2 * y * (y * y) + x);
+    y += 0.33333333333333333333 * (x / (y * y) - y);
 
-    return __reinterpret(d);
+    return y;
+}
+
+float cbrtf(float x)
+{
+    return copysignf(_kernel(fabsf(x)), x);
 }

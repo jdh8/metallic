@@ -1,16 +1,12 @@
-// This file is part of Metallic, a runtime library for WebAssembly.
-//
-// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
-//
-// This Source Code Form is subject to the terms of the Mozilla
-// Public License v. 2.0. If a copy of the MPL was not distributed
-// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-#include <internal/constant>
-#include <cmath>
-
-namespace std {
-namespace __internal {
+/* This file is part of Metallic, a runtime library for WebAssembly.
+ *
+ * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+#include <math.h>
 /*!
  * \brief Kernel of atanf
  *
@@ -44,11 +40,9 @@ static double _atan23(double x)
     return x * num / den;
 }
 
-extern "C"
 float atanf(float x)
 {
-    return std::abs(x) > 1 ? constant::pi_2 - _atan23(1.0 / x) : _atan23(x);
-}
+    const double pi_2 = 1.57079632679489661923;
 
-} // namespace __internal
-} // namespace std
+    return fabsf(x) > 1 ? pi_2 - _atan23(1.0 / x) : _atan23(x);
+}

@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdint.h>
 
-double nextafter(double from, double to)
+float nextafterf(float from, float to)
 {
     if (from == to || to != to)
         return to;
@@ -19,12 +19,12 @@ double nextafter(double from, double to)
         return from;
 
     if (from == 0)
-        return copysign(__reinterpret(1), to);
+        return copysignf(__reinterpretf(1), to);
 
-    int64_t d = __bits(from);
-    int64_t a = __bits(to);
+    int32_t d = __bitsf(from);
+    int32_t a = __bitsf(to);
 
     a < d || (a ^ d) < 0 ? --d : ++d;
 
-    return __reinterpret(d);
+    return __reinterpretf(d);
 }

@@ -1,16 +1,12 @@
-// This file is part of Metallic, a runtime library for WebAssembly.
-//
-// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
-//
-// This Source Code Form is subject to the terms of the Mozilla
-// Public License v. 2.0. If a copy of the MPL was not distributed
-// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-#include <internal/constant>
-#include <cmath>
-
-namespace std {
-namespace __internal {
+/* This file is part of Metallic, a runtime library for WebAssembly.
+ *
+ * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+#include <math.h>
 /*!
  * \brief Kernel of acosf
  *
@@ -42,7 +38,7 @@ static double _acos22(double x)
     double num = n[0] + n[1] * x + n[2] * xx;
     double den = d[0] + d[1] * x + d[2] * xx;
 
-    return std::sqrt(1 - x) * num / den;
+    return sqrt(1 - x) * num / den;
 }
 
 /*!
@@ -92,14 +88,12 @@ static double _asin22(double x)
  */
 static float _kernel(float x)
 {
-    return x < 0.5f ? _asin22(x) : constant::pi_2 - _acos22(x);
+    const double pi_2 = 1.57079632679489661923;
+
+    return x < 0.5f ? _asin22(x) : pi_2 - _acos22(x);
 }
 
-extern "C"
 float asinf(float x)
 {
-    return std::copysign(_kernel(std::abs(x)), x);
+    return copysignf(_kernel(fabsf(x)), x);
 }
-
-} // namespace __internal
-} // namespace std

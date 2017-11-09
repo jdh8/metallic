@@ -1,16 +1,12 @@
-// This file is part of Metallic, a runtime library for WebAssembly.
-//
-// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
-//
-// This Source Code Form is subject to the terms of the Mozilla
-// Public License v. 2.0. If a copy of the MPL was not distributed
-// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-#include <internal/constant>
-#include <cmath>
-
-namespace std {
-namespace __internal {
+/* This file is part of Metallic, a runtime library for WebAssembly.
+ *
+ * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+#include <math.h>
 /*!
  * \brief Kernel of acosf
  *
@@ -43,16 +39,13 @@ static double _kernel(double x)
     double num = n[0] + n[1] * x + n[2] * xx;
     double den = d[0] + d[1] * x + (d[2] + d[3] * x) * xx;
 
-    return std::sqrt(1 - x) * num / den;
+    return sqrt(1 - x) * num / den;
 }
 
-extern "C"
 float acosf(float x)
 {
-    double y = _kernel(std::abs(x));
+    const double pi = 3.14159265358979323846;
+    double y = _kernel(fabsf(x));
 
-    return std::signbit(x) ? constant::pi - y : y;
+    return signbit(x) ? pi - y : y;
 }
-
-} // namespace __internal
-} // namespace std

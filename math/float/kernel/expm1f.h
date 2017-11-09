@@ -1,17 +1,13 @@
-// This file is part of Metallic, a runtime library for WebAssembly.
-//
-// Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
-//
-// This Source Code Form is subject to the terms of the Mozilla
-// Public License v. 2.0. If a copy of the MPL was not distributed
-// with this file, You can obtain one at http://mozilla.org/MPL/2.0/
-
-#ifndef METALLIC_KERNEL_EXPM1F
-#define METALLIC_KERNEL_EXPM1F
-
-namespace std {
-namespace __internal {
-namespace kernel {
+/* This file is part of Metallic, a runtime library for WebAssembly.
+ *
+ * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ *
+ * This Source Code Form is subject to the terms of the Mozilla
+ * Public License v. 2.0. If a copy of the MPL was not distributed
+ * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
+ */
+#ifndef METALLIC_KERNEL_EXPM1F_H
+#define METALLIC_KERNEL_EXPM1F_H
 /*!
  * \brief Kernel of expm1f
  *
@@ -25,7 +21,7 @@ namespace kernel {
  * \param x - The argument in \f$ [-\frac13, \frac13 ] \f$
  * \return  Approximate \f$ \exp x - 1 \f$ as precise as \c float.
  */
-inline double expm1f(double x)
+inline double __kernel_expm1f(double x)
 {
     const double c[] = {
         2.000000002806476762,
@@ -38,11 +34,4 @@ inline double expm1f(double x)
 
     return 2 * x / (xcothx_2 - x);
 }
-
-} // namespace kernel
-} // namespace __internal
-} // namespace std
-
 #endif
-
-// vim: ft=cpp
