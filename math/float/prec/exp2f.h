@@ -6,11 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../reinterpret.h"
-#include "kernel/exp2f.h"
-#include <math.h>
+#ifndef METALLIC_PREC_EXP2F_H
+#define METALLIC_PREC_EXP2F_H
 
-float exp2f(float x)
+#include "../../reinterpret.h"
+#include "../kernel/exp2f.h"
+#include <math.h>
+#include <stdint.h>
+
+inline double __prec_exp2f(double x)
 {
     if (x < -150)
         return 0;
@@ -18,9 +22,11 @@ float exp2f(float x)
     if (x > 128)
         return x * HUGE_VALF;
 
-    float n = nearbyintf(x);
+    double n = nearbyint(x);
     double y = 1 + __kernel_exp2f(x - n);
     int64_t shifted = __bits(y) + ((int64_t)n << 52);
 
     return __reinterpret(shifted);
 }
+
+#endif

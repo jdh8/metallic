@@ -6,9 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef double Scalar;
-
-#include "exp2f.h"
+#include "prec/exp2f.h"
 #include "log2f.h"
 #include "quietf.h"
 #include <math.h>
@@ -26,7 +24,7 @@ static float _unsigned(float x, float y)
         return signbit(y) ? 0 : HUGE_VALF;
 
     if (x > 0)
-        return generic_exp2f(y * finite_log2f(x));
+        return __prec_exp2f(y * finite_log2f(x));
 
     return quietf(x);
 }

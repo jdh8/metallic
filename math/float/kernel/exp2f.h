@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <math.h>
-#include <stdint.h>
+#ifndef METALLIC_KERNEL_EXP2F_H
+#define METALLIC_KERNEL_EXP2F_H
 /*!
  * \brief Kernel of exp2f
  *
@@ -21,7 +21,7 @@
  * \param x - The argument in \f$ [-0.5, 0.5] \f$
  * \return  Approximate \f$ 2^x - 1 \f$ as precise as \c float.
  */
-static double _kernel(double x)
+inline double __kernel_exp2f(double x)
 {
     const double c[] = {
         2.885390086914114281,
@@ -34,20 +34,4 @@ static double _kernel(double x)
 
     return 2 * x / (xcothxln2_2 - x);
 }
-
-static Scalar generic_exp2f(Scalar x)
-{
-    const double ln2 = 0.6931471805599453094;
-
-    if (x < -150)
-        return 0;
-
-    if (x > 128)
-        return x * HUGE_VALF;
-
-    Scalar n = _TGMATH_REAL(x, nearbyint)(x);
-    double y = 1 + _kernel(x - n);
-    int64_t shifted = *(int64_t*)&y + ((int64_t) n << 52);
-
-    return *(double*)&shifted;
-}
+#endif
