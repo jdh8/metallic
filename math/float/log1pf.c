@@ -36,7 +36,7 @@ float log1pf(float x)
         return -HUGE_VALF;
 
     if (j > n1)
-        return quietf(x);
+        return __quietf(x);
 
     if (i < inf)
         return _finite(x);

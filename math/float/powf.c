@@ -26,7 +26,7 @@ static float _unsigned(float x, float y)
     if (x > 0)
         return __prec_exp2f(y * finite_log2f(x));
 
-    return quietf(x);
+    return __quietf(x);
 }
 
 float powf(float x, float y)

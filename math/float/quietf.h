@@ -6,11 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
 #include <stdint.h>
 
-static float quietf(float x)
+inline float __quietf(float x)
 {
-    uint32_t word = *(uint32_t*)&x | 0x7FC00000;
-
-    return *(float*)&word;
+    return __reinterpretf(__bitsf(x) | 0x7FC00000);
 }

@@ -33,7 +33,7 @@ float log10f(float x)
     int32_t i = *(int32_t*)&x;
 
     if (i < 0)
-        return quietf(x);
+        return __quietf(x);
 
     if (i < inf)
         return _finite(x);
