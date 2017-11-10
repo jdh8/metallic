@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "sincosf.h"
+#include "kernel/sincosf.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -23,13 +23,13 @@ float sinf(float x)
     if (i << 1 < thresh << 1) {
         switch (3 & (unsigned)(int_least32_t) q) {
             case 1:
-                return quadrant_cosf(r);
+                return __kernel_cosf(r);
             case 2:
-                return quadrant_sinf(-r);
+                return __kernel_sinf(-r);
             case 3:
-                return -quadrant_cosf(r);
+                return -__kernel_cosf(r);
         }
     }
 
-    return quadrant_sinf(r);
+    return __kernel_sinf(r);
 }
