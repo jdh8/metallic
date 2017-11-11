@@ -7,8 +7,8 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../gamma.h"
+#include "prec/sinpif.h"
 #include "logf.h"
-#include "sinpif.h"
 #include <math.h>
 
 static double _lnproduct(float z)
@@ -33,7 +33,7 @@ float lgammaf(float z)
         if (nearbyintf(z) == z)
             return HUGE_VALF;
 
-        return finite_logf(pi / fabs(sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
+        return finite_logf(pi / fabs(__prec_sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
     }
 
     return _lnproduct(z) + finite_logf(__gamma_lanczos_sum(z));

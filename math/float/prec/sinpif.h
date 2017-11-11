@@ -8,7 +8,7 @@
  */
 #include <math.h>
 
-static double __kernel_sinpif(double x)
+inline double __kernel_sinpif(double x)
 {
     const double c[] = {
         3.14159264393361429, /* No, this is not pi */
@@ -22,7 +22,7 @@ static double __kernel_sinpif(double x)
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-static double __kernel_cospif(double x)
+inline double __kernel_cospif(double x)
 {
     const double c[] = {
         0.999999972423322921,
@@ -36,7 +36,7 @@ static double __kernel_cospif(double x)
     return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
 
-static double sinpif(float x)
+inline double __prec_sinpif(float x)
 {
     x -= 2 * nearbyintf(x / 2);
 
@@ -56,3 +56,5 @@ static double sinpif(float x)
 
     __builtin_unreachable();
 }
+
+/* vim: set ft=c: */

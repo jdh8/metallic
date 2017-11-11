@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "prec/exp2f.h"
 #include "../gamma.h"
+#include "prec/exp2f.h"
+#include "prec/sinpif.h"
 #include "log2f.h"
-#include "sinpif.h"
 #include <math.h>
 
 static double _product(float z)
@@ -45,7 +45,7 @@ float tgammaf(float z)
         if (nearbyintf(z) == z)
             return (z - z) / (z - z);
 
-        return pi / (sinpif(z) * _right(1 - z));
+        return pi / (__prec_sinpif(z) * _right(1 - z));
     }
 
     return _right(z);
