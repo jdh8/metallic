@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "prec/exp2f.h"
-#include "gamma.h"
+#include "../gamma.h"
 #include "log2f.h"
 #include "sinpif.h"
 #include <math.h>
@@ -31,7 +31,7 @@ static double _right(float z)
     if (z > max)
         return HUGE_VALF;
 
-    return _product(z) * gamma_sum(z);
+    return _product(z) * __gamma_lanczos_sum(z);
 }
 
 float tgammaf(float z)

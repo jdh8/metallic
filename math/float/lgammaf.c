@@ -6,8 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#define nearbyintf __builtin_nearbyintf
-#include "gamma.h"
+#include "../gamma.h"
 #include "logf.h"
 #include "sinpif.h"
 #include <math.h>
@@ -34,8 +33,8 @@ float lgammaf(float z)
         if (nearbyintf(z) == z)
             return HUGE_VALF;
 
-        return finite_logf(pi / fabs(sinpif(z) * gamma_sum(1 - z))) - _lnproduct(1 - z);
+        return finite_logf(pi / fabs(sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
     }
 
-    return _lnproduct(z) + finite_logf(gamma_sum(z));
+    return _lnproduct(z) + finite_logf(__gamma_lanczos_sum(z));
 }
