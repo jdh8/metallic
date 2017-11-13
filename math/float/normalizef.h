@@ -32,7 +32,7 @@
  */
 inline int32_t __normalizef(int32_t i)
 {
-    if (i < 1 << (FLT_MANT_DIG - 1)) {
+    if (i < 0x00800000) {
         int32_t shift = __builtin_clz(i) - (32 - FLT_MANT_DIG);
         return (i << shift) - (shift << (FLT_MANT_DIG - 1));
     }
