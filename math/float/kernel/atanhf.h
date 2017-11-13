@@ -12,7 +12,7 @@
  * This computes inverse hyperbolic tangent in a domain of \f$ \left[
  * \frac{1 - \sqrt2}{1 + \sqrt2}, \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$.
  * The result is guaranteed to be faithfully rounded in
- * \c float, whose relative error is controlled within 1.912297e-8.
+ * \c float, whose relative error is controlled within 6.927795e-10.
  *
  * If \a x is outside of \f$ \left[ \frac{1 - \sqrt2}{1 + \sqrt2},
  * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$ the result is inaccurate.
@@ -23,8 +23,14 @@
  */
 inline double __kernel_atanhf(double x)
 {
+    const double c[] = {
+        0.9999999993072205474,
+        0.3333340818599626478,
+        0.1998737838945025914,
+        0.1496325726858180278
+    };
+
     double xx = x * x;
 
-    return x * (3.707126273856395376 - xx)
-        / (3.707126202965120879 - 2.235666074879315124 * xx);
+    return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
