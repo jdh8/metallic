@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanhf.h"
+#include "kernel/atanhf.h"
 #include "reducef.h"
 
 static double finite_logf(double x)
@@ -16,5 +16,5 @@ static double finite_logf(double x)
 
     x = reducef(x, &exponent);
 
-    return 2 * kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
+    return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }

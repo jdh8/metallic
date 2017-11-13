@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "atanhf.h"
+#include "kernel/atanhf.h"
 #include "reducef.h"
 #include "quietf.h"
 #include <math.h>
@@ -20,9 +20,9 @@ static double _finite(double c)
     double y = reducef(c + s, &exponent);
 
     if (exponent)
-        return 2 * kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+        return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return 2 * kernel_atanhf((c - 1) / s);
+        return 2 * __kernel_atanhf((c - 1) / s);
 }
 
 float acoshf(float x)
