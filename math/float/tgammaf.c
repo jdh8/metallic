@@ -8,8 +8,8 @@
  */
 #include "../gamma.h"
 #include "prec/exp2f.h"
+#include "prec/log2f.h"
 #include "prec/sinpif.h"
-#include "log2f.h"
 #include <math.h>
 
 static double _product(float z)
@@ -21,7 +21,7 @@ static double _product(float z)
     double shifted = z - 0.5;
     double base = shifted + g;
 
-    return sqrt2pi * __prec_exp2f(shifted * finite_log2f(base) - log2e * base);
+    return sqrt2pi * __prec_exp2f(shifted * __prec_log2f(base) - log2e * base);
 }
 
 static double _right(float z)

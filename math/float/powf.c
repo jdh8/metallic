@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "prec/exp2f.h"
-#include "log2f.h"
+#include "prec/log2f.h"
 #include "quietf.h"
 #include <math.h>
 #include <stdint.h>
@@ -24,7 +24,7 @@ static float _unsigned(float x, float y)
         return signbit(y) ? 0 : HUGE_VALF;
 
     if (x > 0)
-        return __prec_exp2f(y * finite_log2f(x));
+        return __prec_exp2f(y * __prec_log2f(x));
 
     return __quietf(x);
 }
