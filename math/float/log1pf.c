@@ -6,17 +6,19 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
 #include "kernel/atanhf.h"
-#include "reducef.h"
 #include "quietf.h"
+#include <float.h>
 #include <math.h>
 
 static double _finite(double x)
 {
-    const double ln2 = 0.6931471805599453094;
+    const double ln2 = 0.69314718055994530942;
 
-    int exponent;
-    double y = reducef(x + 1, &exponent);
+    int64_t i = __bits(x);
+    int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> (DBL_MANT_DIG - 1);
+    double y = __reinterpret(i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
         return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
@@ -26,19 +28,15 @@ static double _finite(double x)
 
 float log1pf(float x)
 {
-    const uint32_t n1 = 0xBF800000;
-    const int32_t inf = 0x7F800000;
+    int32_t i = __bitsf(x);
 
-    int32_t i = *(int32_t*)&x;
-    uint32_t j = *(uint32_t*)&x;
-
-    if (j == n1)
+    if (i == 0xBF800000u)
         return -HUGE_VALF;
 
-    if (j > n1)
+    if (i > 0xBF800000u)
         return __quietf(x);
 
-    if (i < inf)
+    if (i < 0x7F800000)
         return _finite(x);
 
     return x;
