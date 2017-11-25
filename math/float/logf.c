@@ -6,24 +6,32 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "logf.h"
+#include "../reinterpret.h"
+#include "kernel/atanhf.h"
+#include "normalizef.h"
 #include "quietf.h"
+#include <float.h>
 #include <math.h>
+
+static float _finite(int32_t i)
+{
+    const double ln2 = 0.69314718055994530942;
+
+    int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
+    double x = __reinterpretf(i - (exponent << (FLT_MANT_DIG - 1)));
+
+    return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
+}
 
 float logf(float x)
 {
-    const int32_t inf = 0x7F800000;
-
-    if (x == 0)
-        return -HUGE_VALF;
-
-    int32_t i = *(int32_t*)&x;
+    int32_t i = __bitsf(x);
 
     if (i < 0)
-        return __quietf(x);
+        return i << 1 == 0 ? -HUGE_VALF : __quietf(x);
 
-    if (i < inf)
-        return finite_logf(x);
+    if (i < 0x7F800000)
+        return _finite(__normalizef(i));
 
     return x;
 }
