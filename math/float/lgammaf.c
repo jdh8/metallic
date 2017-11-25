@@ -7,9 +7,23 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../gamma.h"
+#include "../reinterpret.h"
+#include "kernel/atanhf.h"
 #include "prec/sinpif.h"
-#include "logf.h"
+#include <float.h>
 #include <math.h>
+
+static double _logf(double x)
+{
+    const double ln2 = 0.69314718055994530942;
+
+    int64_t i = __bits(x);
+    int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> (DBL_MANT_DIG - 1);
+
+    x = __reinterpret(i - (exponent << (DBL_MANT_DIG - 1)));
+
+    return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
+}
 
 static double _lnproduct(float z)
 {
@@ -19,7 +33,7 @@ static double _lnproduct(float z)
     double shifted = z - 0.5;
     double base = shifted + g;
 
-    return lnsqrt2pi + shifted * finite_logf(base) - base;
+    return lnsqrt2pi + shifted * _logf(base) - base;
 }
 
 float lgammaf(float z)
@@ -33,8 +47,8 @@ float lgammaf(float z)
         if (nearbyintf(z) == z)
             return HUGE_VALF;
 
-        return finite_logf(pi / fabs(__prec_sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
+        return _logf(pi / fabs(__prec_sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
     }
 
-    return _lnproduct(z) + finite_logf(__gamma_lanczos_sum(z));
+    return _lnproduct(z) + _logf(__gamma_lanczos_sum(z));
 }
