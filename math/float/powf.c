@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
 #include "prec/exp2f.h"
 #include "prec/log2f.h"
 #include "quietf.h"
@@ -41,5 +42,5 @@ float powf(float x, float y)
         sign = -(nearbyintf(y / 2) != y / 2);
     }
 
-    return copysignf(_unsigned(x, y), *(float*)&sign);
+    return copysignf(_unsigned(x, y), __reinterpretf(sign));
 }

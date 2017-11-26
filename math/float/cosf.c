@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
 #include "kernel/sincosf.h"
 #include <math.h>
 #include <stdint.h>
@@ -14,14 +15,13 @@ float cosf(float x)
 {
     const double pi_2 = 1.57079632679489662;
     const float _2_pi = 0.6366197723676;
-    const uint32_t thresh = 0x4F000000; /* 2 ** 31 */
+    const uint_least32_t thresh = 0x4F000000; /* 2 ** 31 */
 
     float q = nearbyintf(x * _2_pi);
     double r = x - pi_2 * q;
-    uint32_t i = *(uint32_t*)&q;
 
-    if (i << 1 < thresh << 1) {
-        switch (3 & (unsigned)(int_least32_t) q) {
+    if ((uint_least32_t)__bitsf(q) << 1 < thresh << 1) {
+        switch (3 & (unsigned)(int_least32_t)q) {
             case 1:
                 return __kernel_sinf(-r);
             case 2:

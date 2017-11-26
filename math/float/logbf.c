@@ -6,13 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
 
 float logbf(float x)
 {
-    x = fabsf(x);
-    int32_t word = *(int32_t*)&x;
+    int32_t word = __bitsf(x) & 0x7FFFFFFF;
 
     if (word == 0)
         return -HUGE_VALF;

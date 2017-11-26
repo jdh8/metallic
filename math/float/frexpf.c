@@ -6,28 +6,23 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../reinterpret.h"
+#include "normalizef.h"
+#include <float.h>
+#include <math.h>
 #include <stdint.h>
 
 float frexpf(float x, int* exp)
 {
-    uint32_t word = *(uint32_t*)&x;
-    uint32_t wabs = word << 1;
+    int32_t i = __bitsf(x) & 0x7FFFFFFF;
 
-    if (wabs >= 0xFF000000 || wabs == 0) {
+    if (i == 0 || i >= 0x7F800000) {
         *exp = 0;
         return x;
     }
 
-    if (wabs < 0x01000000) {
-        int shift = __builtin_clz(wabs);
-        *exp = -(118 + shift);
-        word <<= (shift - 7);
-    }
-    else {
-        *exp = (wabs >> 24) - 126;
-    }
+    i = __normalizef(i);
+    *exp = (i >> (FLT_MANT_DIG - 1)) - 127;
 
-    word = (word & 0x807FFFFF) | 0x3F000000;
-
-    return *(float*)&word;
+    return copysignf(__reinterpretf((i & 0x007FFFFF) | 0x3F000000), x);
 }
