@@ -35,3 +35,5 @@ float ldexpf(float x, int exp)
 
     return copysignf(__reinterpretf(i), x);
 }
+
+float scalbnf(float, int) __attribute__((alias("ldexpf")));
