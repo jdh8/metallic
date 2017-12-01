@@ -13,7 +13,7 @@
  *
  * This computes exponential functon in a domain of \f$ [-0.5,
  * 0.5] \f$.  The result is guaranteed to be faithfully rounded in
- * \c float, whose relative error is controlled within 5.136187e-9.
+ * \c float, whose relative error is controlled within 7.476016e-9.
  *
  * If \a x is outside of \f$ [-0.5, 0.5] \f$,
  * the result is inaccurate.
@@ -24,14 +24,16 @@
 inline double __kernel_exp2f(double x)
 {
     const double c[] = {
-        2.885390086914114281,
-        1.155241599178795343e-1,
-       -9.211145068253212300e-4
+        6.931471880289532425e-1,
+        2.402265108421173406e-1,
+        5.550357105498874537e-2,
+        9.618030771171497658e-3,
+        1.339086685300950937e-3,
+        1.546973499989028719e-4
     };
 
     double xx = x * x;
-    double xcothxln2_2 = c[0] + c[1] * xx + c[2] * (xx * xx);
 
-    return 2 * x / (xcothxln2_2 - x);
+    return x * (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx));
 }
 #endif
