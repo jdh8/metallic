@@ -7,25 +7,34 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <math.h>
-#include <stdint.h>
 
-static double _pade(double x)
+// Relative error: 1.366020e-8
+static double _kernel(double x)
 {
-    double xx = x * x;
+    const double c[] = {
+        1.0000000136602037230,
+       -3.3333387464326621934e-1,
+       -2.2218602357593262059e-2,
+       -2.1257933049346633617e-3,
+       -1.9957378945992693876e-4,
+       -2.9761078265444352366e-5,
+        9.7271696975616268840e-7,
+       -7.7386756126714814615e-7
+    };
 
-    return x * ((xx - 105) * xx + 945) / ((15 * xx - 420) * xx + 945);
+    double xx = x * x;
+    double lo = c[0] + c[1] * x + (c[2] + c[3] * x) * xx;
+    double hi = c[4] + c[5] * x + (c[6] + c[7] * x) * xx;
+
+    return lo + hi * (xx * xx);
 }
 
 float tanf(float x)
 {
-    const double pi_2 = 1.57079632679489662;
-    const float _2_pi = 0.6366197723676;
+    const double pi = 3.14159265358979323846;
+    const float _1_pi = 0.31830988618379067154;
 
-    float q = nearbyintf(x * _2_pi);
-    double r = x - pi_2 * q;
-    double p = _pade(r);
+    double y = x - pi * nearbyintf(x * _1_pi);
 
-    q /= 2;
-
-    return nearbyintf(q) == q ? p : -1 / p;
+    return y / _kernel(y * y);
 }
