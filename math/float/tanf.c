@@ -7,8 +7,20 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <math.h>
-
-// Relative error: 1.366020e-8
+/*!
+ * \brief Kernel of tanf
+ *
+ * This computes the limit of \f$ \sqrt x \cot \sqrt x \f$
+ * for \a x in \f$ \left[ 0, \frac\pi2 \right] \f$.
+ * The result is guaranteed to be faithfully rounded in \c float,
+ * whose absolute error is controlled within 1.366020e-8.
+ *
+ * If \a x is outside of \f$ \left[ 0, \frac\pi2 \right] \f$,
+ * the result is inaccurate.
+ *
+ * \param x - The argument in \f$ \left[ 0, \frac\pi2 \right] \f$.
+ * \return  Approximate \f$ \sqrt x \cot \sqrt x \f$ as precise as \c float.
+ */
 static double _kernel(double x)
 {
     const double c[] = {
