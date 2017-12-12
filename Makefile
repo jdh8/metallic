@@ -1,5 +1,5 @@
 CC = clang
-CFLAGS = -fcolor-diagnostics -pipe -O3
+CFLAGS = -fcolor-diagnostics -pipe -O3 -Iinclude
 LDFLAGS = -nostdlib -Wl,--allow-undefined
 OBJECTS = $(patsubst %.c, %.o, $(wildcard */*.c */*/*.c))
 
