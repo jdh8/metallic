@@ -42,9 +42,15 @@ extern "C" {
 #endif
 
 #if __STDC_VERSION__ >= 201112L
+#ifdef __clang__
+#define CMPLXF(x, y) (float _Complex){ x, y }
+#define CMPLX(x, y) (double _Complex){ x, y }
+#define CMPLXL(x, y) (long double _Complex){ x, y }
+#else
 #define CMPLXF(x, y) __builtin_complex((float)(x), (float)(y))
 #define CMPLX(x, y) __builtin_complex((double)(x), (double)(y))
 #define CMPLXL(x, y) __builtin_complex((long double)(x), (long double)(y))
+#endif
 #endif
 
 #endif // complex.h
