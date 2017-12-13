@@ -10,6 +10,9 @@
 
 float hypotf(float x, float y)
 {
+    if (isinf(x) || isinf(y))
+        return HUGE_VALF;
+
     double a = x;
     double b = y;
 
