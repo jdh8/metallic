@@ -6,4 +6,4 @@ LDFLAGS := -nostdlib -Wl,--allow-undefined
 metallic.so: $(patsubst %.c, %.o, $(wildcard */*.c */*/*.c))
 
 clean:
-	rm -f *.so */*.o */*/*.o
+	$(RM) *.so */*.o */*/*.o
