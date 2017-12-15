@@ -1,4 +1,4 @@
-CC := clang -fcolor-diagnostics
+CC := clang
 TARGET := wasm32-unknown-none-wasm
 CFLAGS := --target=$(TARGET) -pipe -O3 -Iinclude
 LDFLAGS := -nostdlib -Wl,--allow-undefined
