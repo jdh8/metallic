@@ -41,16 +41,18 @@ extern "C" {
 } // extern "C"
 #endif
 
-#if __STDC_VERSION__ >= 201112L
 #ifdef __clang__
-#define CMPLXF(x, y) (float _Complex){ x, y }
-#define CMPLX(x, y) (double _Complex){ x, y }
-#define CMPLXL(x, y) (long double _Complex){ x, y }
+#define __CMPLX(T, x, y) (T _Complex){ x, y }
+#elif __GNUC__
+#define __CMPLX(T, x, y) __builtin_complex((T)(x), (T)(y))
 #else
-#define CMPLXF(x, y) __builtin_complex((float)(x), (float)(y))
-#define CMPLX(x, y) __builtin_complex((double)(x), (double)(y))
-#define CMPLXL(x, y) __builtin_complex((long double)(x), (long double)(y))
+#define __CMPLX(T, x, y) (union { T _Complex __z; T __xy[2]; }){.__xy = {(x), (y)}}.__z
 #endif
+
+#if __STDC_VERSION__ >= 201112L
+#define CMPLXF(x, y) __CMPLX(float, x, y)
+#define CMPLX(x, y)  __CMPLX(double, x, y)
+#define CMPLXL(x, y) __CMPLX(long double, x, y)
 #endif
 
 #endif // complex.h
