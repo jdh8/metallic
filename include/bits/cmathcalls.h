@@ -14,14 +14,25 @@
 #define _ComplexScalar std::complex<_RealScalar>
 #else
 #define _ComplexScalar _RealScalar _Complex
-#endif
 
 _RealScalar _MATHCALL(creal)(_ComplexScalar);
 _RealScalar _MATHCALL(cimag)(_ComplexScalar);
-_RealScalar _MATHCALL(cabs)(_ComplexScalar);
-_RealScalar _MATHCALL(carg)(_ComplexScalar);
 _ComplexScalar _MATHCALL(conj)(_ComplexScalar);
 _ComplexScalar _MATHCALL(cproj)(_ComplexScalar);
+
+_RealScalar _MATHCALL(hypot)(_RealScalar, _RealScalar);
+_RealScalar _MATHCALL(atan2)(_RealScalar, _RealScalar);
+
+inline _RealScalar _MATHCALL(cabs)(_ComplexScalar __z)
+{
+    return _MATHCALL(hypot)(_MATHCALL(creal)(__z), _MATHCALL(cimag)(__z));
+}
+
+inline _RealScalar _MATHCALL(carg)(_ComplexScalar __z)
+{
+    return _MATHCALL(atan2)(_MATHCALL(cimag)(__z), _MATHCALL(creal)(__z));
+}
+#endif // __cplusplus
 
 _ComplexScalar _MATHCALL(cexp)(_ComplexScalar);
 _ComplexScalar _MATHCALL(clog)(_ComplexScalar);
