@@ -38,5 +38,5 @@ static double _Complex _cisf(float x)
 
 float _Complex cexpf(float _Complex z)
 {
-    return __prec_expf((float)z) * _cisf(cimagf(z));
+    return __prec_expf(z) * _cisf(cimagf(z));
 }
