@@ -25,7 +25,7 @@ float sinf(float x)
             case 1:
                 return __kernel_cosf(r);
             case 2:
-                return __kernel_sinf(-r);
+                return -__kernel_sinf(r);
             case 3:
                 return -__kernel_cosf(r);
         }

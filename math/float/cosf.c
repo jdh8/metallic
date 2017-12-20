@@ -23,7 +23,7 @@ float cosf(float x)
     if ((uint_least32_t)__bitsf(q) << 1 < thresh << 1) {
         switch (3 & (unsigned)(int_least32_t)q) {
             case 1:
-                return __kernel_sinf(-r);
+                return -__kernel_sinf(r);
             case 2:
                 return -__kernel_cosf(r);
             case 3:

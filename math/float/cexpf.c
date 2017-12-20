@@ -13,27 +13,29 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _Complex _cisf(float x)
+static double _Complex _cisf(float t)
 {
     const double pi_2 = 1.57079632679489662;
     const float _2_pi = 0.6366197723676;
     const uint_least32_t thresh = 0x4F000000; /* 2 ** 31 */
 
-    float q = nearbyintf(x * _2_pi);
-    double r = x - pi_2 * q;
+    float q = nearbyintf(t * _2_pi);
+    double r = t - pi_2 * q;
+    double x = __kernel_cosf(r);
+    double y = __kernel_sinf(r);
 
     if ((uint_least32_t)__bitsf(q) << 1 < thresh << 1) {
         switch (3 & (unsigned)(int_least32_t)q) {
             case 1:
-                return CMPLX(__kernel_sinf(-r), __kernel_cosf(r));
+                return CMPLX(-y, x);
             case 2:
-                return CMPLX(-__kernel_cosf(r), __kernel_sinf(-r));
+                return CMPLX(-x, -y);
             case 3:
-                return CMPLX(__kernel_sinf(r), -__kernel_cosf(r));
+                return CMPLX(y, -x);
         }
     }
 
-    return CMPLX(__kernel_cosf(r), __kernel_sinf(r));
+    return CMPLX(x, y);
 }
 
 float _Complex cexpf(float _Complex z)
