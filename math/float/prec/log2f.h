@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../reinterpret.h"
 #include "../kernel/atanhf.h"
+#include "../../reinterpret.h"
 #include <float.h>
 
 inline double __prec_log2f(double x)

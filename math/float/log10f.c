@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../reinterpret.h"
-#include "kernel/atanhf.h"
 #include "normalizef.h"
 #include "quietf.h"
+#include "kernel/atanhf.h"
+#include "../reinterpret.h"
 #include <float.h>
 #include <math.h>
 
