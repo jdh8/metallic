@@ -12,7 +12,7 @@
 float _Complex cprojf(float _Complex z)
 {
     if (isinf((float)z) || isinf(cimagf(z)))
-        return HUGE_VALF;
+        return CMPLXF(HUGE_VALF, copysignf(0, cimagf(z)));
 
     return z;
 }
