@@ -21,11 +21,15 @@ float _Complex csqrtf(float _Complex z)
         return CMPLXF(x, 0 * y);
 
     if (x == -INFINITY)
-        return CMPLXF(0, copysignf(x, y));
+        return CMPLXF(y - y, copysignf(x, y));
 
-    double a = x;
+    double a = fabsf(x);
     double b = y;
-    double c = sqrt(a * a + b * b);
+    double s = sqrt(0.5 * (a + sqrt(a * a + b * b)));
+    float t = 0.5 * b / s;
 
-    return CMPLXF(sqrt((c + a) / 2), copysignf(sqrt((c - a) / 2), y));
+    if (signbit(x))
+        return CMPLXF(fabsf(t), copysignf(s, y));
+    else
+        return CMPLXF(s, t);
 }
