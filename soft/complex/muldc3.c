@@ -6,9 +6,9 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
-typedef float Real;
-typedef float _Complex Complex;
+typedef double Real;
+typedef double _Complex Complex;
 
-#define FUNCTION __mulsc3
+#define FUNCTION __muldc3
 
 #include "multiplication.h"
