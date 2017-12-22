@@ -11,7 +11,7 @@
 #include <complex.h>
 #include <math.h>
 
-double _atan2f(double y, double x)
+static double _atan2f(double y, double x)
 {
     const double pi = 3.14159265358979323846;
 
