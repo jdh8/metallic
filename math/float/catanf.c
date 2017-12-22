@@ -6,25 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/atanf.h"
+#include "prec/atan2f.h"
 #include "prec/log1pf.h"
 #include <complex.h>
 #include <math.h>
-
-static double _atan2f(double y, double x)
-{
-    const double pi = 3.14159265358979323846;
-
-    double absy = fabs(y);
-    double absx = fabs(x);
-
-    if (absy > absx)
-        return copysign(pi / 2, y) - __kernel_atanf(x / y);
-
-    double sharp = absy == absx ? copysign(pi / 4, y) : __kernel_atanf(y / absx);
-
-    return signbit(x) ? copysign(pi, y) - sharp : sharp;
-}
 
 float _Complex catanf(float _Complex z)
 {
@@ -45,7 +30,7 @@ float _Complex catanf(float _Complex z)
     double denominator = y - 1.0;
     denominator = xx + denominator * denominator;
 
-    x = 0.5 * _atan2f(2.0 * x, 1 - xx - yy);
+    x = 0.5 * __prec_atan2f(2.0 * x, 1 - xx - yy);
     y = 0.25 * __prec_log1pf(4.0 * y / denominator);
 
     return CMPLXF(x, y);
