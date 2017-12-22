@@ -7,8 +7,11 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "ctanhf.h"
+#include <complex.h>
 
-float _Complex ctanhf(float _Complex z)
+float _Complex ctanf(float _Complex z)
 {
-    return __ctanhf(z, cimagf(z));
+    z = __ctanhf(cimagf(z), z);
+
+    return CMPLXF(cimagf(z), z);
 }
