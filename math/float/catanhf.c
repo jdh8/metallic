@@ -9,7 +9,9 @@
 #include "catanf.h"
 #include <complex.h>
 
-float _Complex catanf(float _Complex z)
+float _Complex catanhf(float _Complex z)
 {
-    return __catanf(z, cimagf(z));
+    z = __catanf(cimagf(z), z);
+
+    return CMPLXF(cimagf(z), z);
 }
