@@ -42,5 +42,16 @@ static float _Complex _clogf(double _Complex z)
 
 float _Complex casinhf(float _Complex z)
 {
+    const double pi = 3.14159265358979323846;
+
+    float x = z;
+    float y = cimagf(z);
+
+    if (isinf(x))
+        return CMPLXF(x, isinf(y) ? copysignf(pi / 4, y) : 0 * y);
+
+    if (isinf(y))
+        return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, x) : x);
+
     return _clogf(z + _cosh_asinh(z));
 }
