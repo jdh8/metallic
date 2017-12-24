@@ -37,7 +37,9 @@ float _Complex casinhf(float _Complex z)
     return __prec_clogf(z + _cosh_asinh(z));
 }
 
+#if defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
 __attribute__((__flatten__))
+#endif
 float _Complex casinf(float _Complex z)
 {
     z = casinhf(CMPLXF(cimagf(z), z));
