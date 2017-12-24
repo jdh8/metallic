@@ -11,6 +11,8 @@
 #include <complex.h>
 #include <math.h>
 
+static const double pi = 3.14159265358979323846;
+
 static double _Complex _cosh_asinh(float _Complex z)
 {
     double x = z;
@@ -23,7 +25,6 @@ static double _Complex _cosh_asinh(float _Complex z)
 
 float _Complex casinhf(float _Complex z)
 {
-    const double pi = 3.14159265358979323846;
 
     float x = z;
     float y = cimagf(z);
@@ -45,4 +46,12 @@ float _Complex casinf(float _Complex z)
     z = casinhf(CMPLXF(cimagf(z), z));
 
     return CMPLXF(cimagf(z), z);
+}
+
+#ifdef __GNUC__
+__attribute__((__flatten__))
+#endif
+float _Complex cacosf(float _Complex z)
+{
+    return pi / 2 - casinf(z);
 }
