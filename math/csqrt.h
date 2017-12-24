@@ -6,23 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../csqrt.h"
 #include <complex.h>
 #include <math.h>
 
-float _Complex csqrtf(float _Complex z)
+inline double _Complex __csqrt(double x, double y)
 {
-    float x = z;
-    float y = cimagf(z);
+    double s = sqrt(0.5 * (fabs(x) + sqrt(x * x + y * y)));
+    double t = 0.5 * y / s;
 
-    if (isinf(y))
-        return CMPLXF(HUGE_VALF, y);
-
-    if (x == INFINITY)
-        return CMPLXF(x, 0 * y);
-
-    if (x == -INFINITY)
-        return CMPLXF(y - y, copysignf(x, y));
-
-    return __csqrt(x, y);
+    if (signbit(x))
+        return CMPLX(fabs(t), copysign(s, y));
+    else
+        return CMPLX(s, t);
 }

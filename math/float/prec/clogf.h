@@ -1,3 +1,4 @@
+
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
  * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
@@ -6,23 +7,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../csqrt.h"
+#include "atan2f.h"
+#include "loghypotf.h"
 #include <complex.h>
-#include <math.h>
 
-float _Complex csqrtf(float _Complex z)
+inline double _Complex __prec_clogf(double _Complex z)
 {
-    float x = z;
-    float y = cimagf(z);
+    double x = z;
+    double y = cimag(z);
 
-    if (isinf(y))
-        return CMPLXF(HUGE_VALF, y);
-
-    if (x == INFINITY)
-        return CMPLXF(x, 0 * y);
-
-    if (x == -INFINITY)
-        return CMPLXF(y - y, copysignf(x, y));
-
-    return __csqrt(x, y);
+    return CMPLX(__prec_loghypotf(x, y), __prec_atan2f(y, x));
 }
