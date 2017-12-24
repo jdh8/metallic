@@ -25,7 +25,6 @@ static double _Complex _cosh_asinh(float _Complex z)
 
 float _Complex casinhf(float _Complex z)
 {
-
     float x = z;
     float y = cimagf(z);
 
