@@ -6,20 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/atanf.h"
-#include <math.h>
+#include "atan2f.h"
 
 float atan2f(float y, float x)
 {
-    const double pi = 3.14159265358979324;
-
-    float absy = fabsf(y);
-    float absx = fabsf(x);
-
-    if (absy > absx)
-        return copysign(pi / 2, y) - __kernel_atanf(x / (double)y);
-
-    double sharp = absy == absx ? copysign(pi / 4, y) : __kernel_atanf(y / (double)absx);
-
-    return signbit(x) ? copysign(pi, y) - sharp : sharp;
+    return __atan2f(y, x);
 }
