@@ -1,1 +1,1 @@
-The function `cacosf` is already implemented in `casinhf.c`.
+The function `cacosf` is already implemented in `casinf.c`.
