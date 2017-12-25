@@ -9,7 +9,7 @@
 #include "kernel/atanf.h"
 #include <math.h>
 
-inline float __atan2f(float y, float x)
+inline double __atan2f(float y, float x)
 {
     const double pi = 3.14159265358979324;
 
