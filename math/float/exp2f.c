@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/exp2f.h"
+#include "kernel/exp2m1f.h"
 #include "../reinterpret.h"
 #include <math.h>
 
@@ -19,7 +19,7 @@ float exp2f(float x)
         return x * HUGE_VALF;
 
     float n = nearbyintf(x);
-    double y = 1 + __kernel_exp2f(x - n);
+    double y = 1 + __kernel_exp2m1f(x - n);
     int64_t shifted = __bits(y) + ((int64_t)n << 52);
 
     return __reinterpret(shifted);

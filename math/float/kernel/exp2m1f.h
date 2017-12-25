@@ -21,7 +21,7 @@
  * \param x - The argument in \f$ [-0.5, 0.5] \f$
  * \return  Approximate \f$ 2^x - 1 \f$ as precise as \c float.
  */
-inline double __kernel_exp2f(double x)
+inline double __kernel_exp2m1f(double x)
 {
     const double c[] = {
         6.931471880289532425e-1,

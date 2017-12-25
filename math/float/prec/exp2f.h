@@ -9,7 +9,7 @@
 #ifndef METALLIC_PREC_EXP2F_H
 #define METALLIC_PREC_EXP2F_H
 
-#include "../kernel/exp2f.h"
+#include "../kernel/exp2m1f.h"
 #include "../../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -23,7 +23,7 @@ inline double __prec_exp2f(double x)
         return x * HUGE_VALF;
 
     double n = nearbyint(x);
-    double y = 1 + __kernel_exp2f(x - n);
+    double y = 1 + __kernel_exp2m1f(x - n);
     int64_t shifted = __bits(y) + ((int64_t)n << 52);
 
     return __reinterpret(shifted);
