@@ -9,6 +9,7 @@
 #include "kernel/atanhf.h"
 #include "prec/sinpif.h"
 #include "../gamma.h"
+#include "../nearbyint.h"
 #include "../reinterpret.h"
 #include <float.h>
 #include <math.h>
@@ -44,7 +45,7 @@ float lgammaf(float z)
         return z;
 
     if (z < 0.5f) {
-        if (nearbyintf(z) == z)
+        if (__nearbyintf(z) == z)
             return HUGE_VALF;
 
         return _logf(pi / fabs(__prec_sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);

@@ -7,6 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/expm1f.h"
+#include "../nearbyint.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -35,7 +36,7 @@ float coshf(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = nearbyintf(x * log2e);
+    float n = __nearbyintf(x * log2e);
 
     if (n == 0)
         return _kernel(x);
