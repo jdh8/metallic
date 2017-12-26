@@ -9,7 +9,7 @@
 #include "quietf.h"
 #include "prec/exp2f.h"
 #include "prec/log2f.h"
-#include "../nearbyint.h"
+#include "../rint.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -38,9 +38,9 @@ float powf(float x, float y)
     if (y == 0)
         return 1;
 
-    if (signbit(x) && __nearbyintf(y) == y) {
+    if (signbit(x) && __rintf(y) == y) {
         x = -x;
-        sign = -(__nearbyintf(y / 2) != y / 2);
+        sign = -(__rintf(y / 2) != y / 2);
     }
 
     return copysignf(_unsigned(x, y), __reinterpretf(sign));

@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/sincosf.h"
-#include "../nearbyint.h"
+#include "../rint.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -18,7 +18,7 @@ float cosf(float x)
     const float _2_pi = 0.6366197723676;
     const uint_least32_t thresh = 0x4F000000; /* 2 ** 31 */
 
-    float q = __nearbyintf(x * _2_pi);
+    float q = __rintf(x * _2_pi);
     double r = x - pi_2 * q;
 
     if ((uint_least32_t)__bitsf(q) << 1 < thresh << 1) {

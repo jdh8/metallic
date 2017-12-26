@@ -6,14 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../nearbyint.h"
+#include "../rint.h"
 #include <math.h>
 
 float remquof(float numerator, float denominator, int* quotient)
 {
     double a = numerator;
     double b = denominator;
-    double q = __nearbyint(a / b);
+    double q = __rint(a / b);
 
     *quotient = q - 8 * trunc(q / 8);
 

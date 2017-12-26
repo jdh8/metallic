@@ -10,6 +10,7 @@
 #include "prec/log2f.h"
 #include "prec/sinpif.h"
 #include "../gamma.h"
+#include "../rint.h"
 #include <math.h>
 
 static double _product(float z)
@@ -42,7 +43,7 @@ float tgammaf(float z)
         return 1 / z;
 
     if (z < 0.5f) {
-        if (nearbyintf(z) == z)
+        if (__rintf(z) == z)
             return (z - z) / (z - z);
 
         return pi / (__prec_sinpif(z) * _right(1 - z));

@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/expm1f.h"
-#include "../nearbyint.h"
+#include "../rint.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -26,7 +26,7 @@ float expf(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = __nearbyintf(x * log2e);
+    float n = __rintf(x * log2e);
     double y = 1 + __kernel_expm1f(x - n * ln2);
     int64_t shifted = __bits(y) + ((int64_t)n << 52);
 
