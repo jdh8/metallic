@@ -6,12 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "catanf.h"
 #include <complex.h>
 
 float _Complex catanhf(float _Complex z)
 {
-    z = __catanf(cimagf(z), z);
+    z = catanf(CMPLXF(cimagf(z), z));
 
     return CMPLXF(cimagf(z), z);
 }
