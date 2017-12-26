@@ -15,8 +15,8 @@ inline float __rintf(float x)
     return __builtin_rintf(x);
 #else
     const float rectifier = 0x00800000;
-    x -= rectifier;
-    return x + rectifier;
+    x += rectifier;
+    return x - rectifier;
 #endif
 }
 
@@ -26,8 +26,8 @@ inline double __rint(double x)
     return __builtin_rint(x);
 #else
     const double rectifier = 0x0020000000000000;
-    x -= rectifier;
-    return x + rectifier;
+    x += rectifier;
+    return x - rectifier;
 #endif
 }
 

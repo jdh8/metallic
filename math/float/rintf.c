@@ -15,15 +15,9 @@ float rintf(float x)
 #if defined(__wasm__) || defined(__FAST_MATH__)
     return __rintf(x);
 #else
-    switch (FLT_ROUNDS) {
-        case 0:
-            return truncf(x);
-        case 2:
-            return ceilf(x);
-        case 3:
-            return floorf(x);
-    }
+    float rectifier = copysignf(0x00800000, x);
+    float y = x - rectifier;
 
-    return copysignf(__rintf(fabsf(x)), x);
+    return copysignf(y + rectifier, x);
 #endif
 }
