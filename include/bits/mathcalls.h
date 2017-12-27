@@ -64,7 +64,6 @@ _Scalar _MATHCALL(lgamma)(_Scalar);
 _Scalar _MATHCALL(trunc)(_Scalar);
 _Scalar _MATHCALL(nearbyint)(_Scalar);
 
-_Scalar   _MATHCALL(round)(_Scalar __x);
 long      _MATHCALL(lround)(_Scalar __x);
 long long _MATHCALL(llround)(_Scalar __x);
 
@@ -101,6 +100,10 @@ inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar* __i)
     return __x - *__i;
 }
 
+inline _Scalar _MATHCALL(round)(_Scalar __x)
+{
+    return _MATHCALL(trunc)(__x + _MATHCALL(copysign)(0.5, __x));
+}
 #else
 _Scalar _MATHCALL(modf)(_Scalar, _Scalar*);
 #endif
