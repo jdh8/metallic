@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/exp2m1f.h"
-#include "../rint.h"
+#include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
 

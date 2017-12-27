@@ -9,7 +9,7 @@
 #include "kernel/atanhf.h"
 #include "prec/sinpif.h"
 #include "../gamma.h"
-#include "../rint.h"
+#include "../round.h"
 #include "../reinterpret.h"
 #include <float.h>
 #include <math.h>

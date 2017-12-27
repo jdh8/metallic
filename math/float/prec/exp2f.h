@@ -10,7 +10,7 @@
 #define METALLIC_PREC_EXP2F_H
 
 #include "../kernel/exp2m1f.h"
-#include "../../rint.h"
+#include "../../round.h"
 #include "../../reinterpret.h"
 #include <math.h>
 #include <stdint.h>

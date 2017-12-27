@@ -6,13 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../rint.h"
+#include "../round.h"
 #include <math.h>
 #include <float.h>
 
 float rintf(float x)
 {
-#if defined(__wasm__) || defined(__FAST_MATH__)
+#if defined(FAST_ROUNDING) || defined(__FAST_MATH__)
     return __rintf(x);
 #else
     float rectifier = copysignf(0x00800000, x);

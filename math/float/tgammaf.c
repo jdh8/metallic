@@ -10,7 +10,7 @@
 #include "prec/log2f.h"
 #include "prec/sinpif.h"
 #include "../gamma.h"
-#include "../rint.h"
+#include "../round.h"
 #include <math.h>
 
 static double _product(float z)

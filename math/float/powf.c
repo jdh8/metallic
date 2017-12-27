@@ -9,7 +9,7 @@
 #include "quietf.h"
 #include "prec/exp2f.h"
 #include "prec/log2f.h"
-#include "../rint.h"
+#include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
