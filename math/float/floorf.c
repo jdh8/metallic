@@ -26,8 +26,7 @@ float floorf(float x)
         return bits >> 31;
 
     int32_t mask = 0x007FFFFF >> ((magnitude >> 23) - 127);
-    int32_t sign = (uint_least32_t)bits >> 31;
 
-    return __reinterpretf((bits + sign * mask) & ~mask);
+    return __reinterpretf((bits + (bits < 0) * mask) & ~mask);
 #endif
 }
