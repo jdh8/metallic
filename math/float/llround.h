@@ -6,9 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "lround.h"
+#include <math.h>
+#include <limits.h>
 
-long lrintf(float x)
+inline long long __llround(float x)
 {
-    return __lround(rintf(x));
+    if (x >= LLONG_MIN && x <= LLONG_MAX)
+        return x;
+    else
+        return signbit(x) ? LLONG_MIN : LLONG_MAX;
 }
+
+/* vim: set ft=c: */
