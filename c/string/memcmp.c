@@ -12,12 +12,11 @@ int memcmp(const void* lhs, const void* rhs, size_t length)
 {
     const unsigned char* a = lhs;
     const unsigned char* b = rhs;
-    int sign;
 
-    while (length--)
-        if ((sign = *a++ - *b++))
-            return sign;
-
+    while (length--) {
+        int compare = *a++ - *b++;
+        if (compare) return compare;
+    }
     return 0;
 }
 
