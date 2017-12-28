@@ -91,7 +91,7 @@ inline _Scalar _MATHCALL(fmin)(_Scalar __x, _Scalar __y)
 
 inline _Scalar _MATHCALL(fdim)(_Scalar __x, _Scalar __y)
 {
-    return !(__x <= __y) * (__x - __y);
+    return __x <= __y ? 0 : __x - __y;
 }
 
 inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar* __i)
