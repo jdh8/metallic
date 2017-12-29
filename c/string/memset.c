@@ -11,29 +11,19 @@
 
 void* memset(void* destination, int c, size_t length)
 {
-    const uint64_t vector = 0x0101010101010101u * (unsigned char) c;
+    const uint64_t vector = 0x0101010101010101u * (unsigned char)c;
     unsigned char* output = destination;
 
-    for (; (uintptr_t) output % 8 && length; --length)
+    while (length-- && (uintptr_t)output % sizeof(uint64_t))
         *output++ = c;
 
-    for (; length >= 8; length -= 8) {
-        *(uint64_t*) output = vector;
-        output += 8;
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
+        *(uint64_t*)output = vector;
+        output += sizeof(uint64_t);
     }
 
-    if (length & 4) {
-        *(uint32_t*) output = vector;
-        output += 4;
-    }
-
-    if (length & 2) {
-        *(uint16_t*) output = vector;
-        output += 2;
-    }
-
-    if (length & 1)
-        *output = c;
+    while (length--)
+        *output++ = c;
 
     return destination;
 }

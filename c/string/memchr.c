@@ -19,7 +19,7 @@ void* memchr(const void* source, int c, size_t length)
 
     const uint64_t* vector = (const uint64_t*)src;
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
-    const uint64_t mask = 0x0101010101010101 * (unsigned char)c;
+    const uint64_t mask = 0x0101010101010101u * (unsigned char)c;
 
     for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
         src = (const unsigned char*)vector;
