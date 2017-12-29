@@ -7,65 +7,25 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stddef.h>
-#include <stdint.h>
 
-static void forward(unsigned char* output, const unsigned char* input, size_t length)
+static void _forwards(unsigned char* output, const unsigned char* input, size_t length)
 {
-    for (; (uintptr_t) output % 4 && length; --length)
+    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
+    #pragma clang loop vectorize(enable)
+    #endif
+    while (length--)
         *output++ = *input++;
-
-    if ((uintptr_t) output & 4 && length >= 4) {
-        __builtin_memmove(__builtin_assume_aligned(output, 4), input, 4);
-        output += 4;
-        input += 4;
-        length -= 4;
-    }
-
-    for (; length >= 8; length -= 8) {
-        __builtin_memmove(__builtin_assume_aligned(output, 8), input, 8);
-        output += 8;
-        input += 8;
-    }
-
-    if (length & 4) {
-        __builtin_memmove(__builtin_assume_aligned(output, 4), input, 4);
-        output += 4;
-        input += 4;
-    }
-
-    if (length & 2) {
-        __builtin_memmove(__builtin_assume_aligned(output, 2), input, 2);
-        output += 2;
-        input += 2;
-    }
-
-    if (length & 1)
-        *output = *input;
 }
 
-static void backward(unsigned char* output, const unsigned char* input, size_t length)
+static void _backwards(unsigned char* output, const unsigned char* input, size_t length)
 {
     output += length;
     input += length;
 
-    for (; (uintptr_t) output % 4 && length; --length)
-        *--output = *--input;
-
-    if ((uintptr_t) output & 4 && length >= 4) {
-        __builtin_memmove(__builtin_assume_aligned(output -= 4, 4), input -= 4, 4);
-        length -= 4;
-    }
-
-    for (; length >= 8; length -= 8)
-        __builtin_memmove(__builtin_assume_aligned(output -= 8, 8), input -= 8, 8);
-
-    if (length & 4)
-        __builtin_memmove(__builtin_assume_aligned(output -= 4, 4), input -= 4, 4);
-
-    if (length & 2)
-        __builtin_memmove(__builtin_assume_aligned(output -= 2, 2), input -= 2, 2);
-
-    if (length & 1)
+    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
+    #pragma clang loop vectorize(enable)
+    #endif
+    while (length--)
         *--output = *--input;
 }
 
@@ -75,9 +35,9 @@ void* memmove(void* destination, const void* source, size_t length)
     const unsigned char* input = source;
 
     if (output - input >= length)
-        forward(output, input, length);
+        _forwards(output, input, length);
     else
-        backward(output, input, length);
+        _backwards(output, input, length);
 
     return destination;
 }
