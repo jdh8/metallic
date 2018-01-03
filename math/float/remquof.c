@@ -6,16 +6,18 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../round.h"
+#include "../reinterpret.h"
 #include <math.h>
 
 float remquof(float numerator, float denominator, int* quotient)
 {
-    double a = numerator;
-    double b = denominator;
-    double q = __rint(a / b);
+    if (__bitsf(fabsf(denominator)) < 0x7E000000)
+        numerator = fmodf(numerator, 8 * denominator);
 
-    *quotient = q - 8 * trunc(q / 8);
+    float q = rintf(numerator / denominator);
+    float r = numerator - denominator * (double)q;
 
-    return a - b * q;
+    *quotient = q;
+
+    return r ? r : copysignf(r, numerator);
 }
