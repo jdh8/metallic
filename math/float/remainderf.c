@@ -6,14 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../round.h"
+#include "../reinterpret.h"
 #include <math.h>
 
 float remainderf(float numerator, float denominator)
 {
-    double a = numerator;
-    double b = denominator;
-    double q = __rint(a / b);
+    if (__bitsf(fabsf(denominator)) < 0x7F000000)
+        numerator = fmodf(numerator, 2 * denominator);
 
-    return a - b * q;
+    float q = rintf(numerator / denominator);
+    float r = numerator - denominator * q;
+
+    return r ? r : copysignf(r, numerator);
 }
