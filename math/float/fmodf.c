@@ -53,13 +53,10 @@ float fmodf(float numerator, float denominator)
 
     a &= 0x7FFFFFFF;
 
-    if (a >= 0x7F800000)
-        return __reinterpretf(a | 0x00400000);
+    if (a >= 0x7F800000 || b > 0x7F800000 || b == 0)
+        return __reinterpretf(a | 0x7FC00000);
 
-    if (b > 0x7F800000)
-        return __reinterpretf(b | s);
-
-    if (a < b || b == 0)
+    if (a < b)
         return numerator;
 
     return __reinterpretf(_finite(__normalizef(a), __normalizef(b)) | s);
