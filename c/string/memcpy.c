@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stddef.h>
-#include <stddef.h>
 
 void* memcpy(void* restrict destination, const void* restrict source, size_t length)
 {
