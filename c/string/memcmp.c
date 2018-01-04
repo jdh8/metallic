@@ -13,10 +13,10 @@ int memcmp(const void* lhs, const void* rhs, size_t length)
     const unsigned char* a = lhs;
     const unsigned char* b = rhs;
 
-    while (length--) {
-        int compare = *a++ - *b++;
-        if (compare) return compare;
-    }
+    while (length--)
+        if (*a != *b)
+            return *a - *b;
+
     return 0;
 }
 
