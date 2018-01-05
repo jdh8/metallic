@@ -25,7 +25,7 @@
  *
  * \return  Quotient
  */
-static uint32_t kernel3x2(uint64_t u1, uint32_t u0, uint64_t v, uint64_t* r)
+static uint32_t _kernel3x2(uint64_t u1, uint32_t u0, uint64_t v, uint64_t r[static 1])
 {
     uint32_t v1 = v >> 32;
     uint32_t v0 = v;
@@ -46,7 +46,7 @@ static uint32_t kernel3x2(uint64_t u1, uint32_t u0, uint64_t v, uint64_t* r)
     return q;
 }
 
-static uint64_t div4x2(unsigned __int128 u, uint64_t v, uint64_t* r)
+static uint64_t _div4x2(unsigned __int128 u, uint64_t v, uint64_t r[static 1])
 {
     uint64_t u2 = u >> 64;
     uint64_t u0 = u;
@@ -58,14 +58,14 @@ static uint64_t div4x2(unsigned __int128 u, uint64_t v, uint64_t* r)
 
     int shift = __builtin_clzll(v);
     uint64_t u1 = u0 >> 32;
-    uint64_t q1 = kernel3x2(u2, u1, v << shift, &u1);
-    uint64_t q0 = kernel3x2(u1, u0, v << shift, &u0);
+    uint64_t q1 = _kernel3x2(u2, u1, v << shift, &u1);
+    uint64_t q0 = _kernel3x2(u1, u0, v << shift, &u0);
 
     *r = u0 % v;
     return (q1 << 32 | q0) << shift | u0 / v;
 }
 
-static uint64_t russian(unsigned __int128 u, unsigned __int128 v, unsigned __int128* r)
+static uint64_t _russian(unsigned __int128 u, unsigned __int128 v, unsigned __int128 r[static 1])
 {
     uint64_t high = v >> 64;
     uint64_t low = v;
@@ -91,7 +91,7 @@ static uint64_t russian(unsigned __int128 u, unsigned __int128 v, unsigned __int
     return q;
 }
 
-static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128* r)
+static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128 r[static 1])
 {
     uint64_t u2 = u >> 64;
     uint64_t v2 = v >> 64;
@@ -118,13 +118,13 @@ static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, un
         }
 
         uint64_t q2 = u2 / v0;
-        uint64_t q0 = div4x2((unsigned __int128)(u2 % v0) << 64 | u0, v0, &u0);
+        uint64_t q0 = _div4x2((unsigned __int128)(u2 % v0) << 64 | u0, v0, &u0);
 
         *r = u0;
         return (unsigned __int128) q2 << 64 | q0;
     }
 
-    return russian(u, v, r);
+    return _russian(u, v, r);
 }
 
 #endif /* udivmodti4.h */

@@ -25,4 +25,10 @@
 #define _NOEXCEPT
 #endif
 
+#if __STDC_VERSION__ >= 199901L
+#define _STATIC static
+#else
+#define _STATIC
+#endif
+
 #endif /* bits/specifiers.h */

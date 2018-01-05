@@ -35,14 +35,14 @@ _Scalar _MATHCALL(tanh)(_Scalar);
 _Scalar _MATHCALL(ceil)(_Scalar);
 _Scalar _MATHCALL(floor)(_Scalar);
 
-_Scalar _MATHCALL(frexp)(_Scalar, int*);
+_Scalar _MATHCALL(frexp)(_Scalar, int[_STATIC 1]);
 _Scalar _MATHCALL(ldexp)(_Scalar, int);
 
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
 _Scalar _MATHCALL(remainder)(_Scalar, _Scalar);
-_Scalar _MATHCALL(remquo)(_Scalar, _Scalar, int*);
+_Scalar _MATHCALL(remquo)(_Scalar, _Scalar, int[_STATIC 1]);
 _Scalar _MATHCALL(fma)(_Scalar, _Scalar, _Scalar);
-_Scalar _MATHCALL(nan)(const char*);
+_Scalar _MATHCALL(nan)(const char[_STATIC 1]);
 
 _Scalar _MATHCALL(exp2)(_Scalar);
 _Scalar _MATHCALL(expm1)(_Scalar);
@@ -94,7 +94,7 @@ inline _Scalar _MATHCALL(fdim)(_Scalar __x, _Scalar __y)
     return __x <= __y ? 0 : __x - __y;
 }
 
-inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar* __i)
+inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar __i[_STATIC 1])
 {
     *__i = _MATHCALL(trunc)(__x);
     return __x - *__i;

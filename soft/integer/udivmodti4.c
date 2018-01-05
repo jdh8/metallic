@@ -8,7 +8,7 @@
  */
 #include "udivmodti4.h"
 
-unsigned __int128 __udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128* r)
+unsigned __int128 __udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128 r[static 1])
 {
     return udivmodti4(u, v, r);
 }

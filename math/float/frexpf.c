@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdint.h>
 
-float frexpf(float x, int* exp)
+float frexpf(float x, int exp[static 1])
 {
     int32_t i = __bitsf(x) & 0x7FFFFFFF;
 

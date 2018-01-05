@@ -9,7 +9,7 @@
 #include "../reinterpret.h"
 #include <math.h>
 
-float remquof(float numerator, float denominator, int* quotient)
+float remquof(float numerator, float denominator, int quotient[static 1])
 {
     if (__bitsf(fabsf(denominator)) < 0x7E000000)
         numerator = fmodf(numerator, 8 * denominator);
