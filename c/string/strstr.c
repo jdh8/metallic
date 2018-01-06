@@ -7,6 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <string.h>
+#include <stddef.h>
 
 struct MaxSuffix
 {
@@ -58,7 +59,7 @@ static const unsigned char* _nonperiodic_memmem(
 {
     ptrdiff_t j = 0;
 
-    while (j < excess) {
+    while (j <= excess) {
         ptrdiff_t i = suffix.index + 1;
 
         while (i < n && x[i] == source[i + j])
@@ -90,7 +91,7 @@ static const unsigned char* _periodic_memmem(
     ptrdiff_t memory = 0;
     ptrdiff_t j = 0;
 
-    while (j < excess) {
+    while (j <= excess) {
         ptrdiff_t i = _max(suffix.index + 1, memory);
 
         while (i < n && x[i] == source[i + j])
