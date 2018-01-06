@@ -139,13 +139,11 @@ static const unsigned char* _strmem(const unsigned char source[static 1], const 
 
 char* strstr(const char source[static 1], const char x[static 1])
 {
-    if (!*x)
+    if (x[0] == 0)
         return (char*)source;
 
-    char* start = strchr(source, *x);
+    if (x[1] == 0)
+        return strchr(source, *x);
 
-    if (x[1] && start)
-        return (char*)_strmem((const unsigned char*)start, (const unsigned char*)x, strlen(x));
-
-    return start;
+    return (char*)_strmem((const unsigned char*)source, (const unsigned char*)x, strlen(x));
 }
