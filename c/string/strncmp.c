@@ -10,15 +10,17 @@
 
 int strncmp(const char lhs[static 1], const char rhs[static 1], size_t length)
 {
-    const unsigned char* a = (const unsigned char*)lhs;
-    const unsigned char* b = (const unsigned char*)rhs;
+    const unsigned char* x = (const unsigned char*)lhs;
+    const unsigned char* y = (const unsigned char*)rhs;
 
     while (length--) {
-        if (*a != *b || *a == 0)
-            return *a - *b;
-        ++a;
-        ++b;
+        unsigned char a = *x++;
+        unsigned char b = *y++;
+
+        if (a != b || a == 0)
+            return a - b;
     }
+
     return 0;
 }
 

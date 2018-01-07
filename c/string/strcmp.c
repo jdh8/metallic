@@ -8,13 +8,14 @@
  */
 int strcmp(const char lhs[static 1], const char rhs[static 1])
 {
-    const unsigned char* a = (const unsigned char*)lhs;
-    const unsigned char* b = (const unsigned char*)rhs;
+    const unsigned char* x = (const unsigned char*)lhs;
+    const unsigned char* y = (const unsigned char*)rhs;
 
-    while (*a == *b && *a) {
-        ++a;
-        ++b;
+    while (*x == *y && *x) {
+        ++x;
+        ++y;
     }
-    return *a - *b;
+
+    return *x - *y;
 }
 
