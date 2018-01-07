@@ -17,7 +17,7 @@ int strncmp(const char lhs[static 1], const char rhs[static 1], size_t length)
         unsigned char a = *x++;
         unsigned char b = *y++;
 
-        if (a != b || a == 0)
+        if (a != b || !a)
             return a - b;
     }
 

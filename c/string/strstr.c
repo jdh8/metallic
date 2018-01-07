@@ -149,10 +149,10 @@ void* memmem(const void* haystack, size_t length, const void* needle, size_t n)
 
 char* strstr(const char source[static 1], const char x[static 1])
 {
-    if (x[0] == 0)
+    if (!x[0])
         return (char*)source;
 
-    if (x[1] == 0)
+    if (!x[1])
         return strchr(source, *x);
 
     return memmem(source, strlen(source), x, strlen(x));
