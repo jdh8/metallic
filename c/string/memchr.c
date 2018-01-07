@@ -36,5 +36,5 @@ void* memchr(const void* source, int c, size_t length)
         if (*src == c)
             return (unsigned char*)src;
 
-    return NULL;
+    return 0;
 }
