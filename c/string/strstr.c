@@ -51,7 +51,6 @@ static struct MaxSuffix _max_suffix(int comp(unsigned char, unsigned char), cons
 
 static int _lt(unsigned char a, unsigned char b) { return a < b; }
 static int _gt(unsigned char a, unsigned char b) { return a > b; }
-static size_t _max(size_t a, size_t b) { return a < b ? b : a; }
 
 static const unsigned char* _nonperiodic_memmem(
     const unsigned char* source, size_t excess,
@@ -81,6 +80,8 @@ static const unsigned char* _nonperiodic_memmem(
 
     return 0;
 }
+
+static size_t _max(size_t a, size_t b) { return a < b ? b : a; }
 
 static const unsigned char* _periodic_memmem(
     const unsigned char* source, size_t excess,
@@ -117,8 +118,11 @@ static const unsigned char* _periodic_memmem(
     return 0;
 }
 
-static const unsigned char* _memmem(const unsigned char* source, size_t length, const unsigned char* x, size_t n)
+void* memmem(const void* haystack, size_t length, const void* needle, size_t n)
 {
+    const unsigned char* source = haystack;
+    const unsigned char* x = needle;
+
     if (length < n)
         return 0;
 
@@ -129,9 +133,9 @@ static const unsigned char* _memmem(const unsigned char* source, size_t length, 
     size_t excess = length - n;
 
     if (memcmp(x, x + suffix.period, suffix.index + 1))
-        return _nonperiodic_memmem(source, excess, x, n, suffix);
+        return (void*)_nonperiodic_memmem(source, excess, x, n, suffix);
     else
-        return _periodic_memmem(source, excess, x, n, suffix);
+        return (void*)_periodic_memmem(source, excess, x, n, suffix);
 }
 
 char* strstr(const char source[static 1], const char x[static 1])
@@ -142,5 +146,5 @@ char* strstr(const char source[static 1], const char x[static 1])
     if (x[1] == 0)
         return strchr(source, *x);
 
-    return (char*)_memmem((const unsigned char*)source, strlen(source), (const unsigned char*)x, strlen(x));
+    return (char*)memmem(source, strlen(source), x, strlen(x));
 }
