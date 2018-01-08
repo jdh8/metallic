@@ -11,13 +11,13 @@
 
 void* memchr(const void* source, int c, size_t length)
 {
-    const unsigned char* src = source;
+    const unsigned char* input = source;
 
-    for (; length-- && (uintptr_t)src % sizeof(uint64_t); ++src)
-        if (*src == c)
-            return (unsigned char*)src;
+    for (; length-- && (uintptr_t)input % sizeof(uint64_t); ++input)
+        if (*input == c)
+            return (unsigned char*)input;
 
-    const uint64_t* vector = (const uint64_t*)src;
+    const uint64_t* vector = (const uint64_t*)input;
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
     uint64_t mask = 0x0101010101010101u * (unsigned char)c;
 
@@ -26,15 +26,15 @@ void* memchr(const void* source, int c, size_t length)
 
         if (((word + magic) ^ ~word) & ~magic)
             for (int k = 0; k < sizeof(uint64_t); ++k)
-                if (src[k] == c)
-                    return (unsigned char*)(src + k);
+                if (input[k] == c)
+                    return (unsigned char*)(input + k);
 
-        src = (const unsigned char*)++vector;
+        input = (const unsigned char*)++vector;
     }
 
-    for (; length--; ++src)
-        if (*src == c)
-            return (unsigned char*)src;
+    for (; length--; ++input)
+        if (*input == c)
+            return (unsigned char*)input;
 
     return 0;
 }

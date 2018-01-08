@@ -136,11 +136,8 @@ static const unsigned char* _search(
         return _periodic(source, excess, x, n, suffix);
 }
 
-void* memmem(const void* haystack, size_t length, const void* needle, size_t n)
+void* memmem(const void* source, size_t length, const void* x, size_t n)
 {
-    const unsigned char* source = haystack;
-    const unsigned char* x = needle;
-
     if (length < n)
         return 0;
 
