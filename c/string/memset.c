@@ -9,10 +9,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void* memset(void* destination, int c, size_t length)
+void* memset(void* destination, int character, size_t length)
 {
-    const uint64_t vector = 0x0101010101010101u * (unsigned char)c;
     unsigned char* output = destination;
+    unsigned char c = character;
+    uint64_t vector = 0x0101010101010101u * c;
 
     while (length-- && (uintptr_t)output % sizeof(uint64_t))
         *output++ = c;

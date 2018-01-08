@@ -9,9 +9,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void* memchr(const void* source, int c, size_t length)
+void* memchr(const void* source, int character, size_t length)
 {
     const unsigned char* input = source;
+    unsigned char c = character;
 
     for (; length-- && (uintptr_t)input % sizeof(uint64_t); ++input)
         if (*input == c)
@@ -19,7 +20,7 @@ void* memchr(const void* source, int c, size_t length)
 
     const uint64_t* vector = (const uint64_t*)input;
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
-    uint64_t mask = 0x0101010101010101u * (unsigned char)c;
+    uint64_t mask = 0x0101010101010101u * c;
 
     for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
         uint64_t word = *vector ^ mask;
