@@ -14,7 +14,7 @@ void* memchr(const void* source, int character, size_t length)
     const unsigned char* input = source;
     unsigned char c = character;
 
-    for (; length-- && (uintptr_t)input % sizeof(uint64_t); ++input)
+    for (; (uintptr_t)input % sizeof(uint64_t) && length--; ++input)
         if (*input == c)
             return (unsigned char*)input;
 
