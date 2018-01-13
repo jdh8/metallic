@@ -29,7 +29,7 @@ inline double __expm1f(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = __rintf(x * log2e);
+    float n = __sintf(x * log2e);
     double y = __kernel_expm1f(x - n * ln2);
 
     if (n == 0)

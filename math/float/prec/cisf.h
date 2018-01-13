@@ -19,7 +19,7 @@ inline double _Complex __prec_cisf(double t)
     const double _2_pi = 0.636619772367581343;
     const uint_least64_t thresh = 0x43E0000000000000; /* 2 ** 63 */
 
-    double q = __rint(t * _2_pi);
+    double q = __sint(t * _2_pi);
     double r = t - pi_2 * q;
     double x = __kernel_cosf(r);
     double y = __kernel_sinf(r);

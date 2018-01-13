@@ -47,7 +47,7 @@ float tanf(float x)
     const double pi = 3.14159265358979323846;
     const float _1_pi = 0.31830988618379067154;
 
-    double y = x - pi * __rintf(x * _1_pi);
+    double y = x - pi * __sintf(x * _1_pi);
 
     return y / _kernel(y * y);
 }
