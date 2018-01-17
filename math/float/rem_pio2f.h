@@ -9,6 +9,9 @@
 #include "../reinterpret.h"
 #include "../round.h"
 #include <math.h>
+#include <stddef.h>
+
+uint64_t __2opi_64(ptrdiff_t);
 
 inline int __rem_pio2f(float x, double y[static 1])
 {
@@ -29,5 +32,17 @@ inline int __rem_pio2f(float x, double y[static 1])
         return 0;
     }
 
-    // TODO
+    const double pi_2_65 = 8.51530395021638647334e-20;
+
+    int32_t exp = magnitude >> 23;
+    int32_t mantissa = (i & 0x007FFFFF) | 0x00800000;
+    int32_t shift = __builtin_ctz(mantissa);
+
+    uint64_t product = (mantissa >> shift) * __2opi_64(exp + shift - 90);
+    int64_t r = product << 4;
+    int q = (product >> 60) + (r < 0);
+
+    *y = copysign(pi_2_65, x) * r;
+
+    return i < 0 ? -q : q;
 }
