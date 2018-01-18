@@ -41,7 +41,7 @@ float lgammaf(float z)
 {
     const double pi = 3.14159265358979324;
 
-    if (z >= HUGE_VALF)
+    if (z == INFINITY)
         return z;
 
     if (z < 0.5f) {
