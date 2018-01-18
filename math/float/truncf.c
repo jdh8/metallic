@@ -8,8 +8,6 @@
  */
 #include "../reinterpret.h"
 #include "../round.h"
-#include <math.h>
-#include <float.h>
 
 float truncf(float x)
 {
