@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdint.h>
 
-float ldexpf(float x, int exp)
+float SCALBNF(float x, Integer exp)
 {
     int32_t i = __bitsf(x) & 0x7FFFFFFF;
 
@@ -21,7 +21,7 @@ float ldexpf(float x, int exp)
 
     i = __normalizef(i);
 
-    int biased = exp + (i >> (FLT_MANT_DIG - 1));
+    Integer biased = exp + (i >> (FLT_MANT_DIG - 1));
 
     if (biased >= 0xFF || biased < -FLT_MANT_DIG)
         return x * (exp < 0 ? 0 : HUGE_VALF);
@@ -35,5 +35,3 @@ float ldexpf(float x, int exp)
 
     return copysignf(__reinterpretf(i), x);
 }
-
-float scalbnf(float, int) __attribute__((alias("ldexpf")));
