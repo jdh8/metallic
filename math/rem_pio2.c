@@ -83,7 +83,7 @@ static const uint64_t _data[] = {
 
 static const uint64_t* const _point = _data + sizeof(_data) / sizeof(uint64_t) - 2;
 
-static uint64_t __2opi_64(ptrdiff_t precision)
+static uint64_t _2opi_64(ptrdiff_t precision)
 {
     ptrdiff_t index = precision >> 6;
     ptrdiff_t shift = precision & 63;
@@ -122,7 +122,7 @@ int __rem_pio2f(float x, double y[static 1])
     int32_t mantissa = (i & 0x007FFFFF) | 0x00800000;
     int32_t shift = __builtin_ctz(mantissa);
 
-    uint64_t product = (mantissa >> shift) * __2opi_64(exp + shift - 90);
+    uint64_t product = (mantissa >> shift) * _2opi_64(exp + shift - 90);
     int64_t r = product << 4;
     int q = (product >> 60) + (r < 0);
 
