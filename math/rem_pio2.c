@@ -81,20 +81,19 @@ static const uint64_t _data[] = {
                      0,                  0
 };
 
-static const uint64_t* const _point = _data + sizeof(_data) / sizeof(uint64_t) - 2;
+static uint64_t _2opi_get(ptrdiff_t index, ptrdiff_t shift)
+{
+    const uint64_t* point = _data + sizeof(_data) / sizeof(uint64_t) - 2;
+
+    if (shift)
+        return point[-(index + 1)] >> (64 - shift) | point[-index] << shift;
+    else
+        return point[-index];
+}
 
 static uint64_t _2opi_64(ptrdiff_t precision)
 {
-    ptrdiff_t index = precision >> 6;
-    ptrdiff_t shift = precision & 63;
-
-    if (!shift)
-        return _point[-index];
-
-    uint64_t low = _point[-(index + 1)] >> (64 - shift);
-    uint64_t high = _point[-index] << shift;
-
-    return low | high;
+    return _2opi_get(precision >> 6, precision & 63);
 }
 
 int __rem_pio2f(float x, double y[static 1])
