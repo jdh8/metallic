@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+int __rem_pio2f(float x, double y[static 1]);
+
 inline double __kernel_sinf(double x)
 {
     const double c[] = {

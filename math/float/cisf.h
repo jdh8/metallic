@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/sincosf.h"
-#include "rem_pio2f.h"
 #include <complex.h>
 
 inline double _Complex __cisf(float t)
