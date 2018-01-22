@@ -7,47 +7,43 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../round.h"
-#include <math.h>
+
+int __rem_pio2f(float x, double y[static 1]);
+
 /*!
  * \brief Kernel of tanf
  *
  * This computes the limit of \f$ \sqrt x \cot \sqrt x \f$
- * for \a x in \f$ \left[ 0, \frac\pi2 \right] \f$.
+ * for \a x in \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$.
  * The result is guaranteed to be faithfully rounded in \c float,
- * whose absolute error is controlled within 1.366020e-8.
+ * whose absolute error is controlled within 4.520299e-9.
  *
- * If \a x is outside of \f$ \left[ 0, \frac\pi2 \right] \f$,
+ * If \a x is outside of \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$,
  * the result is inaccurate.
  *
- * \param x - The argument in \f$ \left[ 0, \frac\pi2 \right] \f$.
+ * \param x - The argument in \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$.
  * \return  Approximate \f$ \sqrt x \cot \sqrt x \f$ as precise as \c float.
  */
 static double _kernel(double x)
 {
     const double c[] = {
-        1.0000000136602037230,
-       -3.3333387464326621934e-1,
-       -2.2218602357593262059e-2,
-       -2.1257933049346633617e-3,
-       -1.9957378945992693876e-4,
-       -2.9761078265444352366e-5,
-        9.7271696975616268840e-7,
-       -7.7386756126714814615e-7
+        9.9999999547970088679e-1,
+       -3.3333297156778390385e-1,
+       -2.2226847402057085257e-2,
+       -2.0958255714778903209e-3,
+       -2.4838647503256150943e-4
     };
 
     double xx = x * x;
-    double lo = c[0] + c[1] * x + (c[2] + c[3] * x) * xx;
-    double hi = c[4] + c[5] * x + (c[6] + c[7] * x) * xx;
 
-    return lo + hi * (xx * xx);
+    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
 }
 
 float tanf(float x)
 {
-    const double pi = 3.14159265358979323846;
-    const float _1_pi = 0.31830988618379067154;
+    double y;
+    unsigned q = __rem_pio2f(x, &y);
+    double ycoty = _kernel(y * y);
 
-    double y = x - pi * __sintf(x * _1_pi);
-
-    return y / _kernel(y * y);
+    return q & 1 ? ycoty / -y : y / ycoty;
 }
