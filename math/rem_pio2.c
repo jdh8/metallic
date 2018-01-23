@@ -101,7 +101,7 @@ int __rem_pio2f(float x, double y[static 1])
     const double pi_2[] = { 1.57079631090164184570, 1.58932547735281966916e-8 };
     const double _2_pi = 0.63661977236758134308;
 
-    int32_t i = __bitsf(x);
+    int32_t i = reinterpret(int32_t, x);
     int32_t magnitude = i & 0x7FFFFFFF;
 
     if (magnitude < 0x4DC90FDB) {

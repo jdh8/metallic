@@ -33,7 +33,7 @@ static float _unsigned(float x, float y)
 
 float powf(float x, float y)
 {
-    uint_least32_t sign = 0;
+    uint32_t sign = 0;
 
     if (y == 0)
         return 1;
@@ -43,5 +43,5 @@ float powf(float x, float y)
         sign = -(__rintf(y / 2) != y / 2);
     }
 
-    return copysignf(_unsigned(x, y), __reinterpretf(sign));
+    return copysignf(_unsigned(x, y), reinterpret(float, sign));
 }

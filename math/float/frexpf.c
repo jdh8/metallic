@@ -14,7 +14,7 @@
 
 float frexpf(float x, int exp[static 1])
 {
-    int32_t i = __bitsf(x) & 0x7FFFFFFF;
+    int32_t i = reinterpret(int32_t, x) & 0x7FFFFFFF;
 
     if (i == 0 || i >= 0x7F800000) {
         *exp = 0;
@@ -24,5 +24,5 @@ float frexpf(float x, int exp[static 1])
     i = __normalizef(i);
     *exp = (i >> (FLT_MANT_DIG - 1)) - 127;
 
-    return copysignf(__reinterpretf((i & 0x007FFFFF) | 0x3F000000), x);
+    return copysignf(reinterpret(float, (i & 0x007FFFFF) | 0x3F000000), x);
 }

@@ -8,10 +8,11 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
+#include <stdint.h>
 
 float remainderf(float numerator, float denominator)
 {
-    if (__bitsf(fabsf(denominator)) < 0x7F000000)
+    if ((reinterpret(uint32_t, denominator) & 0x7FFFFFFF) < 0x7F000000)
         numerator = fmodf(numerator, 2 * denominator);
 
     float q = rintf(numerator / denominator);

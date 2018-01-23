@@ -18,14 +18,14 @@ static float _finite(int32_t i)
     const double log2e = 1.44269504088896340736;
 
     int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
-    double x = __reinterpretf(i - (exponent << (FLT_MANT_DIG - 1)));
+    double x = reinterpret(float, i - (exponent << (FLT_MANT_DIG - 1)));
 
     return 2 * log2e * __kernel_atanhf((x - 1) / (x + 1)) + exponent;
 }
 
 float log2f(float x)
 {
-    int32_t i = __bitsf(x);
+    int32_t i = reinterpret(int32_t, x);
 
     if (i < 0)
         return i << 1 == 0 ? -HUGE_VALF : __quietf(x);

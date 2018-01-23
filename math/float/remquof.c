@@ -8,10 +8,11 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
+#include <stdint.h>
 
 float remquof(float numerator, float denominator, int quotient[static 1])
 {
-    if (__bitsf(fabsf(denominator)) < 0x7E000000)
+    if ((reinterpret(uint32_t, denominator) & 0x7FFFFFFF) < 0x7E000000)
         numerator = fmodf(numerator, 8 * denominator);
 
     float q = rintf(numerator / denominator);

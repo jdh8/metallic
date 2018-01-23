@@ -16,7 +16,7 @@ float floorf(float x)
 #ifdef FAST_ROUNDING
     return __builtin_floorf(x);
 #else
-    int32_t bits = __bitsf(x);
+    int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
 
     if (magnitude == 0 || magnitude >= 0x4B000000) /* 2**23 */
@@ -27,6 +27,6 @@ float floorf(float x)
 
     int32_t mask = 0x007FFFFF >> ((magnitude >> 23) - 127);
 
-    return __reinterpretf((bits + (bits < 0) * mask) & ~mask);
+    return reinterpret(float, (bits + (bits < 0) * mask) & ~mask);
 #endif
 }

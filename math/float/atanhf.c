@@ -16,9 +16,9 @@ static double _finite(double x)
 {
     const double ln2 = 0.69314718055994530942;
 
-    int64_t i = __bits((1 + x) / (1 - x));
+    int64_t i = reinterpret(int64_t, (1 + x) / (1 - x));
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> (DBL_MANT_DIG - 1);
-    double y = __reinterpret(i - (exponent << (DBL_MANT_DIG - 1)));
+    double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
         return __kernel_atanhf((y - 1) / (y + 1)) + ln2 / 2 * exponent;

@@ -19,14 +19,14 @@ static float _finite(int32_t i)
     const double log10_2 = 0.30102999566398119521;
 
     int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
-    double x = __reinterpretf(i - (exponent << (FLT_MANT_DIG - 1)));
+    double x = reinterpret(float, i - (exponent << (FLT_MANT_DIG - 1)));
 
     return 2 * log10_e * __kernel_atanhf((x - 1) / (x + 1)) + exponent * log10_2;
 }
 
 float log10f(float x)
 {
-    int32_t i = __bitsf(x);
+    int32_t i = reinterpret(int32_t, x);
 
     if (i < 0)
         return i << 1 == 0 ? -HUGE_VALF : __quietf(x);

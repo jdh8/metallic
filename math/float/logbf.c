@@ -12,7 +12,7 @@
 
 float logbf(float x)
 {
-    int32_t word = __bitsf(x) & 0x7FFFFFFF;
+    int32_t word = reinterpret(int32_t, x) & 0x7FFFFFFF;
 
     if (word == 0)
         return -HUGE_VALF;

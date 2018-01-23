@@ -40,9 +40,9 @@ float sinhf(float x)
         return _kernel(x);
 
     double y = 1 + __kernel_expm1f(x - n * ln2);
-    int64_t shifted = __bits(y) + ((int64_t)n << 52);
+    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    y = __reinterpret(shifted);
+    y = reinterpret(double, shifted);
 
     return 0.5 * y - 0.5 / y;
 }

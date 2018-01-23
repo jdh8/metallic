@@ -19,12 +19,12 @@ double nextafter(double from, double to)
         return from;
 
     if (from == 0)
-        return copysign(__reinterpret(1), to);
+        return copysign(__DBL_DENORM_MIN__, to);
 
-    int64_t d = __bits(from);
-    int64_t a = __bits(to);
+    int64_t d = reinterpret(int64_t, from);
+    int64_t a = reinterpret(int64_t, to);
 
     a < d || (a ^ d) < 0 ? --d : ++d;
 
-    return __reinterpret(d);
+    return reinterpret(double, d);
 }

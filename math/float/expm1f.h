@@ -37,9 +37,9 @@ inline double __expm1f(float x)
 
     y += 1;
 
-    int64_t shifted = __bits(y) + ((int64_t)n << 52);
+    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    return __reinterpret(shifted) - 1;
+    return reinterpret(double, shifted) - 1;
 }
 #endif
 /* vim: set ft=c: */

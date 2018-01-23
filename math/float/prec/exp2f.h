@@ -25,9 +25,9 @@ inline double __prec_exp2f(double x)
 
     double n = __rint(x);
     double y = 1 + __kernel_exp2m1f(x - n);
-    int64_t shifted = __bits(y) + ((int64_t)n << 52);
+    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    return __reinterpret(shifted);
+    return reinterpret(double, shifted);
 }
 
 #endif

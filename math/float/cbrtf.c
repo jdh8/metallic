@@ -13,14 +13,14 @@
 
 static float _kernel(float x)
 {
-    int32_t i = __bitsf(x);
+    int32_t i = reinterpret(int32_t, x);
 
     if (i == 0 || i >= 0x7F800000)
         return x;
 
     i = 0x2A512CE3 + __normalizef(i) / 3;
 
-    double y = __reinterpretf(i);
+    double y = reinterpret(float, i);
 
     y *= 0.5 + 1.5 * x / (2 * y * (y * y) + x);
     y += 0.33333333333333333333 * (x / (y * y) - y);

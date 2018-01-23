@@ -10,15 +10,16 @@
 #include "../reinterpret.h"
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 
 static double _finite(double s)
 {
     const double ln2 = 0.6931471805599453094;
 
     double c = sqrt(s * s + 1);
-    int64_t i = __bits(c + s);
+    int64_t i = reinterpret(int64_t, c + s);
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> (DBL_MANT_DIG - 1);
-    double y = __reinterpret(i - (exponent << (DBL_MANT_DIG - 1)));
+    double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
         return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;

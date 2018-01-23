@@ -10,6 +10,7 @@
 #include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
+#include <stdint.h>
 
 float exp2f(float x)
 {
@@ -21,7 +22,7 @@ float exp2f(float x)
 
     float n = __rintf(x);
     double y = 1 + __kernel_exp2m1f(x - n);
-    int64_t shifted = __bits(y) + ((int64_t)n << 52);
+    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    return __reinterpret(shifted);
+    return reinterpret(double, shifted);
 }

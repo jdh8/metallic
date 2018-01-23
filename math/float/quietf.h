@@ -11,5 +11,5 @@
 
 inline float __quietf(float x)
 {
-    return __reinterpretf(__bitsf(x) | 0x7FC00000);
+    return reinterpret(float, reinterpret(uint32_t, x) | 0x7FC00000);
 }

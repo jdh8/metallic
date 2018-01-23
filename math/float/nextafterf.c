@@ -19,12 +19,12 @@ float nextafterf(float from, float to)
         return from;
 
     if (from == 0)
-        return copysignf(__reinterpretf(1), to);
+        return copysignf(__FLT_DENORM_MIN__, to);
 
-    int32_t d = __bitsf(from);
-    int32_t a = __bitsf(to);
+    int32_t d = reinterpret(int32_t, from);
+    int32_t a = reinterpret(int32_t, to);
 
     a < d || (a ^ d) < 0 ? --d : ++d;
 
-    return __reinterpretf(d);
+    return reinterpret(float, d);
 }

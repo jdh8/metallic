@@ -47,17 +47,17 @@ static int32_t _finite(int32_t a, int32_t b)
 
 float fmodf(float numerator, float denominator)
 {
-    int32_t a = __bitsf(numerator);
-    int32_t b = __bitsf(denominator) & 0x7FFFFFFF;
+    int32_t a = reinterpret(int32_t, numerator);
+    int32_t b = reinterpret(int32_t, denominator) & 0x7FFFFFFF;
     int32_t s = a & 0x80000000;
 
     a &= 0x7FFFFFFF;
 
     if (a >= 0x7F800000 || b > 0x7F800000 || b == 0)
-        return __reinterpretf(a | 0x7FC00000);
+        return reinterpret(float, a | 0x7FC00000);
 
     if (a < b)
         return numerator;
 
-    return __reinterpretf(_finite(__normalizef(a), __normalizef(b)) | s);
+    return reinterpret(float, _finite(__normalizef(a), __normalizef(b)) | s);
 }
