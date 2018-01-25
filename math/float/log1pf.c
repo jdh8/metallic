@@ -6,7 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "quietf.h"
 #include "prec/log1pf.h"
 #include "../reinterpret.h"
 #include <math.h>
@@ -20,7 +19,7 @@ float log1pf(float x)
         return -HUGE_VALF;
 
     if (i > 0xBF800000u)
-        return __quietf(x);
+        return -NAN;
 
     if (i < 0x7F800000)
         return __prec_log1pf(x);

@@ -6,7 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "quietf.h"
 #include "prec/exp2f.h"
 #include "prec/log2f.h"
 #include "../round.h"
@@ -28,7 +27,7 @@ static float _unsigned(float x, float y)
     if (x > 0)
         return __prec_exp2f(y * __prec_log2f(x));
 
-    return __quietf(x);
+    return -NAN;
 }
 
 float powf(float x, float y)

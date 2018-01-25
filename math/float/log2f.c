@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "normalizef.h"
-#include "quietf.h"
 #include "kernel/atanhf.h"
 #include "../reinterpret.h"
 #include <float.h>
@@ -28,7 +27,7 @@ float log2f(float x)
     int32_t i = reinterpret(int32_t, x);
 
     if (i < 0)
-        return i << 1 == 0 ? -HUGE_VALF : __quietf(x);
+        return i << 1 == 0 ? -HUGE_VALF : -NAN;
 
     if (i < 0x7F800000)
         return _finite(__normalizef(i));

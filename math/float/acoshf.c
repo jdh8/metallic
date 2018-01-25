@@ -6,11 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "quietf.h"
 #include "kernel/atanhf.h"
 #include "../reinterpret.h"
 #include <float.h>
 #include <math.h>
+#include <stdint.h>
 
 static double _finite(double c)
 {
@@ -32,7 +32,7 @@ float acoshf(float x)
     int32_t i = reinterpret(int32_t, x);
 
     if (i < 0x3F800000)
-        return __quietf(x);
+        return -NAN;
 
     if (i < 0x7F800000)
         return _finite(x);
