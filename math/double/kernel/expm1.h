@@ -9,7 +9,7 @@
 #ifndef METALLIC_KERNEL_EXPM1_H
 #define METALLIC_KERNEL_EXPM1_H
 
-inline double __complement_expm1(double x)
+inline double __kernel_expm1(double x, double y)
 {
     const double p[] = {
         1.6666666666666602132e-1,
@@ -19,16 +19,14 @@ inline double __complement_expm1(double x)
         4.1381437643920980023e-8
     };
 
-    double xx = x * x;
+    double r = x - y;
+    double r2 = r * r;
+    double r4 = r2 * r2;
 
-    return p[0] * x + (p[1] + p[2] * x) * xx + (p[3] + p[4] * x) * (xx * xx);
+    double c = r - (p[0] * r2 + (p[1] + p[2] * r2) * r4 + (p[3] + p[4] * r2) * (r4 * r4));
+
+    return r * c / (2 - c) - y + x;
 }
 
-inline double __kernel_expm1(double x)
-{
-    double c = x - __complement_expm1(x * x);
-
-    return x + x * c / (2 - c);
-}
 #endif
 /* vim: set ft=c: */
