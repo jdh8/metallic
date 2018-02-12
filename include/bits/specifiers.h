@@ -27,8 +27,10 @@
 
 #if __STDC_VERSION__ >= 199901L
 #define _STATIC static
+#define _RESTRICT restrict
 #else
 #define _STATIC
+#define _RESTRICT
 #endif
 
 #endif /* bits/specifiers.h */
