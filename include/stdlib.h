@@ -71,7 +71,7 @@ long double strtold(const char[_STATIC 1], char**);
 #define MB_CUR_MAX __ctype_get_mb_cur_max()
 
 int mblen(const char*, size_t);
-int mbtowc(wchar_t*, const char*, size_t);
+int mbtowc(wchar_t*__restrict, const char*__restrict, size_t);
 int wctomb(char*, wchar_t);
 
 size_t mbstowcs(wchar_t[_STATIC 1], const char[_STATIC 1], size_t);
