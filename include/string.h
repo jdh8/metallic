@@ -38,6 +38,6 @@ size_t strcspn(const char[_STATIC 1], const char[_STATIC 1]);
 char* strpbrk(const char[_STATIC 1], const char[_STATIC 1]);
 
 char* strstr(const char[_STATIC 1], const char[_STATIC 1]);
-char* strtok(char*__restrict, const char*__restrict);
+char* strtok(char*__restrict, const char[_STATIC _RESTRICT 1]);
 
 #endif /* string.h */
