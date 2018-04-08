@@ -12,7 +12,8 @@
 
 float logbf(float x)
 {
-    int32_t word = reinterpret(int32_t, x) & 0x7FFFFFFF;
+    float y = fabsf(x);
+    int32_t word = reinterpret(int32_t, y);
 
     if (word == 0)
         return -HUGE_VALF;
@@ -23,5 +24,5 @@ float logbf(float x)
     if (word < 0x7F800000)
         return (word >> 23) - 127;
 
-    return x;
+    return y;
 }

@@ -12,7 +12,8 @@
 
 double logb(double x)
 {
-    int64_t word = reinterpret(int64_t, x) & 0x7FFFFFFFFFFFFFFF;
+    double y = fabs(x);
+    int64_t word = reinterpret(int64_t, y);
 
     if (word == 0)
         return -HUGE_VALF;
@@ -23,5 +24,5 @@ double logb(double x)
     if (word < 0x7FF0000000000000)
         return (word >> 52) - 1023;
 
-    return x;
+    return y;
 }
