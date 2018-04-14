@@ -6,6 +6,6 @@ metallic.a: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c))
 	llvm-link -o $@ $^
 
 clean:
-	$(RM) *.so */*.o */*/*.o */*.d */*/*.d
+	$(RM) *.a */*.o */*/*.o */*.d */*/*.d
 
 -include */*.d */*/*.d
