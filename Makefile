@@ -1,10 +1,9 @@
 CC := clang --target=wasm32-unknown-none-wasm
 CPPFLAGS := -MMD -MP -Iinclude
-CFLAGS := -pipe -O3 -Wall
-LDFLAGS := -nostdlib -Wl,--allow-undefined
+CFLAGS := -pipe -O3 -Wall -emit-llvm
 
-metallic.so: $(patsubst %.c, %.o, $(wildcard */*.c */*/*.c))
-	$(CC) $(LDFLAGS) -o $@ $^
+metallic.a: $(patsubst %.c, %.o, $(wildcard */*.c */*/*.c))
+	llvm-link -o $@ $^
 
 clean:
 	$(RM) *.so */*.o */*/*.o */*.d */*/*.d
