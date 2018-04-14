@@ -21,7 +21,7 @@ double SCALBN(double x, Integer exp)
 
     i = __normalize(i);
 
-    Integer biased = exp + (i >> (DBL_MANT_DIG - 1));
+    int64_t biased = exp + (i >> (DBL_MANT_DIG - 1));
 
     if (biased >= 0x7FF || biased < -DBL_MANT_DIG)
         return x * (exp < 0 ? 0 : HUGE_VALF);
