@@ -1,8 +1,8 @@
 CC := clang --target=wasm32-unknown-none-wasm
 CPPFLAGS := -MMD -MP -Iinclude
-CFLAGS := -pipe -O3 -Wall -emit-llvm
+CFLAGS := -pipe -O3 -Wall -flto
 
-metallic.a: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)))
+metallic.bc: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)))
 	llvm-link -o $@ $^
 
 clean:
