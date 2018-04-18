@@ -4,7 +4,7 @@ CFLAGS := -pipe -Iinclude -O3 -Wall -flto
 LDFLAGS := -nostdlib -fno-lto
 
 metallic.bc: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)))
-	llvm-link -o $@ $^
+	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
 
 test/%.wasm: metallic.bc test/%.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
