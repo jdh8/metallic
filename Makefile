@@ -10,6 +10,6 @@ test/%.wasm: metallic.bc test/%.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	$(RM) *.a */*.o */*/*.o */*.d */*/*.d
+	$(RM) *.bc */*.o */*/*.o */*.d */*/*.d
 
 -include */*.d */*/*.d
