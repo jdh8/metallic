@@ -8,11 +8,13 @@
  */
 #include <stdint.h>
 
+void __wasm_call_ctors(void);
 void* sbrk(intptr_t);
 int main(void);
 
 void _start(void)
 {
+    __wasm_call_ctors();
     sbrk((intptr_t)__builtin_frame_address(0));
     main();
 }
