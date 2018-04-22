@@ -7,13 +7,12 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stdint.h>
-#include <stdlib.h>
 
 void* sbrk(intptr_t);
 int main(void);
 
-_Noreturn void _start(void)
+void _start(void)
 {
     sbrk((intptr_t)__builtin_frame_address(0));
-    exit(main());
+    main();
 }
