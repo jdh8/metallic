@@ -22,7 +22,7 @@ double frexp(double x, int exp[static 1])
     }
 
     i = __normalize(i);
-    *exp = (i >> (DBL_MANT_DIG - 1)) - 1023;
+    *exp = (i >> (DBL_MANT_DIG - 1)) - 1022;
 
     return copysign(reinterpret(double, (i & 0x000FFFFFFFFFFFFF) | 0x3FE0000000000000), x);
 }

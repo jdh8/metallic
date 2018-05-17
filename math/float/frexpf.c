@@ -22,7 +22,7 @@ float frexpf(float x, int exp[static 1])
     }
 
     i = __normalizef(i);
-    *exp = (i >> (FLT_MANT_DIG - 1)) - 127;
+    *exp = (i >> (FLT_MANT_DIG - 1)) - 126;
 
     return copysignf(reinterpret(float, (i & 0x007FFFFF) | 0x3F000000), x);
 }
