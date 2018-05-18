@@ -1,7 +1,8 @@
 #include "../metallic/assert.h"
 #include <tgmath.h>
 
-int main(void)
+__attribute__((constructor))
+static void test_frexp(void)
 {
     int exp;
     metallic_assert(frexp((Scalar)8, &exp) == (Scalar)0.5);
