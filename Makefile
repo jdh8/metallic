@@ -12,8 +12,8 @@ metallic.bc: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)
 check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*.c test/*/*.c))
 	node --experimental-modules $^
 
-test/%.out: metallic.bc test/%.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ -xir $^
+test/%.out: metallic.a test/%.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -xir test/$*.o
 
 clean:
 	$(RM) *.bc *.a */*.o */*/*.o */*.d */*/*.d test/*.out
