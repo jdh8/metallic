@@ -9,13 +9,13 @@ metallic.a: metallic.bc
 metallic.bc: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)))
 	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
 
-check: $(patsubst %.c, %.wasm, $(wildcard test/*.c test/*/*.c))
-	node --experimental-modules test/index.mjs $^
+check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*.c test/*/*.c))
+	node --experimental-modules $^
 
-test/%.wasm: metallic.a test/%.c
+test/%.out: metallic.a test/%.c
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 clean:
-	$(RM) *.bc *.a */*.o */*/*.o */*.d */*/*.d test/*.wasm
+	$(RM) *.bc *.a */*.o */*/*.o */*.d */*/*.d test/*.out
 
 -include */*.d */*/*.d
