@@ -8,6 +8,7 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
+#include <float.h>
 #include <stdint.h>
 
 float nextafterf(float from, float to)
@@ -19,7 +20,7 @@ float nextafterf(float from, float to)
         return from;
 
     if (from == 0)
-        return copysignf(__FLT_DENORM_MIN__, to);
+        return copysignf(FLT_TRUE_MIN, to);
 
     int32_t d = reinterpret(int32_t, from);
     int32_t a = reinterpret(int32_t, to);

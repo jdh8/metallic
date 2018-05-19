@@ -8,6 +8,7 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
+#include <float.h>
 #include <stdint.h>
 
 double nextafter(double from, double to)
@@ -19,7 +20,7 @@ double nextafter(double from, double to)
         return from;
 
     if (from == 0)
-        return copysign(__DBL_DENORM_MIN__, to);
+        return copysign(DBL_TRUE_MIN, to);
 
     int64_t d = reinterpret(int64_t, from);
     int64_t a = reinterpret(int64_t, to);
