@@ -31,7 +31,7 @@ double SCALBN(double x, Integer exp)
     if (biased > 0)
         i |= biased << (DBL_MANT_DIG - 1);
     else
-        i >>= -biased;
+        i = (i | 0x0010000000000000) >> (1 - biased);
 
     return copysign(reinterpret(double, i), x);
 }

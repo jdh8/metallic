@@ -14,7 +14,7 @@
 
 float SCALBNF(float x, Integer exp)
 {
-    int32_t i = reinterpret(int32_t, x) & 0x7FFFFFFF;
+    int32_t i = reinterpret(int32_t, fabsf(x));
 
     if (i == 0 || i >= 0x7F800000)
         return x;
@@ -31,7 +31,7 @@ float SCALBNF(float x, Integer exp)
     if (biased > 0)
         i |= biased << (FLT_MANT_DIG - 1);
     else
-        i >>= -biased;
+        i = (i | 0x00800000) >> (1 - biased);
 
     return copysignf(reinterpret(float, i), x);
 }
