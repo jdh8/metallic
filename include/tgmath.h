@@ -33,7 +33,7 @@
     float _Complex: cabsf,      \
     double _Complex: cabs,      \
     long double _Complex: cabsl \
-)
+)(x)
 #else
 #define _TGMATH(x, function) __builtin_choose_expr(                                                     \
     __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr(             \
@@ -41,18 +41,18 @@
     __builtin_types_compatible_p(__typeof__(x), float _Complex), c##function##f, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x), double _Complex), c##function, __builtin_choose_expr(   \
     __builtin_types_compatible_p(__typeof__(x), long double _Complex), c##function##l, function         \
-)))))
+)))))(x)
 #define _TGMATH_COMPLEX(x, function) __builtin_choose_expr(                                                       \
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), float _Complex), function##f, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x + _Complex_I), long double _Complex), function##l, function         \
-))
+))(x)
 #define fabs(x) __builtin_choose_expr(                                                         \
     __builtin_types_compatible_p(__typeof__(x), float), fabsf, __builtin_choose_expr(          \
     __builtin_types_compatible_p(__typeof__(x), long double), fabsl, __builtin_choose_expr(    \
     __builtin_types_compatible_p(__typeof__(x), float _Complex), cabsf, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x), double _Complex), cabs, __builtin_choose_expr( \
     __builtin_types_compatible_p(__typeof__(x), long double _Complex), cabsl, fabs             \
-)))))
+)))))(x)
 #endif
 
 #define exp(x) _TGMATH(x, exp)(x)
