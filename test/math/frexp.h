@@ -38,6 +38,14 @@ static void test_frexp_down(Scalar mantissa)
         test_frexp_value(x, mantissa, i);
         x *= 0.5f;
     }
+
+    while (x) {
+        int exp;
+        Scalar y = frexp(x, &exp);
+        metallic_assert(fabs(y) >= 0.5f && fabs(y) < 1);
+        metallic_assert(ldexp(y, exp) == x);
+        x *= 0.5f;
+    }
 }
 
 static void test_frexp_mantissa(Scalar x)
