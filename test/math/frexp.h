@@ -24,7 +24,7 @@ static void test_frexp_up(Scalar mantissa)
 {
     Scalar x = mantissa;
 
-    for (int i = 0; i <= METALLIC_LIMITS(MAX_EXP, mantissa); ++i) {
+    for (int i = 0; i <= METALLIC_LIMITS(Scalar, MAX_EXP); ++i) {
         test_frexp_value(x, mantissa, i);
         x *= 2;
     }
@@ -34,7 +34,7 @@ static void test_frexp_down(Scalar mantissa)
 {
     Scalar x = mantissa;
 
-    for (int i = 0; i >= METALLIC_LIMITS(MIN_EXP, mantissa); --i) {
+    for (int i = 0; i >= METALLIC_LIMITS(Scalar, MIN_EXP); --i) {
         test_frexp_value(x, mantissa, i);
         x *= 0.5f;
     }
