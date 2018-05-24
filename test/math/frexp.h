@@ -6,10 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../metallic/assert.h"
-#include "../metallic/limits.h"
-#include <tgmath.h>
-#include <float.h>
+#define frexp SUFFIX(frexp)
+#define ldexp SUFFIX(ldexp)
 
 static void test_frexp_value(Scalar x, Scalar mantissa, int exp)
 {
@@ -24,7 +22,7 @@ static void test_frexp_up(Scalar mantissa)
 {
     Scalar x = mantissa;
 
-    for (int i = 0; i <= METALLIC_LIMITS(Scalar, MAX_EXP); ++i) {
+    for (int i = 0; i <= LIMITS(MAX_EXP); ++i) {
         test_frexp_value(x, mantissa, i);
         x *= 2;
     }
@@ -34,7 +32,7 @@ static void test_frexp_down(Scalar mantissa)
 {
     Scalar x = mantissa;
 
-    for (int i = 0; i >= METALLIC_LIMITS(Scalar, MIN_EXP); --i) {
+    for (int i = 0; i >= LIMITS(MIN_EXP); --i) {
         test_frexp_value(x, mantissa, i);
         x *= 0.5f;
     }
@@ -57,28 +55,25 @@ static void test_frexp_mantissa(Scalar x)
 static void test_frexp_0(Scalar zero)
 {
     int exp;
-    Scalar mantissa = frexp(zero, &exp);
-
-    metallic_assert(mantissa == zero);
+    metallic_assert(reinterpret(Unsigned, frexp(zero, &exp)) == reinterpret(Unsigned, zero));
     metallic_assert(exp == 0);
-    metallic_assert(signbit(mantissa) == signbit(zero));
 }
 
 __attribute__((constructor))
 static void test_frexp(void)
 {
     int exp;
-    metallic_assert(isnan(frexp((Scalar)NAN, &exp)));
-    metallic_assert(frexp((Scalar)INFINITY, &exp) == INFINITY);
-    metallic_assert(frexp((Scalar)-INFINITY, &exp) == -INFINITY);
+    metallic_assert(isnan(frexp(NAN, &exp)));
+    metallic_assert(frexp(INFINITY, &exp) == INFINITY);
+    metallic_assert(frexp(-INFINITY, &exp) == -INFINITY);
 
     test_frexp_0(0);
     test_frexp_0(-0.0);
 
     test_frexp_mantissa(0.5);
     test_frexp_mantissa(-0.5);
-    test_frexp_mantissa(0.501L);
-    test_frexp_mantissa(0.60792710185402662866327677925836583L);
+    test_frexp_mantissa(SUFFIX(0.501));
+    test_frexp_mantissa(SUFFIX(0.60792710185402662866327677925836583));
 }
 
 /* vim: set ft=c: */
