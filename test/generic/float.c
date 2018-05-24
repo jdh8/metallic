@@ -1,4 +1,4 @@
-#include "../metallic/assert.h"
+#include "../assert.h"
 #include "../../src/math/reinterpret.h"
 #include <math.h>
 #include <float.h>
