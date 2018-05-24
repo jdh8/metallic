@@ -1,5 +1,5 @@
-#include "metallic/assert.h"
-#include "../math/reinterpret.h"
+#include "../metallic/assert.h"
+#include "../../src/math/reinterpret.h"
 #include <math.h>
 #include <float.h>
 #include <limits.h>
@@ -12,7 +12,7 @@ typedef uint32_t Unsigned;
 #define SUFFIX(x) (x ## f)
 #define LIMITS(identifier) (FLT_ ## identifier)
 
-#include "math/frexp.h"
-#include "math/scalbn.h"
+#include "frexp.h"
+#include "scalbn.h"
 
 int main(void) {}

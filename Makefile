@@ -6,16 +6,16 @@ LDFLAGS := -nostdlib -fno-lto
 metallic.a: metallic.bc
 	llc -filetype=obj -o $@ $^
 
-metallic.bc: $(patsubst %.c, %.o, $(filter-out test/%, $(wildcard */*.c */*/*.c)))
+metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
 
-check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*.c test/*/*.c))
+check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*/*.c))
 	node --experimental-modules $^
 
-test/%.out: metallic.a test/%.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $< -xir test/$*.o
+test/%.out: metallic.a test/%.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $^
 
 clean:
-	$(RM) *.bc *.a */*.o */*/*.o */*.d */*/*.d test/*.out
+	$(RM) *.bc *.a */*/*.o */*/*/*.o */*/*.d */*/*/*.d test/*/*.out
 
--include */*.d */*/*.d
+-include */*/*.d */*/*/*.d
