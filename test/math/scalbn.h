@@ -12,6 +12,7 @@ __attribute__((constructor))
 static void test_scalbn(void)
 {
     const Scalar n0 = -0.0;
+    const Unsigned i0 = reinterpret(Unsigned, n0);
 
     metallic_assert(isnan(scalbn(NAN, 1)));
     metallic_assert(isnan(scalbn(-NAN, 1)));
@@ -19,7 +20,7 @@ static void test_scalbn(void)
     metallic_assert(scalbn(-INFINITY, 1) == -INFINITY);
 
     metallic_assert(reinterpret(Unsigned, scalbn(0, 1)) == 0);
-    metallic_assert(reinterpret(Unsigned, scalbn(n0, 1)) == reinterpret(Unsigned, n0));
+    metallic_assert(reinterpret(Unsigned, scalbn(n0, 1)) == i0);
 
     metallic_assert(scalbn(0x1.2345p0f, 3) == 0x1.2345p3f);
     metallic_assert(scalbn(-0x6.789p2f, -6) == -0x6.789p-4f);
@@ -32,7 +33,7 @@ static void test_scalbn(void)
 
     metallic_assert(scalbn(-max, 1) == -INFINITY);
     metallic_assert(scalbn(-max, INT_MAX) == -INFINITY);
-    metallic_assert(reinterpret(Unsigned, scalbn(-max, INT_MIN)) == reinterpret(Unsigned, n0));
+    metallic_assert(reinterpret(Unsigned, scalbn(-max, INT_MIN)) == i0);
 
     const Scalar tiny = LIMITS(MIN);
     const Scalar min = LIMITS(TRUE_MIN);
@@ -50,8 +51,8 @@ static void test_scalbn(void)
 
     metallic_assert(scalbn(-11111 * min, 3) == -88888 * min);
     metallic_assert(scalbn(-11111 * min, INT_MAX) == -INFINITY);
-    metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, -20)) == reinterpret(Unsigned, n0));
-    metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, INT_MIN)) == reinterpret(Unsigned, n0));
+    metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, -20)) == i0);
+    metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, INT_MIN)) == i0);
 }
 
 /* vim: set ft=c: */
