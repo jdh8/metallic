@@ -4,7 +4,7 @@ CFLAGS := -pipe -O3 -Wall -flto
 LDFLAGS := -nostdlib -fno-lto
 
 metallic.a: metallic.bc
-	llc -filetype=obj -o $@ $^
+	llc -filetype=obj -o $@ $<
 
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
@@ -12,10 +12,10 @@ metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*/*.c))
 	node --experimental-modules $^
 
-test/%.out: test/%.c metallic.a
+%.out: %.c metallic.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.a
 
 clean:
-	$(RM) *.bc *.a */*/*.o */*/*/*.o */*/*.d */*/*/*.d test/*/*.out
+	$(RM) *.bc *.a */*/*.{o,d,out} */*/*/*.[od]
 
 -include */*/*.d */*/*/*.d
