@@ -16,6 +16,6 @@ check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*/*.c))
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.a
 
 clean:
-	$(RM) *.bc *.a */*/*.{o,d,out} */*/*/*.[od]
+	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out}
 
--include */*/*.d */*/*/*.d
+-include */*/*{,/*}.d
