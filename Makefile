@@ -18,4 +18,4 @@ check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*/*.c))
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out}
 
--include */*/*{,/*}.d
+-include */*/*.d */*/*/*.d
