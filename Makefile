@@ -9,11 +9,14 @@ metallic.a: metallic.bc
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
 
-check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/*/*.c))
+check: test/index.mjs $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c))
 	node --experimental-modules $^
 
 %.out: %.c metallic.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.a
+
+%.exe: %.c
+	cc -MMD -MP -MQ $@ -pipe -O3 -Wall -march=native -o $@ $<
 
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out}
