@@ -12,6 +12,7 @@ typedef uint32_t Unsigned;
 #define SUFFIX(x) (x ## f)
 #define LIMITS(identifier) (FLT_ ## identifier)
 
+#include "log.h"
 #include "frexp.h"
 #include "scalbn.h"
 
