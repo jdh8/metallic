@@ -26,6 +26,6 @@ check/native: $(patsubst %.c, %.run, $(wildcard test/native/*/*.c))
 	cc -MMD -MP -MQ $@ -pipe -O3 -Wall -march=native -lm -o $@ $<
 
 clean:
-	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out}
+	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out,exe}
 
 -include */*/*.d */*/*/*.d
