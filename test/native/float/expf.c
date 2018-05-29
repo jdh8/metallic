@@ -14,21 +14,26 @@ static float _expf(float) __attribute__((alias("expf")));
 
 int main(void)
 {
-    const int32_t threshold = 0x42AEAC50; // 126 log(2)
-
+    assert(_expf(0) == 1);
+    assert(_expf(-0.0) == 1);
     assert(_expf(INFINITY) == INFINITY);
     assert(reinterpret(uint32_t, _expf(-INFINITY)) == 0);
     assert(isnan(_expf(NAN)));
 
-    for (int32_t i = 0; i < threshold; i += 543) {
-        float x = reinterpret(float, i);
-        verify(approx(_expf(x), exp(x)), x);
-        verify(approx(_expf(-x), exp(-x)), x);
-    }
+    const float min = log(0x1p-126);
+    const float max = log(0x1p+128);
+    const float step = 1.337e-5;
 
-    for (int32_t i = threshold; i < 0x7F800000; i += 777) {
+    for (float x = min; x < max; x += step)
+        verify(approx(_expf(x), exp(x)), x);
+
+    for (uint32_t i = reinterpret(uint32_t, max); i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
         verify(approxf(_expf(x), exp(x)), x);
-        verify(approxf(_expf(-x), exp(-x)), x);
+    }
+
+    for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
+        float x = reinterpret(float, i);
+        verify(approxf(_expf(x), exp(x)), x);
     }
 }
