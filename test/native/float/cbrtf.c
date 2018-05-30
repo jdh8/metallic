@@ -16,17 +16,13 @@ int main(void)
 {
     assert(_cbrtf(INFINITY) == INFINITY);
     assert(_cbrtf(-INFINITY) == -INFINITY);
+    assert(isnan(_cbrtf(NAN)));
+    assert(isnan(_cbrtf(-NAN)));
 
     for (uint32_t i = 0; i < 0x7F800000; i += 543) {
         float x = reinterpret(float, i);
         float y = _cbrtf(x);
         verify(approx(y, cbrt(x)), x);
         verify(_cbrtf(-x) == -y, x);
-    }
-
-    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 543) {
-        float x = reinterpret(float, i);
-        verify(isnan(_cbrtf(x)), x);
-        verify(isnan(_cbrtf(-x)), x);
     }
 }

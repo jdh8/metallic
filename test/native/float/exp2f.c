@@ -19,6 +19,7 @@ int main(void)
     assert(_exp2f(INFINITY) == INFINITY);
     assert(reinterpret(uint32_t, _exp2f(-INFINITY)) == 0);
     assert(isnan(_exp2f(NAN)));
+    assert(isnan(_exp2f(-NAN)));
 
     const float min = -126;
     const float max = 128;

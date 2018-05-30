@@ -19,6 +19,7 @@ int main(void)
     assert(_logf(-0.0) == -INFINITY);
     assert(_logf(INFINITY) == INFINITY);
     assert(isnan(_logf(-INFINITY)));
+    assert(isnan(_logf(NAN)));
 
     for (int32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
