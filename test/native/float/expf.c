@@ -29,7 +29,7 @@ int main(void)
 
     for (uint32_t i = reinterpret(uint32_t, max); i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(approxf(_expf(x), exp(x)), x);
+        verify(_expf(x) == HUGE_VALF, x);
     }
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
