@@ -13,6 +13,7 @@ typedef uint32_t Unsigned;
 #define LIMITS(identifier) (FLT_ ## identifier)
 
 #include "frexp.h"
+#include "modf.h"
 #include "scalbn.h"
 
 int main(void) {}
