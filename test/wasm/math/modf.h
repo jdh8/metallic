@@ -33,7 +33,10 @@ static void test_modf(void)
     metallic_assert(isnan(modf(NAN, &i)));
     metallic_assert(isnan(i));
 
-    for (Unsigned i = 0; i <= reinterpret(Unsigned, (Scalar)INFINITY); i += 53) {
+    Unsigned max = reinterpret(Unsigned, (Scalar)INFINITY);
+    Unsigned step = max >> 25;
+
+    for (Unsigned i = 0; i <= max; i += step) {
         Scalar x = reinterpret(Scalar, i);
         _finite(x);
         _finite(-x);

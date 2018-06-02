@@ -13,5 +13,6 @@ typedef uint64_t Unsigned;
 #define LIMITS(identifier) (DBL_ ## identifier)
 
 #include "frexp.h"
+#include "modf.h"
 
 int main(void) {}
