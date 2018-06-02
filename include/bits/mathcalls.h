@@ -37,6 +37,7 @@ _Scalar _MATHCALL(floor)(_Scalar);
 
 _Scalar _MATHCALL(frexp)(_Scalar, int[_STATIC 1]);
 _Scalar _MATHCALL(ldexp)(_Scalar, int);
+_Scalar _MATHCALL(modf)(_Scalar, _Scalar[1]);
 
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
 _Scalar _MATHCALL(remainder)(_Scalar, _Scalar);
@@ -82,14 +83,6 @@ _Scalar _MATHCALL(logb)(_Scalar);
 _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
 _Scalar _MATHCALL(nexttoward)(_Scalar, long double);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
-
-inline _Scalar _MATHCALL(modf)(_Scalar __x, _Scalar __i[_STATIC 1])
-{
-    *__i = _MATHCALL(trunc)(__x);
-    return __x - *__i;
-}
-#else
-_Scalar _MATHCALL(modf)(_Scalar, _Scalar[1]);
 #endif
 
 /* vim: set ft=c: */
