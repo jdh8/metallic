@@ -8,6 +8,7 @@
  */
 #include "normalizef.h"
 #include "../reinterpret.h"
+#include <math.h>
 
 static int32_t _mantissa(int32_t a)
 {
@@ -47,17 +48,14 @@ static int32_t _finite(int32_t a, int32_t b)
 
 float fmodf(float numerator, float denominator)
 {
-    int32_t a = reinterpret(int32_t, numerator);
-    int32_t b = reinterpret(int32_t, denominator) & 0x7FFFFFFF;
-    int32_t s = a & 0x80000000;
-
-    a &= 0x7FFFFFFF;
+    int32_t a = reinterpret(int32_t, fabsf(numerator));
+    int32_t b = reinterpret(int32_t, fabsf(denominator));
 
     if (a >= 0x7F800000 || b > 0x7F800000 || b == 0)
-        return reinterpret(float, a | 0x7FC00000);
+        return copysignf(NAN, numerator);
 
     if (a < b)
         return numerator;
 
-    return reinterpret(float, _finite(__normalizef(a), __normalizef(b)) | s);
+    return copysignf(reinterpret(float, _finite(__normalizef(a), __normalizef(b))), numerator);
 }
