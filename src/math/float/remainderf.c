@@ -12,7 +12,7 @@
 
 float remainderf(float numerator, float denominator)
 {
-    if ((reinterpret(uint32_t, denominator) & 0x7FFFFFFF) < 0x7F000000)
+    if (reinterpret(uint32_t, fabsf(denominator)) < 0x7F000000)
         numerator = fmodf(numerator, 2 * denominator);
 
     float q = rintf(numerator / denominator);
