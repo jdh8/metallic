@@ -9,7 +9,7 @@
 #define modf SUFFIX(modf)
 #define trunc SUFFIX(trunc)
 
-static void _finite(Scalar x)
+static void test_modf_finite(Scalar x)
 {
     Scalar i;
     Scalar y = modf(x, &i);
@@ -38,8 +38,8 @@ static void test_modf(void)
 
     for (Unsigned i = 0; i <= max; i += step) {
         Scalar x = reinterpret(Scalar, i);
-        _finite(x);
-        _finite(-x);
+        test_modf_finite(x);
+        test_modf_finite(-x);
     }
 }
 
