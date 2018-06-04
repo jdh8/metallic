@@ -10,52 +10,54 @@
 #include "../reinterpret.h"
 #include <math.h>
 
-static int32_t _mantissa(int32_t a)
+static uint_least32_t _remshift(uint_least32_t a, uint_least32_t b, uint_least32_t exp)
 {
-    return (a & 0x007FFFFF) | 0x00800000;
-}
-
-static int32_t _load(int32_t mantissa, int32_t template)
-{
-    if (mantissa == 0)
-        return mantissa;
-
-    int32_t shift = __builtin_clz(mantissa) - 8;
-    int32_t bias = -shift << 23 | (mantissa << shift & 0x007FFFFF);
-    int32_t normalized = bias + (template & 0x7F800000);
-
-    if (normalized < 0x00800000)
-        return _mantissa(normalized) >> -((normalized >> 23) + 1);
-
-    return normalized;
-}
-
-static int32_t _finite(int32_t a, int32_t b)
-{
-    unsigned exp = (a >> 23) - (b >> 23);
-    uint_least32_t divisor = _mantissa(b);
-    uint_least64_t remainder = ((uint_least64_t)_mantissa(a) << (exp & 31)) % divisor;
-    uint_least64_t coeff = 0x100000000 % divisor;
+    uint_least64_t remainder = ((uint_least64_t)a << (exp & 31)) % b;
+    uint_least64_t coeff = ((uint_least64_t)1 << 32) % b;
 
     for (exp >>= 5; exp; exp >>= 1) {
         if (exp & 1)
-            remainder = remainder * coeff % divisor;
-        coeff = coeff * coeff % divisor;
+            remainder = remainder * coeff % b;
+        coeff = coeff * coeff % b;
     }
 
-    return _load(remainder, b);
+    return remainder;
+}
+
+static int32_t _load(int32_t remainder, int32_t template)
+{
+    if (remainder == 0)
+        return remainder;
+
+    int32_t shift = __builtin_clz(remainder) - 8;
+    int32_t exp = (template >> 23) - shift;
+    int32_t mantissa = remainder << shift;
+    int32_t normalized = exp << 23 | (mantissa & 0x007FFFFF);
+
+    return normalized < 0x00800000 ? mantissa >> -(exp + 1) : normalized;
+}
+
+static uint32_t _finite(uint32_t a, uint32_t b)
+{
+    uint32_t aa = (a & 0x007FFFFF) | 0x00800000;
+    uint32_t bb = (b & 0x007FFFFF) | 0x00800000;
+
+    if (b < 0x01000000)
+        return a < 0x01000000 ? a % b : _remshift(aa, b, (a >> 23) - 1);
+
+    return _load(_remshift(aa, bb, (a >> 23) - (b >> 23)), b);
 }
 
 float fmodf(float numerator, float denominator)
 {
-    int32_t a = reinterpret(int32_t, fabsf(numerator));
-    int32_t b = reinterpret(int32_t, fabsf(denominator));
+    uint32_t a = reinterpret(uint32_t, fabsf(numerator));
+    uint32_t b = reinterpret(uint32_t, fabsf(denominator));
 
     if (a >= 0x7F800000 || b > 0x7F800000 || b == 0)
-        return copysignf(NAN, numerator);
+        return NAN;
 
     if (a < b)
         return numerator;
 
-    return copysignf(reinterpret(float, _finite(__normalizef(a), __normalizef(b))), numerator);
+    return copysignf(reinterpret(float, _finite(a, b)), numerator);
 }
