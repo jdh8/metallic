@@ -36,5 +36,5 @@ float atanhf(float x)
     if (absx < 1)
         return _finite(x);
 
-    return -NAN;
+    return NAN;
 }

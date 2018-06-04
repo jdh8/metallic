@@ -27,7 +27,7 @@ float log2f(float x)
     int32_t i = reinterpret(int32_t, x);
 
     if (i <= 0)
-        return i << 1 == 0 ? -HUGE_VALF : -NAN;
+        return i << 1 == 0 ? -HUGE_VALF : NAN;
 
     if (i < 0x7F800000)
         return _finite(__normalizef(i));

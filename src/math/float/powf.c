@@ -27,7 +27,7 @@ static float _unsigned(float x, float y)
     if (x > 0)
         return __prec_exp2f(y * __prec_log2f(x));
 
-    return -NAN;
+    return NAN;
 }
 
 float powf(float x, float y)

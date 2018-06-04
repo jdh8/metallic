@@ -19,7 +19,7 @@ float log1pf(float x)
         return -HUGE_VALF;
 
     if (i > 0xBF800000u)
-        return -NAN;
+        return NAN;
 
     if (i < 0x7F800000)
         return __prec_log1pf(x);

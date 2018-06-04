@@ -32,7 +32,7 @@ float acoshf(float x)
     int32_t i = reinterpret(int32_t, x);
 
     if (i < 0x3F800000)
-        return -NAN;
+        return NAN;
 
     if (i < 0x7F800000)
         return _finite(x);
