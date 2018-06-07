@@ -42,8 +42,8 @@ static uint32_t _finite(uint32_t a, uint32_t b)
     uint32_t aa = (a & 0x007FFFFF) | 0x00800000;
     uint32_t bb = (b & 0x007FFFFF) | 0x00800000;
 
-    if (b < 0x01000000)
-        return a < 0x01000000 ? a % b : _remshift(aa, b, (a >> 23) - 1);
+    if (b <= 0x01000000)
+        return a <= 0x01000000 ? a % b : _remshift(aa, b, (a >> 23) - 1);
 
     return _load(_remshift(aa, bb, (a >> 23) - (b >> 23)), b);
 }
