@@ -6,9 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "normalizef.h"
 #include "../reinterpret.h"
 #include <math.h>
+#include <stdint.h>
 
 static uint_least32_t _remshift(uint_least32_t a, uint_least32_t b, uint_least32_t exp)
 {
