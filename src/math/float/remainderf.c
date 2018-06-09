@@ -12,11 +12,11 @@
 
 float remainderf(float numerator, float denominator)
 {
-    if (reinterpret(uint32_t, fabsf(denominator)) < 0x7F000000)
-        numerator = fmodf(numerator, 2 * denominator);
+    float r = fmodf(numerator, 2 * denominator);
+    float q = __rintf(r / denominator);
 
-    float q = rintf(numerator / denominator);
-    float r = numerator - denominator * q;
+    if (q)
+        r -= denominator * (double)q;
 
     return r ? r : copysignf(r, numerator);
 }
