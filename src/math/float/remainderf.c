@@ -25,13 +25,10 @@ float remainderf(float numerator, float denominator)
                 numerator -= denominator;
         }
     }
-    else {
-        float threshold = 0.5f * denominator;
-        if (numerator > threshold) {
+    else if (numerator > 0.5f * denominator) {
+        numerator -= denominator;
+        if (numerator >= 0.5f * denominator)
             numerator -= denominator;
-            if (numerator >= threshold)
-                numerator -= denominator;
-        }
     }
 
     bits ^= reinterpret(uint32_t, numerator);
