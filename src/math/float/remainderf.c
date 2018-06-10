@@ -11,9 +11,12 @@
 #include <float.h>
 #include <stdint.h>
 
-static float _quadrant(float numerator, float denominator)
+float remainderf(float numerator, float denominator)
 {
-    numerator = fmodf(numerator, 2 * denominator);
+    uint32_t bits = reinterpret(uint32_t, numerator) & 0x80000000;
+
+    numerator = fmodf(fabsf(numerator), 2 * denominator);
+    denominator = fabsf(denominator);
 
     if (denominator < 2 * FLT_MIN) {
         if (2 * numerator > denominator) {
@@ -22,20 +25,16 @@ static float _quadrant(float numerator, float denominator)
                 numerator -= denominator;
         }
     }
-    else if (numerator > 0.5f * denominator) {
-        numerator -= denominator;
-        if (numerator >= 0.5f * denominator)
+    else {
+        float threshold = 0.5f * denominator;
+        if (numerator > threshold) {
             numerator -= denominator;
+            if (numerator >= threshold)
+                numerator -= denominator;
+        }
     }
 
-    return numerator;
-}
+    bits ^= reinterpret(uint32_t, numerator);
 
-float remainderf(float numerator, float denominator)
-{
-    float r = _quadrant(fabsf(numerator), fabsf(denominator));
-    uint32_t i = reinterpret(uint32_t, r);
-    uint32_t sign = reinterpret(uint32_t, numerator) & 0x80000000;
-
-    return reinterpret(float, i ^ sign);
+    return reinterpret(float, bits);
 }
