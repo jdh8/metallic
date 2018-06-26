@@ -1,3 +1,3 @@
 import fs from "fs";
 
-process.argv.slice(2).map(async path => (await WebAssembly.instantiate(fs.readFileSync(path))).instance.exports._start());
+WebAssembly.instantiate(fs.readFileSync(process.argv[2])).then(module => module.instance.exports._start());
