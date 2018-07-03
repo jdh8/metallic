@@ -10,8 +10,6 @@
 #include "../../../src/math/float/expf.c"
 #include <assert.h>
 
-static float _expf(float) __attribute__((alias("expf")));
-
 int main(void)
 {
     assert(_expf(0) == 1);

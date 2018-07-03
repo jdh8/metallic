@@ -12,7 +12,7 @@
 #include <math.h>
 #include <stdint.h>
 
-float expf(float x)
+static float _expf(float x)
 {
     const float minimum = -103.972077083991796;
     const float maximum = 88.7228391116729996;
@@ -32,3 +32,7 @@ float expf(float x)
 
     return reinterpret(double, shifted);
 }
+
+#ifdef __wasm__
+float expf(float x) { return _expf(x); }
+#endif
