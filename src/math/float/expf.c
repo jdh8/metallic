@@ -33,6 +33,6 @@ static float _expf(float x)
     return reinterpret(double, shifted);
 }
 
-#ifdef __wasm__
+#ifdef _METALLIC
 float expf(float x) { return _expf(x); }
 #endif

@@ -1,5 +1,5 @@
 CC := clang --target=wasm32-unknown-none-wasm
-CPPFLAGS := -MMD -MP -Iinclude
+CPPFLAGS := -MMD -MP -Iinclude -D_METALLIC
 CFLAGS := -pipe -O3 -Wall -flto
 LDFLAGS := -nostdlib -fno-lto
 
