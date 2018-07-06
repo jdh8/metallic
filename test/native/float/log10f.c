@@ -10,8 +10,6 @@
 #include "../../../src/math/float/log10f.c"
 #include <assert.h>
 
-static float _log10f(float) __attribute__((alias("log10f")));
-
 int main(void)
 {
     assert(reinterpret(uint32_t, _log10f(1)) == 0);

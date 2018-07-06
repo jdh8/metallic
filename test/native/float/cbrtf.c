@@ -10,8 +10,6 @@
 #include "../../../src/math/float/cbrtf.c"
 #include <assert.h>
 
-static float _cbrtf(float) __attribute__((alias("cbrtf")));
-
 int main(void)
 {
     assert(_cbrtf(INFINITY) == INFINITY);

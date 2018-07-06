@@ -10,8 +10,6 @@
 #include "../../../src/math/float/logf.c"
 #include <assert.h>
 
-static float _logf(float) __attribute__((alias("logf")));
-
 int main(void)
 {
     assert(reinterpret(uint32_t, _logf(1)) == 0);
