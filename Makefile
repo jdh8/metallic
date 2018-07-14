@@ -11,13 +11,13 @@ metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 
 check: $(patsubst %.c, %.run, $(wildcard test/*/*/*.c))
 
-%.run: %.out test/wasm/index.mjs
+test/wasm/%.run: test/wasm/%.out test/wasm/index.mjs
 	node --experimental-modules test/wasm/index.mjs $<
 
 %.out: %.c metallic.a
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.a
 
-%.run: %.exe
+test/native/%.run: test/native/%.exe
 	$<
 
 %.exe: %.c
