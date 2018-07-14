@@ -11,7 +11,7 @@
 #include <float.h>
 #include <stdint.h>
 
-float remquof(float numerator, float denominator, int quotient[static 1])
+static float _remquof(float numerator, float denominator, int quotient[static 1])
 {
     int32_t from = reinterpret(int32_t, numerator);
     int q = 0;
@@ -56,3 +56,10 @@ float remquof(float numerator, float denominator, int quotient[static 1])
 
     return reinterpret(float, to);
 }
+
+#ifdef _METALLIC
+float remquof(float numerator, float denominator, int quotient[static 1])
+{
+    return _remquof(numerator, denominator, quotient);
+}
+#endif
