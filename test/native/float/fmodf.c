@@ -28,6 +28,19 @@ static void run(float numerator, float denominator)
 
 int main(void)
 {
+    assert(isnan(_fmodf(INFINITY, INFINITY)));
+    assert(isnan(_fmodf(-INFINITY, INFINITY)));
+    assert(isnan(_fmodf(-INFINITY, -INFINITY)));
+    assert(isnan(_fmodf(INFINITY, -INFINITY)));
+
+    assert(isnan(_fmodf(NAN, INFINITY)));
+    assert(isnan(_fmodf(NAN, -INFINITY)));
+
+    assert(isnan(_fmodf(INFINITY, NAN)));
+    assert(isnan(_fmodf(-INFINITY, NAN)));
+
+    assert(isnan(_fmodf(NAN, NAN)));
+
     for (uint32_t j = 6; j < 0x7F800000; j += 0x000ABCDE)
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
             run(reinterpret(float, i), reinterpret(float, j));
