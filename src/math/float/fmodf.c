@@ -30,7 +30,7 @@ static int32_t _load(int32_t remainder, int32_t template)
     int32_t mantissa = remainder << shift;
     int32_t normalized = exp << 23 | (mantissa & 0x007FFFFF);
 
-    return normalized < 0x00800000 ? mantissa >> -(exp + 1) : normalized;
+    return normalized < 0x00800000 ? mantissa >> (1 - exp) : normalized;
 }
 
 static uint32_t _finite(uint32_t a, uint32_t b)
