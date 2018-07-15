@@ -13,13 +13,9 @@
 static uint_least32_t _remshift(uint_least32_t a, uint_least32_t b, uint_least32_t exp)
 {
     uint_least64_t remainder = ((uint_least64_t)a << (exp & 31)) % b;
-    uint_least64_t coeff = ((uint_least64_t)1 << 32) % b;
 
-    for (exp >>= 5; exp; exp >>= 1) {
-        if (exp & 1)
-            remainder = remainder * coeff % b;
-        coeff = coeff * coeff % b;
-    }
+    for (uint_least32_t shift = exp >> 5; shift; --shift)
+        remainder = (remainder << 32) % b;
 
     return remainder;
 }
