@@ -34,7 +34,7 @@ static void run(float numerator, float denominator)
 
 int main(void)
 {
-    for (uint32_t j = 0; j < 0x7F800000; j += 0x002ABCDE)
+    for (uint32_t j = 594; j < 0x7F800000; j += 0x002ABCDE)
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00234567)
             run(reinterpret(float, i), reinterpret(float, j));
 }
