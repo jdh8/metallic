@@ -48,7 +48,7 @@ static uint32_t _finite(uint32_t a, uint32_t b)
     return _load(_remshift(aa, bb, (a >> 23) - (b >> 23)), b);
 }
 
-float fmodf(float numerator, float denominator)
+static float _fmodf(float numerator, float denominator)
 {
     uint32_t a = reinterpret(uint32_t, fabsf(numerator));
     uint32_t b = reinterpret(uint32_t, fabsf(denominator));
@@ -61,3 +61,7 @@ float fmodf(float numerator, float denominator)
 
     return copysignf(reinterpret(float, _finite(a, b)), numerator);
 }
+
+#ifdef _METALLIC
+float fmodf(float numerator, float denominator) { return _fmodf(numerator, denominator); }
+#endif
