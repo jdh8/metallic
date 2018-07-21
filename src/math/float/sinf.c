@@ -8,7 +8,7 @@
  */
 #include "kernel/sincosf.h"
 
-float sinf(float x)
+static float _sinf(float x)
 {
     double y;
     unsigned q = __rem_pio2f(x, &y);
@@ -17,3 +17,7 @@ float sinf(float x)
 
     return q & 2 ? -y : y;
 }
+
+#ifdef _METALLIC
+float sinf(float x) { return _sinf(x); }
+#endif
