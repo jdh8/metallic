@@ -121,9 +121,9 @@ int __rem_pio2f(float x, double y[static 1])
     int32_t mantissa = (i & 0x007FFFFF) | 0x00800000;
     int32_t shift = __builtin_ctz(mantissa);
 
-    uint64_t product = (mantissa >> shift) * _2opi_64(exp + shift - 90);
-    int64_t r = product << 4;
-    int q = (product >> 60) + (r < 0);
+    uint64_t product = (mantissa >> shift) * _2opi_64(exp + shift - 88);
+    int64_t r = product << 2;
+    int q = (product >> 62) + (r < 0);
 
     *y = copysign(pi_2_65, x) * r;
 
