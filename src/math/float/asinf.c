@@ -93,7 +93,11 @@ static float _kernel(float x)
     return x < 0.5f ? _asin22(x) : pi_2 - _acos22(x);
 }
 
-float asinf(float x)
+static float _asinf(float x)
 {
     return copysignf(_kernel(fabsf(x)), x);
 }
+
+#ifdef _METALLIC
+float asinf(float x) { return _asinf(x); }
+#endif
