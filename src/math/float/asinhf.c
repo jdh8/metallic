@@ -30,7 +30,7 @@ static double _finite(double s)
 static float _asinhf(float x)
 {
     if (x - x == 0)
-        return _finite(x);
+        return copysignf(_finite(fabsf(x)), x);
 
     return x;
 }
