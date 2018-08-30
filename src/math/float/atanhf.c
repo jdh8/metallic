@@ -26,7 +26,7 @@ static double _finite(double x)
         return __kernel_atanhf(x);
 }
 
-float atanhf(float x)
+static float _atanhf(float x)
 {
     float absx = fabsf(x);
 
@@ -38,3 +38,7 @@ float atanhf(float x)
 
     return NAN;
 }
+
+#ifdef _METALLIC
+float atanhf(float x) { return _atanhf(x); }
+#endif
