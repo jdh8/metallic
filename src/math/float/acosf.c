@@ -42,10 +42,14 @@ static double _kernel(double x)
     return sqrt(1 - x) * num / den;
 }
 
-float acosf(float x)
+static float _acosf(float x)
 {
     const double pi = 3.14159265358979323846;
     double y = _kernel(fabsf(x));
 
     return signbit(x) ? pi - y : y;
 }
+
+#ifdef _METALLIC
+float acosf(float x) { return _acosf(x); }
+#endif
