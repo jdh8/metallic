@@ -1,21 +1,18 @@
 CC := clang --target=wasm32-unknown-none-wasm
 CPPFLAGS := -MMD -MP -Iinclude -D_METALLIC
 CFLAGS := -pipe -O3 -Wall -flto
-LDFLAGS := -nostdlib -fno-lto
-
-metallic.a: metallic.bc
-	llc -filetype=obj -o $@ $<
+LDFLAGS := -nostdlib
 
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
-	llvm-link $^ | opt -mergefunc -std-link-opts -o $@
+	llvm-link -o $@ $^
 
 check: $(patsubst %.c, %.run, $(wildcard test/*/*/*.c))
 
 test/wasm/%.run: test/wasm/%.out test/wasm/index.mjs
 	node --experimental-modules test/wasm/index.mjs $<
 
-%.out: %.c metallic.a
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.a
+%.out: %.c metallic.bc
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.bc
 
 test/native/%.run: test/native/%.exe
 	$<
