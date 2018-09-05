@@ -19,7 +19,7 @@ int main(void)
         float x = reinterpret(float, i);
         float y = _tanhf(x);
         verify(approx(y, tanh(x)), x);
-        assert(reinterpret(uint32_t, -y) == reinterpret(uint32_t, _tanhf(-x)));
+        verify(reinterpret(uint32_t, -y) == reinterpret(uint32_t, _tanhf(-x)), x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
