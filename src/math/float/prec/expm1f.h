@@ -9,13 +9,13 @@
 #ifndef METALLIC_EXPM1F_H
 #define METALLIC_EXPM1F_H
 
-#include "kernel/expm1f.h"
-#include "../round.h"
-#include "../reinterpret.h"
+#include "../kernel/expm1f.h"
+#include "../../round.h"
+#include "../../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
 
-inline double __expm1f(float x)
+inline double __prec_expm1f(float x)
 {
     const float minimum = -103.972077083991796;
     const float maximum = 88.7228391116729996;
