@@ -32,20 +32,21 @@ static float _sinhf(float x)
     const float log2e = 1.442695040888963407;
     const double ln2 = 0.6931471805599453094;
 
-    if (fabsf(x) > maximum)
-        return x * HUGE_VALF;
+    float r = fabsf(x);
+    float n = __rintf(r * log2e);
 
-    float n = __rintf(x * log2e);
+    if (r > maximum)
+        return copysignf(HUGE_VALF, x);
 
     if (n == 0)
         return _kernel(x);
 
-    double y = 1 + __kernel_expm1f(x - n * ln2);
+    double y = 1 + __kernel_expm1f(r - n * ln2);
     int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
     y = reinterpret(double, shifted);
 
-    return 0.5 * y - 0.5 / y;
+    return copysignf(0.5 * y - 0.5 / y, x);
 }
 
 #ifdef _METALLIC
