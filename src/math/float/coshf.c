@@ -15,19 +15,20 @@
 static double _kernel(double x)
 {
     const double c[] = {
-        1.0000000755358223489,
-        0.49998868839284553868,
-        0.041917552126235240473
+        9.9999999717752092082e-1,
+        5.0000026035619964450e-1,
+        4.1662914849658509656e-2,
+        1.4061755174211695843e-3
     };
 
     x *= x;
 
-    return c[0] + c[1] * x + c[2] * (x * x);
+    return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
 
-float coshf(float x)
+static float _coshf(float x)
 {
-    const float maximum = 88.72283935546875;
+    const float maximum = 89.41598629223294;
     const float log2e = 1.442695040888963407;
     const double ln2 = 0.6931471805599453094;
 
@@ -48,3 +49,7 @@ float coshf(float x)
 
     return 0.5 * y + 0.5 / y;
 }
+
+#ifdef _METALLIC
+float coshf(float x) { return _coshf(x); }
+#endif
