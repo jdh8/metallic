@@ -14,8 +14,6 @@ int main(void)
 {
     assert(_coshf(INFINITY) == INFINITY);
     assert(_coshf(-INFINITY) == INFINITY);
-    assert(isnan(_coshf(NAN)));
-    assert(isnan(_coshf(-NAN)));
 
     const float max = log(0x1p129);
     const float step = 1.337e-5;
@@ -30,5 +28,11 @@ int main(void)
         float x = reinterpret(float, i);
         verify(_coshf(x) == HUGE_VALF, x);
         verify(_coshf(-x) == HUGE_VALF, x);
+    }
+
+    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+        float x = reinterpret(float, i);
+        assert(isnan(_coshf(x)));
+        assert(isnan(_coshf(-x)));
     }
 }

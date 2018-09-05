@@ -17,7 +17,6 @@ int main(void)
     assert(_logf(-0.0) == -INFINITY);
     assert(_logf(INFINITY) == INFINITY);
     assert(isnan(_logf(-INFINITY)));
-    assert(isnan(_logf(NAN)));
 
     for (int32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
@@ -27,5 +26,11 @@ int main(void)
     for (uint32_t i = 1; i < 0x80000000; i += 12345) {
         float x = reinterpret(float, i);
         verify(isnan(_logf(-x)), x);
+    }
+    
+    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+        float x = reinterpret(float, i);
+        assert(isnan(_logf(x)));
+        assert(isnan(_logf(-x)));
     }
 }

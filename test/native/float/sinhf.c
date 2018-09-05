@@ -14,8 +14,6 @@ int main(void)
 {
     assert(_sinhf(INFINITY) == INFINITY);
     assert(_sinhf(-INFINITY) == -INFINITY);
-    assert(isnan(_sinhf(NAN)));
-    assert(isnan(_sinhf(-NAN)));
 
     const float max = reinterpret(uint32_t, (float)log(0x1p129));
 
@@ -30,5 +28,11 @@ int main(void)
         float x = reinterpret(float, i);
         verify(_sinhf(x) == HUGE_VALF, x);
         verify(_sinhf(-x) == -HUGE_VALF, x);
+    }
+
+    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+        float x = reinterpret(float, i);
+        assert(isnan(_sinhf(x)));
+        assert(isnan(_sinhf(-x)));
     }
 }
