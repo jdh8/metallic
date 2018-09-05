@@ -22,6 +22,11 @@ inline _Bool approxf(float x, float y)
     return a - b + 1 <= 2;
 }
 
+inline _Bool identical(float x, float y)
+{
+    return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
+}
+
 #define verify(cond, x) if (!(cond)) {                                                               \
     float y = x;                                                                                     \
     fprintf(stderr, "Assertion `"#cond"' failed at %g (%#"PRIx32")\n", y, reinterpret(uint32_t, y)); \

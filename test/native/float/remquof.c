@@ -11,11 +11,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-static _Bool identical(float x, float y)
-{
-    return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
-}
-
 static _Bool coterminal(unsigned q0, unsigned q1)
 {
     return !((q0 ^ q1) & 7);

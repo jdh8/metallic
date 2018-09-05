@@ -11,11 +11,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-static _Bool identical(float x, float y)
-{
-    return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
-}
-
 static void run(float numerator, float denominator)
 {
     float r0 = fmodf(numerator, denominator);

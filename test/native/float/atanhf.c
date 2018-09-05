@@ -17,9 +17,9 @@ int main(void)
 
     for (int32_t i = 0; i < 0x3F800000; i += 81) {
         float x = reinterpret(float, i);
-        double y = atanh(x);
-        verify(approx(_atanhf(x), y), x);
-        verify(approx(_atanhf(-x), -y), x);
+        double y = _atanhf(x);
+        verify(approx(y, tanh(x)), x);
+        verify(identical(-y, _atanhf(-x)), x);
     }
 
     for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {

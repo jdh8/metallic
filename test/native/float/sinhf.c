@@ -21,7 +21,7 @@ int main(void)
         float x = reinterpret(float, i);
         float y = _sinhf(x);
         verify(approx(y, sinh(x)), x);
-        verify(reinterpret(uint32_t, -y) == reinterpret(uint32_t, _sinhf(-x)), x);
+        verify(identical(-y, _sinhf(-x)), x);
     }
 
     for (uint32_t i = max + 1; i < 0x7F800000; i += 777) {

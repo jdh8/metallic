@@ -21,7 +21,7 @@ int main(void)
     for (float x = 0; x < max; x += step) {
         float y = _coshf(x);
         verify(approx(y, cosh(x)), x);
-        verify(reinterpret(uint32_t, y) == reinterpret(uint32_t, _coshf(-x)), x);
+        verify(identical(y, _coshf(-x)), x);
     }
 
     for (uint32_t i = reinterpret(uint32_t, max) + 1; i < 0x7F800000; i += 777) {

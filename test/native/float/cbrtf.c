@@ -19,7 +19,7 @@ int main(void)
         float x = reinterpret(float, i);
         float y = _cbrtf(x);
         verify(approx(y, cbrt(x)), x);
-        verify(_cbrtf(-x) == -y, x);
+        verify(identical(-y, _cbrtf(-x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
