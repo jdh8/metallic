@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -15,19 +15,20 @@
 static double _kernel(double x)
 {
     const double c[] = {
-        1.0000000107805563820,
-        1.6666505200553427403e-1,
-        8.3691534741249721668e-3
+        9.9999999968693898353e-1,
+        1.6666669554963883147e-1,
+        8.3329170332871780878e-3,
+        2.0033150164010427988e-4
     };
 
     double xx = x * x;
 
-    return x * (c[0] + c[1] * xx + c[2] * (xx * xx));
+    return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-float sinhf(float x)
+static float _sinhf(float x)
 {
-    const float maximum = 88.72283935546875;
+    const float maximum = 89.41598629223294;
     const float log2e = 1.442695040888963407;
     const double ln2 = 0.6931471805599453094;
 
@@ -46,3 +47,7 @@ float sinhf(float x)
 
     return 0.5 * y - 0.5 / y;
 }
+
+#ifdef _METALLIC
+float sinhf(float x) { return _sinhf(x); }
+#endif
