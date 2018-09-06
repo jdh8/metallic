@@ -9,18 +9,20 @@ metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 check: $(patsubst %.c, %.run, $(wildcard test/*/*/*.c))
 
 test/wasm/%.run: test/wasm/%.out test/wasm/index.mjs
-	node --experimental-modules test/wasm/index.mjs $<
+	node --experimental-modules test/wasm/index.mjs $< > $@
 
 %.out: %.c metallic.bc
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.bc
 
 test/native/%.run: test/native/%.exe
-	$<
+	$< > $@
 
 %.exe: %.c
 	cc -MMD -MP -MQ $@ -pipe -O3 -Wall -march=native -lm -o $@ $<
 
 clean:
-	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out,exe}
+	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out,exe,run}
+
+.DELETE_ON_ERROR:
 
 -include */*/*.d */*/*/*.d
