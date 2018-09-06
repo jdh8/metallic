@@ -9,9 +9,13 @@
 #include "kernel/erfcf.h"
 #include <math.h>
 
-float erfcf(float x)
+static float _erfcf(float x)
 {
     double t = __kernel_erfcf(fabsf(x));
 
     return signbit(x) ? 2 - t : t;
 }
+
+#ifdef _METALLIC
+float erfcf(float x) { return _erfcf(x); }
+#endif
