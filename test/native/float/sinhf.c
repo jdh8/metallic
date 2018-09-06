@@ -15,7 +15,7 @@ int main(void)
     assert(_sinhf(INFINITY) == INFINITY);
     assert(_sinhf(-INFINITY) == -INFINITY);
 
-    const float max = reinterpret(uint32_t, (float)log(0x1p129));
+    const uint32_t max = reinterpret(uint32_t, (float)log(0x1p129));
 
     for (uint32_t i = 0; i < max; i += 77) {
         float x = reinterpret(float, i);
