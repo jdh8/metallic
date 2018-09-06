@@ -18,3 +18,7 @@ float rintf(float x)
     return copysignf(y - rectifier, x);
 #endif
 }
+
+#ifdef __wasm__
+float nearbyintf(float) __attribute__((alias("rintf")));
+#endif
