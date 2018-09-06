@@ -105,7 +105,7 @@ int __rem_pio2f(float x, double y[static 1])
     int32_t magnitude = i & 0x7FFFFFFF;
 
     if (magnitude < 0x4DC90FDB) {
-        double q = __sint(_2_pi * x);
+        double q = __rint(_2_pi * x) + 0;
         *y = x - q * pi_2[0] - q * pi_2[1];
         return q;
     }

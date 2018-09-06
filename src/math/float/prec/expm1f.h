@@ -24,20 +24,18 @@ inline double __prec_expm1f(float x)
     const double ln2 = 0.6931471805599453094;
 
     if (x < minimum)
-        return 0;
+        return -1;
 
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = __sintf(x * log2e);
+    float n = __rintf(x * log2e) + 0;
     double y = __kernel_expm1f(x - n * ln2);
 
     if (n == 0)
         return y;
 
-    y += 1;
-
-    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
+    int64_t shifted = reinterpret(int64_t, y + 1) + ((int64_t)n << 52);
 
     return reinterpret(double, shifted) - 1;
 }

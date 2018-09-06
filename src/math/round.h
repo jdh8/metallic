@@ -9,27 +9,30 @@
 #ifndef METALLIC_ROUND_H
 #define METALLIC_ROUND_H
 
-inline float __sintf(float x)
-{
-    const float rectifier = 0x00800000;
-    x += rectifier;
-    return x - rectifier;
-}
-
-inline double __sint(double x)
-{
-    const double rectifier = 0x0020000000000000;
-    x += rectifier;
-    return x - rectifier;
-}
-
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
+
 #define FAST_ROUNDING
 #define __rintf __builtin_rintf
 #define __rint  __builtin_rint
+
 #else
-#define __rintf __sintf
-#define __rint  __sint
+
+#include <math.h>
+
+inline float __rintf(float x)
+{
+    const float rectifier = 0x00800000;
+    float y = fabsf(x) + rectifier;
+    return copysignf(y - rectifier, x);
+}
+
+inline double __rint(double x)
+{
+    const double rectifier = 0x0010000000000000;
+    double y = fabs(x) + rectifier;
+    return copysign(y - rectifier, x);
+}
+
 #endif
 
 #endif /* "round.h" */
