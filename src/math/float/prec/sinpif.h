@@ -6,7 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../round.h"
 #include <math.h>
 
 inline double __kernel_sinpif(double x)
@@ -39,9 +38,9 @@ inline double __kernel_cospif(double x)
 
 inline double __prec_sinpif(float x)
 {
-    x -= 2 * __rintf(x / 2);
+    x -= 2 * rintf(x / 2);
 
-    float q = __rintf(2 * x);
+    float q = rintf(2 * x);
     float r = x - q / 2;
 
     switch (3u & (int) q) {

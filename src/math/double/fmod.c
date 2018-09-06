@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../reinterpret.h"
-#include "../round.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -15,7 +14,7 @@ static double _easy(uint64_t a, uint64_t b)
 {
     double x = reinterpret(double, a);
     double y = reinterpret(double, b);
-    return x - __rint(x / y) * y;
+    return x - rint(x / y) * y;
 }
 
 static double _subnormal(uint64_t a, uint64_t b)

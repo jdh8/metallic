@@ -8,7 +8,6 @@
  */
 #include "prec/exp2f.h"
 #include "prec/log2f.h"
-#include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -37,9 +36,9 @@ float powf(float x, float y)
     if (y == 0)
         return 1;
 
-    if (signbit(x) && __rintf(y) == y) {
+    if (signbit(x) && rintf(y) == y) {
         x = -x;
-        sign = -(__rintf(y / 2) != y / 2);
+        sign = -(rintf(y / 2) != y / 2);
     }
 
     return copysignf(_unsigned(x, y), reinterpret(float, sign));

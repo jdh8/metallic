@@ -10,7 +10,6 @@
 #define METALLIC_EXPM1F_H
 
 #include "../kernel/expm1f.h"
-#include "../../round.h"
 #include "../../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -29,7 +28,7 @@ inline double __prec_expm1f(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = __rintf(x * log2e) + 0;
+    float n = rintf(x * log2e) + 0;
     double y = __kernel_expm1f(x - n * ln2);
 
     if (n == 0)

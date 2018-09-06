@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/expm1f.h"
-#include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -37,7 +36,7 @@ static float _coshf(float x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    float n = __rintf(x * log2e);
+    float n = rintf(x * log2e);
 
     if (n == 0)
         return _kernel(x);

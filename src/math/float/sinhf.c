@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/expm1f.h"
-#include "../round.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -33,7 +32,7 @@ static float _sinhf(float x)
     const double ln2 = 0.6931471805599453094;
 
     float r = fabsf(x);
-    float n = __rintf(r * log2e);
+    float n = rintf(r * log2e);
 
     if (r > maximum)
         return copysignf(HUGE_VALF, x);

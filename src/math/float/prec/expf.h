@@ -10,7 +10,6 @@
 #define METALLIC_PREC_EXPF_H
 
 #include "../kernel/expm1f.h"
-#include "../../round.h"
 #include "../../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -29,7 +28,7 @@ inline double __prec_expf(double x)
     if (x > maximum)
         return x * HUGE_VALF;
 
-    double n = __rint(x * log2e);
+    double n = rint(x * log2e);
     double y = 1 + __kernel_expm1f(x - n * ln2);
     int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 

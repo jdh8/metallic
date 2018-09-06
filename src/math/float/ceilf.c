@@ -7,13 +7,12 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../reinterpret.h"
-#include "../round.h"
 #include <math.h>
 #include <float.h>
 
 float ceilf(float x)
 {
-#ifdef FAST_ROUNDING
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
     return __builtin_ceilf(x);
 #else
     int32_t bits = reinterpret(int32_t, x);

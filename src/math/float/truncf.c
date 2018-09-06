@@ -7,11 +7,10 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../reinterpret.h"
-#include "../round.h"
 
 float truncf(float x)
 {
-#ifdef FAST_ROUNDING
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
     return __builtin_truncf(x);
 #else
     const int32_t mask = 0xFF800000;
