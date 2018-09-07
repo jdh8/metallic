@@ -118,9 +118,8 @@ int __rem_pio2f(float x, double y[static 1])
 
     int32_t exp = magnitude >> 23;
     int32_t mantissa = (i & 0x007FFFFF) | 0x00800000;
-    int32_t shift = __builtin_ctz(mantissa);
 
-    uint64_t product = (mantissa >> shift) * _2opi_64(exp + shift - 88);
+    uint64_t product = mantissa * _2opi_64(exp - 88);
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 
