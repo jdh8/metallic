@@ -117,9 +117,13 @@ int __rem_pio2f(float x, double y[static 1])
     const double pi_2_65 = 8.51530395021638647334e-20;
 
     int32_t exp = magnitude >> 23;
-    int32_t mantissa = (i & 0x007FFFFF) | 0x00800000;
+    uint64_t mantissa = (i & 0x007FFFFF) | 0x00800000;
 
-    uint64_t product = mantissa * _2opi_64(exp - 88);
+    /* TODO Optimize 96-bit access */
+    uint64_t high = _2opi_64(exp - 88);
+    uint32_t low = _2opi_64(exp - 56);
+
+    uint64_t product = mantissa * high + ((mantissa * low) >> 32);
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 
