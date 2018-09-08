@@ -11,7 +11,7 @@
 
 #include "../prec/expf.h"
 
-inline double __kernel_erfcf(double x)
+static double __kernel_erfcf(double x)
 {
     const double c[] = {
        -1.265512220104944281,

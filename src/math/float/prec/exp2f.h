@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 
-inline double __prec_exp2f(double x)
+static double __prec_exp2f(double x)
 {
     if (x < -150)
         return 0;

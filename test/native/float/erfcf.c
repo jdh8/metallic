@@ -27,5 +27,3 @@ int main(void)
         assert(isnan(_erfcf(-x)));
     }
 }
-
-double __kernel_erfcf(double x);

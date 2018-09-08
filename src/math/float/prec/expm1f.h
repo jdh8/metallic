@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 
-inline double __prec_expm1f(float x)
+static double __prec_expm1f(float x)
 {
     const float minimum = -103.972077083991796;
     const float maximum = 88.7228391116729996;

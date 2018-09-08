@@ -9,6 +9,10 @@
 #ifndef _STRINGS_H
 #define _STRINGS_H
 
-inline int ffs(unsigned x) { return __builtin_ffs(x); }
+int ffs(int);
+
+#ifdef __GNUC__
+#define ffs(x) __builtin_ffs(x)
+#endif
 
 #endif /* strings.h */

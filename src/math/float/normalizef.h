@@ -19,7 +19,7 @@
  *
  * \sa __normalize() for details
  */
-inline int32_t __normalizef(int32_t i)
+static int32_t __normalizef(int32_t i)
 {
     if (i < 0x00800000) {
         int32_t shift = __builtin_clz(i) - (32 - FLT_MANT_DIG);

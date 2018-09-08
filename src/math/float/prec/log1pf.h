@@ -11,7 +11,7 @@
 #include <float.h>
 #include <stdint.h>
 
-inline double __prec_log1pf(double x)
+static double __prec_log1pf(double x)
 {
     const double ln2 = 0.69314718055994530942;
 

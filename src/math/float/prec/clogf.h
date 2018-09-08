@@ -11,7 +11,7 @@
 #include "loghypotf.h"
 #include <complex.h>
 
-inline double _Complex __prec_clogf(double _Complex z)
+static double _Complex __prec_clogf(double _Complex z)
 {
     double x = z;
     double y = cimag(z);

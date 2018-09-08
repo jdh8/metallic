@@ -16,7 +16,7 @@
  * \param x - The argument in \f$ [-1, 1] \f$
  * \return  Approximate \f$ \arctan x \f$ as precise as \c float.
  */
-inline double __kernel_atanf(double x)
+static double __kernel_atanf(double x)
 {
     const double n[] = {
         80.3271869581482272,

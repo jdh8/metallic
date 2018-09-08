@@ -9,7 +9,7 @@
 #include <math.h>
 #include <limits.h>
 
-inline long __lround(float x)
+static long __lround(float x)
 {
     if (x >= LONG_MIN && x <= LONG_MAX)
         return x;

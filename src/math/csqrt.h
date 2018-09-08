@@ -9,7 +9,7 @@
 #include <complex.h>
 #include <math.h>
 
-inline double _Complex __csqrt(double x, double y)
+static double _Complex __csqrt(double x, double y)
 {
     double s = sqrt(0.5 * (fabs(x) + sqrt(x * x + y * y)));
     double t = 0.5 * y / s;

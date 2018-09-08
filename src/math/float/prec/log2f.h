@@ -10,7 +10,7 @@
 #include "../../reinterpret.h"
 #include <float.h>
 
-inline double __prec_log2f(double x)
+static double __prec_log2f(double x)
 {
     const double log2e = 1.44269504088896340736;
 

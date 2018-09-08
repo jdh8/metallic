@@ -9,7 +9,7 @@
 #include "../kernel/atanf.h"
 #include <math.h>
 
-inline double __prec_atan2f(double y, double x)
+static double __prec_atan2f(double y, double x)
 {
     const double pi = 3.14159265358979323846;
 

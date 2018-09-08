@@ -12,7 +12,7 @@
 #include <float.h>
 #include <stdint.h>
 
-inline double __prec_loghypotf(double x, double y)
+static double __prec_loghypotf(double x, double y)
 {
     const double ln2 = 0.69314718055994530942;
 

@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 
-inline double __prec_expf(double x)
+static double __prec_expf(double x)
 {
     const double minimum = -103.972077083991796;
     const double maximum = 88.7228391116729996;

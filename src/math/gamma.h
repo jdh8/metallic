@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-inline double __gamma_lanczos_sum(double z)
+static double __gamma_lanczos_sum(double z)
 {
     const double p[] = {
         0.99999999999980993227684700473478,

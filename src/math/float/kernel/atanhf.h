@@ -21,7 +21,7 @@
  * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$ 
  * \return  Approximate \f$ \operatorname{atanh}(x) \f$ as precise as \c float.
  */
-inline double __kernel_atanhf(double x)
+static double __kernel_atanhf(double x)
 {
     const double c[] = {
         0.9999999993072205474,

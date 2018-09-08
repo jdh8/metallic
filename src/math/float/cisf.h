@@ -9,7 +9,7 @@
 #include "kernel/sincosf.h"
 #include <complex.h>
 
-inline double _Complex __cisf(float t)
+static double _Complex __cisf(float t)
 {
     double r;
     unsigned q = __rem_pio2f(t, &r);
