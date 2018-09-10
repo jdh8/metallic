@@ -12,19 +12,19 @@
 
 int main(void)
 {
-    assert(_cbrtf(INFINITY) == INFINITY);
-    assert(_cbrtf(-INFINITY) == -INFINITY);
+    assert(cbrtf(INFINITY) == INFINITY);
+    assert(cbrtf(-INFINITY) == -INFINITY);
 
     for (uint32_t i = 0; i < 0x7F800000; i += 543) {
         float x = reinterpret(float, i);
-        float y = _cbrtf(x);
+        float y = cbrtf(x);
         verify(approx(y, cbrt(x)), x);
-        verify(identical(-y, _cbrtf(-x)), x);
+        verify(identical(-y, cbrtf(-x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_cbrtf(x)));
-        assert(isnan(_cbrtf(-x)));
+        assert(isnan(cbrtf(x)));
+        assert(isnan(cbrtf(-x)));
     }
 }

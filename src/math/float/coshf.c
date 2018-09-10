@@ -25,7 +25,7 @@ static double _kernel(double x)
     return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
 
-static float _coshf(float x)
+float coshf(float x)
 {
     const float maximum = 89.41598629223294;
     const float log2e = 1.442695040888963407;
@@ -48,7 +48,3 @@ static float _coshf(float x)
 
     return 0.5 * y + 0.5 / y;
 }
-
-#ifdef _METALLIC
-float coshf(float x) { return _coshf(x); }
-#endif

@@ -65,7 +65,7 @@ static float _asin(double x)
     return x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + (c[4] + c[5] * x2) * (x4 * x4));
 }
 
-static float _asinf(float x)
+float asinf(float x)
 {
     const double pi_2 = 1.57079632679489661923;
 
@@ -73,7 +73,3 @@ static float _asinf(float x)
 
     return r < 0.5f ? _asin(x) : copysignf(pi_2 - _acos(r), x);
 }
-
-#ifdef _METALLIC
-float asinf(float x) { return _asinf(x); }
-#endif

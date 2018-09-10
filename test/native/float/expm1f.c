@@ -12,29 +12,29 @@
 
 int main(void)
 {
-    assert(_expm1f(INFINITY) == INFINITY);
-    assert(_expm1f(-INFINITY) == -1);
+    assert(expm1f(INFINITY) == INFINITY);
+    assert(expm1f(-INFINITY) == -1);
 
     const uint32_t max = reinterpret(uint32_t, (float)log(0x1p+128));
 
     for (uint32_t i = 0; i < max; i += 77) {
         float x = reinterpret(float, i);
-        verify(approx(_expm1f(x), expm1(x)), x);
+        verify(approx(expm1f(x), expm1(x)), x);
     }
 
     for (uint32_t i = 0x80000000u; i < 0xFF800000u; i += 111) {
         float x = reinterpret(float, i);
-        verify(approx(_expm1f(x), expm1(x)), x);
+        verify(approx(expm1f(x), expm1(x)), x);
     }
 
     for (uint32_t i = max; i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(_expm1f(x) == HUGE_VALF, x);
+        verify(expm1f(x) == HUGE_VALF, x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_expm1f(x)));
-        assert(isnan(_expm1f(-x)));
+        assert(isnan(expm1f(x)));
+        assert(isnan(expm1f(-x)));
     }
 }

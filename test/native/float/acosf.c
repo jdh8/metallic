@@ -12,18 +12,18 @@
 
 int main(void)
 {
-    assert(_acosf(0) * 2 == _acosf(-1));
-    assert(_acosf(0.5) == (float)acos(0.5));
+    assert(acosf(0) * 2 == acosf(-1));
+    assert(acosf(0.5) == (float)acos(0.5));
 
     for (int32_t i = 0; i < 0x3F800000; i += 81) {
         float x = reinterpret(float, i);
-        verify(approx(_acosf(x), acos(x)), x);
-        verify(approx(_acosf(-x), acos(-x)), x);
+        verify(approx(acosf(x), acos(x)), x);
+        verify(approx(acosf(-x), acos(-x)), x);
     }
 
     for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {
         float x = reinterpret(float, i);
-        assert(isnan(_acosf(x)));
-        assert(isnan(_acosf(-x)));
+        assert(isnan(acosf(x)));
+        assert(isnan(acosf(-x)));
     }
 }

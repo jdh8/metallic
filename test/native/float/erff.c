@@ -12,19 +12,19 @@
 
 int main(void)
 {
-    assert(_erff(INFINITY) == 1);
-    assert(_erff(-INFINITY) == -1);
+    assert(erff(INFINITY) == 1);
+    assert(erff(-INFINITY) == -1);
 
     for (uint32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
-        float y = _erff(x);
+        float y = erff(x);
         verify(approx(y, erf(x)), x);
-        verify(identical(-y, _erff(-x)), x);
+        verify(identical(-y, erff(-x)), x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_erff(x)));
-        assert(isnan(_erff(-x)));
+        assert(isnan(erff(x)));
+        assert(isnan(erff(-x)));
     }
 }

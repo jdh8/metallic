@@ -11,7 +11,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static float _expf(float x)
+float expf(float x)
 {
     const float minimum = -103.972077083991796;
     const float maximum = 88.7228391116729996;
@@ -31,7 +31,3 @@ static float _expf(float x)
 
     return reinterpret(double, shifted);
 }
-
-#ifdef _METALLIC
-float expf(float x) { return _expf(x); }
-#endif

@@ -8,7 +8,7 @@
  */
 #include "kernel/sincosf.h"
 
-static float _cosf(float x)
+float cosf(float x)
 {
     double y;
     unsigned q = __rem_pio2f(x, &y);
@@ -17,7 +17,3 @@ static float _cosf(float x)
 
     return (q + 1) & 2 ? -y : y;
 }
-
-#ifdef _METALLIC
-float cosf(float x) { return _cosf(x); }
-#endif

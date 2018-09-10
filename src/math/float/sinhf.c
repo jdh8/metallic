@@ -25,7 +25,7 @@ static double _kernel(double x)
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-static float _sinhf(float x)
+float sinhf(float x)
 {
     const float maximum = 89.41598629223294;
     const float log2e = 1.442695040888963407;
@@ -47,7 +47,3 @@ static float _sinhf(float x)
 
     return copysignf(0.5 * y - 0.5 / y, x);
 }
-
-#ifdef _METALLIC
-float sinhf(float x) { return _sinhf(x); }
-#endif

@@ -8,11 +8,7 @@
  */
 #include "prec/expm1f.h"
 
-static float _expm1f(float x)
+float expm1f(float x)
 {
     return __prec_expm1f(x);
 }
-
-#ifdef _METALLIC
-float expm1f(float x) { return _expm1f(x); }
-#endif

@@ -12,31 +12,31 @@
 
 int main(void)
 {
-    assert(_exp2f(0) == 1);
-    assert(_exp2f(-0.0) == 1);
-    assert(_exp2f(INFINITY) == INFINITY);
-    assert(reinterpret(uint32_t, _exp2f(-INFINITY)) == 0);
+    assert(exp2f(0) == 1);
+    assert(exp2f(-0.0) == 1);
+    assert(exp2f(INFINITY) == INFINITY);
+    assert(reinterpret(uint32_t, exp2f(-INFINITY)) == 0);
 
     const float min = -126;
     const float max = 128;
     const float step = 1.337e-5;
 
     for (float x = min; x < max; x += step)
-        verify(approx(_exp2f(x), exp2(x)), x);
+        verify(approx(exp2f(x), exp2(x)), x);
 
     for (uint32_t i = reinterpret(uint32_t, max); i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(_exp2f(x) == HUGE_VALF, x);
+        verify(exp2f(x) == HUGE_VALF, x);
     }
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(approxf(_exp2f(x), exp2(x)), x);
+        verify(approxf(exp2f(x), exp2(x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_exp2f(x)));
-        assert(isnan(_exp2f(-x)));
+        assert(isnan(exp2f(x)));
+        assert(isnan(exp2f(-x)));
     }
 }

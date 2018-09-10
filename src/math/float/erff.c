@@ -28,11 +28,7 @@ static float _right(float x)
     return x > 0.4769362762044699f ? 1 - __kernel_erfcf(x) : _kernel(x);
 }
 
-static float _erff(float x)
+float erff(float x)
 {
     return copysignf(_right(fabsf(x)), x);
 }
-
-#ifdef _METALLIC
-float erff(float x) { return _erff(x); }
-#endif

@@ -12,18 +12,18 @@
 
 int main(void)
 {
-    assert(_erfcf(INFINITY) == 0);
-    assert(_erfcf(-INFINITY) == 2);
+    assert(erfcf(INFINITY) == 0);
+    assert(erfcf(-INFINITY) == 2);
 
     for (uint32_t i = 0; i < 0x7F800000; i += 111) {
         float x = reinterpret(float, i);
-        verify(approx(_erfcf(x), erfc(x)), x);
-        verify(approx(_erfcf(-x), erfc(-x)), x);
+        verify(approx(erfcf(x), erfc(x)), x);
+        verify(approx(erfcf(-x), erfc(-x)), x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_erfcf(x)));
-        assert(isnan(_erfcf(-x)));
+        assert(isnan(erfcf(x)));
+        assert(isnan(erfcf(-x)));
     }
 }

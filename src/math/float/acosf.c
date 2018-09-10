@@ -39,14 +39,10 @@ static double _kernel(double x)
         + (c[4] + c[5] * x + (c[6] + c[7] * x) * xx) * (xx * xx));
 }
 
-static float _acosf(float x)
+float acosf(float x)
 {
     const double pi = 3.14159265358979323846;
     double y = _kernel(fabsf(x));
 
     return x > 0 ? y : pi - y;
 }
-
-#ifdef _METALLIC
-float acosf(float x) { return _acosf(x); }
-#endif

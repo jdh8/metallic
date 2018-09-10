@@ -28,11 +28,7 @@ static float _kernel(float x)
     return y;
 }
 
-static float _cbrtf(float x)
+float cbrtf(float x)
 {
     return copysignf(_kernel(fabsf(x)), x);
 }
-
-#ifdef _METALLIC
-float cbrtf(float x) { return _cbrtf(x); }
-#endif

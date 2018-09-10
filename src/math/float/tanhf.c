@@ -16,11 +16,7 @@ static float _right(float x)
     return y < 2 ? y / (y + 2) : 1 - 2 / (y + 2);
 }
 
-static float _tanhf(float x)
+float tanhf(float x)
 {
     return copysignf(_right(fabsf(x)), x);
 }
-
-#ifdef _METALLIC
-float tanhf(float x) { return _tanhf(x); }
-#endif

@@ -24,7 +24,7 @@ static double _finite(double c)
     return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
 }
 
-static float _acoshf(float x)
+float acoshf(float x)
 {
     int32_t i = reinterpret(int32_t, x);
 
@@ -36,7 +36,3 @@ static float _acoshf(float x)
 
     return x;
 }
-
-#ifdef _METALLIC
-float acoshf(float x) { return _acoshf(x); }
-#endif

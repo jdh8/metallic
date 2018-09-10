@@ -27,14 +27,10 @@ static double _finite(double s)
         return 2 * __kernel_atanhf(s / (c + 1));
 }
 
-static float _asinhf(float x)
+float asinhf(float x)
 {
     if (x - x == 0)
         return copysignf(_finite(fabsf(x)), x);
 
     return x;
 }
-
-#ifdef _METALLIC
-float asinhf(float x) { return _asinhf(x); }
-#endif

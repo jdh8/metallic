@@ -12,21 +12,21 @@
 
 int main(void)
 {
-    assert(_acoshf(INFINITY) == INFINITY);
-    assert(isnan(_acoshf(-INFINITY)));
+    assert(acoshf(INFINITY) == INFINITY);
+    assert(isnan(acoshf(-INFINITY)));
 
     for (int32_t i = 0x3F800000; i < 0x7F800000; i += 81) {
         float x = reinterpret(float, i);
-        verify(approx(_acoshf(x), acosh(x)), x);
+        verify(approx(acoshf(x), acosh(x)), x);
     }
 
     for (uint32_t i = 0; i < 0x3F800000; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_acoshf(x)));
+        assert(isnan(acoshf(x)));
     }
 
     for (uint32_t i = 0x7FC00000; i & 0xC0000000; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_acoshf(x)));
+        assert(isnan(acoshf(x)));
     }
 }

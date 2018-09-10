@@ -11,7 +11,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static float _exp2f(float x)
+float exp2f(float x)
 {
     if (x < -150)
         return 0;
@@ -25,7 +25,3 @@ static float _exp2f(float x)
 
     return reinterpret(double, shifted);
 }
-
-#ifdef _METALLIC
-float exp2f(float x) { return _exp2f(x); }
-#endif

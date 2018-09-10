@@ -12,25 +12,25 @@
 
 int main(void)
 {
-    assert(reinterpret(uint32_t, _logf(1)) == 0);
-    assert(_logf(0) == -INFINITY);
-    assert(_logf(-0.0) == -INFINITY);
-    assert(_logf(INFINITY) == INFINITY);
-    assert(isnan(_logf(-INFINITY)));
+    assert(reinterpret(uint32_t, logf(1)) == 0);
+    assert(logf(0) == -INFINITY);
+    assert(logf(-0.0) == -INFINITY);
+    assert(logf(INFINITY) == INFINITY);
+    assert(isnan(logf(-INFINITY)));
 
     for (int32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
-        verify(approx(_logf(x), log(x)), x);
+        verify(approx(logf(x), log(x)), x);
     }
 
     for (uint32_t i = 1; i < 0x80000000; i += 12345) {
         float x = reinterpret(float, i);
-        verify(isnan(_logf(-x)), x);
+        verify(isnan(logf(-x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_logf(x)));
-        assert(isnan(_logf(-x)));
+        assert(isnan(logf(x)));
+        assert(isnan(logf(-x)));
     }
 }

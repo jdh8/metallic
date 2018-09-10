@@ -22,7 +22,7 @@ static float _finite(int32_t i)
     return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }
 
-static float _logf(float x)
+float logf(float x)
 {
     int32_t i = reinterpret(int32_t, x);
 
@@ -34,7 +34,3 @@ static float _logf(float x)
 
     return x;
 }
-
-#ifdef _METALLIC
-float logf(float x) { return _logf(x); }
-#endif

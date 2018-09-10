@@ -12,19 +12,19 @@
 
 int main(void)
 {
-    assert(_tanhf(INFINITY) == 1);
-    assert(_tanhf(-INFINITY) == -1);
+    assert(tanhf(INFINITY) == 1);
+    assert(tanhf(-INFINITY) == -1);
 
     for (uint32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
-        float y = _tanhf(x);
+        float y = tanhf(x);
         verify(approx(y, tanh(x)), x);
-        verify(identical(-y, _tanhf(-x)), x);
+        verify(identical(-y, tanhf(-x)), x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
         float x = reinterpret(float, i);
-        assert(isnan(_tanhf(x)));
-        assert(isnan(_tanhf(-x)));
+        assert(isnan(tanhf(x)));
+        assert(isnan(tanhf(-x)));
     }
 }
