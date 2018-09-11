@@ -13,8 +13,6 @@
 int main(void)
 {
     assert(reinterpret(uint32_t, logf(1)) == 0);
-    assert(logf(0) == -INFINITY);
-    assert(logf(-0.0) == -INFINITY);
     assert(logf(INFINITY) == INFINITY);
     assert(isnan(logf(-INFINITY)));
 
@@ -23,9 +21,9 @@ int main(void)
         verify(approx(logf(x), log(x)), x);
     }
 
-    for (uint32_t i = 1; i < 0x80000000; i += 12345) {
+    for (uint32_t i = 0x80000001; i >> 31; i += 12345) {
         float x = reinterpret(float, i);
-        verify(isnan(logf(-x)), x);
+        verify(isnan(logf(x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
