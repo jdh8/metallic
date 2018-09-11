@@ -8,7 +8,7 @@
  */
 #include "common.h"
 #include "../../../src/math/float/sinf.c"
-#include "../../../src/math/rem_pio2.c"
+#include "../../../src/math/float/rem_pio2f.c"
 #include <assert.h>
 
 int main(void)
