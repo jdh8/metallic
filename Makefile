@@ -18,7 +18,7 @@ test/native/%.run: test/native/%.exe
 	$< > $@
 
 %.exe: %.c
-	cc -MMD -MP -MQ $@ -pipe -O3 -Wall -march=native -lm -o $@ $<
+	cc $(CFLAGS) -MMD -MP -MQ $@ -march=native -lm -o $@ $<
 
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out,exe,run}
