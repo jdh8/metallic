@@ -11,7 +11,7 @@
 #include <complex.h>
 #include <math.h>
 
-static double _Complex _cosh_asinh(float _Complex z)
+static double _Complex _coshasinh(float _Complex z)
 {
     double x = z;
     double y = cimagf(z);
@@ -34,5 +34,5 @@ float _Complex casinhf(float _Complex z)
     if (isinf(y))
         return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, x) : x);
 
-    return _clogf(z + _cosh_asinh(z));
+    return _clogf(z + _coshasinh(z));
 }

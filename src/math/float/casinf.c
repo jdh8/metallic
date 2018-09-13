@@ -14,10 +14,3 @@ float _Complex casinf(float _Complex z)
 
     return CMPLXF(cimagf(z), z);
 }
-
-float _Complex cacosf(float _Complex z)
-{
-    const double pi = 3.14159265358979323846;
-
-    return pi / 2 - casinf(z);
-}
