@@ -1,14 +1,17 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "llround.h"
+#include <math.h>
+#include <limits.h>
 
 long long llrintf(float x)
 {
-    return _llround(rintf(x));
+    x = rintf(x);
+
+    return x >= LLONG_MAX ? LLONG_MAX : x > LLONG_MIN ? (long long)x : LLONG_MIN;
 }
