@@ -22,11 +22,11 @@ float _Complex ctanhf(float _Complex z)
     if (x != x)
         return CMPLXF(x, y ? x : y);
 
-    double _Complex circular = __cisf(y);
+    double _Complex circular = _cisf(y);
     double cos = circular;
     double sin = cimag(circular);
 
-    double exp = __prec_expf(x);
+    double exp = _expf(x);
     double cosh = 0.5 * exp + 0.5 / exp;
     double sinh = 0.5 * exp - 0.5 / exp;
 

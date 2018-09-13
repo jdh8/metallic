@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double __prec_expf(double x)
+static double _expf(double x)
 {
     const double minimum = -103.972077083991796;
     const double maximum = 88.7228391116729996;
@@ -29,7 +29,7 @@ static double __prec_expf(double x)
         return x * HUGE_VALF;
 
     double n = rint(x * log2e);
-    double y = 1 + __kernel_expm1f(x - n * ln2);
+    double y = 1 + _kernel_expm1f(x - n * ln2);
     int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
     return reinterpret(double, shifted);

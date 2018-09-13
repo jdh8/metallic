@@ -29,8 +29,8 @@ float _Complex catanf(float _Complex z)
     double denominator = y - 1.0;
     denominator = xx + denominator * denominator;
 
-    x = 0.5 * __prec_atan2f(2.0 * x, 1 - xx - yy);
-    y = 0.25 * __prec_log1pf(4.0 * y / denominator);
+    x = 0.5 * _atan2f(2.0 * x, 1 - xx - yy);
+    y = 0.25 * _log1pf(4.0 * y / denominator);
 
     return CMPLXF(x, y);
 }

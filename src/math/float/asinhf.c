@@ -22,9 +22,9 @@ static double _finite(double s)
     double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
-        return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+        return 2 * _kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return 2 * __kernel_atanhf(s / (c + 1));
+        return 2 * _kernel_atanhf(s / (c + 1));
 }
 
 float asinhf(float x)

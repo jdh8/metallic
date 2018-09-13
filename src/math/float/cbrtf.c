@@ -18,7 +18,7 @@ static float _kernel(float x)
     if (i == 0 || i >= 0x7F800000)
         return x;
 
-    i = 0x2A512CE3 + __normalizef(i) / 3;
+    i = 0x2A512CE3 + _normalizef(i) / 3;
 
     double y = reinterpret(float, i);
 

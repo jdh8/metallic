@@ -8,7 +8,7 @@
  */
 #include <math.h>
 
-static double __kernel_sinpif(double x)
+static double _kernel_sinpif(double x)
 {
     const double c[] = {
         3.14159264393361429, /* No, this is not pi */
@@ -22,7 +22,7 @@ static double __kernel_sinpif(double x)
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-static double __kernel_cospif(double x)
+static double _kernel_cospif(double x)
 {
     const double c[] = {
         0.999999972423322921,
@@ -36,7 +36,7 @@ static double __kernel_cospif(double x)
     return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
 
-static double __prec_sinpif(float x)
+static double _sinpif(float x)
 {
     x -= 2 * rintf(x / 2);
 
@@ -45,13 +45,13 @@ static double __prec_sinpif(float x)
 
     switch (3u & (int) q) {
         case 0:
-            return __kernel_sinpif(r);
+            return _kernel_sinpif(r);
         case 1:
-            return __kernel_cospif(r);
+            return _kernel_cospif(r);
         case 2:
-            return __kernel_sinpif(-r);
+            return _kernel_sinpif(-r);
         case 3:
-            return -__kernel_cospif(r);
+            return -_kernel_cospif(r);
     }
 
     __builtin_unreachable();

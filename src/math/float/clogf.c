@@ -16,7 +16,7 @@ static float _real(float x, float y)
     if (isinf(x) || isinf(y))
         return HUGE_VALF;
 
-    return __prec_loghypotf(x, y);
+    return _loghypotf(x, y);
 }
 
 float _Complex clogf(float _Complex z)
@@ -24,5 +24,5 @@ float _Complex clogf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    return CMPLXF(_real(x, y), __atan2f(y, x));
+    return CMPLXF(_real(x, y), _atan2f(y, x));
 }

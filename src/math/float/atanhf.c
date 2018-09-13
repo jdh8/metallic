@@ -21,9 +21,9 @@ static double _finite(double x)
     double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
-        return __kernel_atanhf((y - 1) / (y + 1)) + ln2 / 2 * exponent;
+        return _kernel_atanhf((y - 1) / (y + 1)) + ln2 / 2 * exponent;
     else
-        return __kernel_atanhf(x);
+        return _kernel_atanhf(x);
 }
 
 float atanhf(float x)

@@ -19,7 +19,7 @@ float SCALBNF(float x, Integer exp)
     if (i == 0 || i >= 0x7F800000)
         return x;
 
-    i = __normalizef(i);
+    i = _normalizef(i);
 
     Integer biased = exp + (i >> (FLT_MANT_DIG - 1));
 

@@ -30,7 +30,7 @@
  * \param i - Representation of a nonzero magnitude
  * \return  Normalized magnitude
  */
-static int64_t __normalize(int64_t i)
+static int64_t _normalize(int64_t i)
 {
     if (i < 1LL << (DBL_MANT_DIG - 1)) {
         int64_t shift = __builtin_clzll(i) - (64 - DBL_MANT_DIG);

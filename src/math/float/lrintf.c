@@ -10,5 +10,5 @@
 
 long lrintf(float x)
 {
-    return __lround(rintf(x));
+    return _lround(rintf(x));
 }

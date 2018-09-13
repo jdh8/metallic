@@ -12,9 +12,9 @@
 
 float _Complex ccoshf(float _Complex z)
 {
-    double _Complex circular = __cisf(cimagf(z));
+    double _Complex circular = _cisf(cimagf(z));
 
-    double exp = __prec_expf(z);
+    double exp = _expf(z);
     double cosh = 0.5 * exp + 0.5 / exp;
     double sinh = 0.5 * exp - 0.5 / exp;
 

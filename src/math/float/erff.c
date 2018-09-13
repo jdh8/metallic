@@ -25,7 +25,7 @@ static double _kernel(double x)
 
 static float _right(float x)
 {
-    return x > 0.4769362762044699f ? 1 - __kernel_erfcf(x) : _kernel(x);
+    return x > 0.4769362762044699f ? 1 - _kernel_erfcf(x) : _kernel(x);
 }
 
 float erff(float x)

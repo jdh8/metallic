@@ -21,7 +21,7 @@ static double _product(float z)
     double shifted = z - 0.5;
     double base = shifted + g;
 
-    return sqrt2pi * __prec_exp2f(shifted * __prec_log2f(base) - log2e * base);
+    return sqrt2pi * _exp2f(shifted * _log2f(base) - log2e * base);
 }
 
 static double _right(float z)
@@ -31,7 +31,7 @@ static double _right(float z)
     if (z > max)
         return HUGE_VALF;
 
-    return _product(z) * __gamma_lanczos_sum(z);
+    return _product(z) * _gamma_lanczos_sum(z);
 }
 
 float tgammaf(float z)
@@ -45,7 +45,7 @@ float tgammaf(float z)
         if (rintf(z) == z)
             return (z - z) / (z - z);
 
-        return pi / (__prec_sinpif(z) * _right(1 - z));
+        return pi / (_sinpif(z) * _right(1 - z));
     }
 
     return _right(z);

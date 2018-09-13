@@ -10,5 +10,5 @@
 
 float atan2f(float y, float x)
 {
-    return __atan2f(y, x);
+    return _atan2f(y, x);
 }

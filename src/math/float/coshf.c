@@ -41,7 +41,7 @@ float coshf(float x)
     if (n == 0)
         return _kernel(x);
 
-    double y = 1 + __kernel_expm1f(x - n * ln2);
+    double y = 1 + _kernel_expm1f(x - n * ln2);
     int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
     y = reinterpret(double, shifted);

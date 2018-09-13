@@ -10,5 +10,5 @@
 
 long lroundf(float x)
 {
-    return __lround(roundf(x));
+    return _lround(roundf(x));
 }

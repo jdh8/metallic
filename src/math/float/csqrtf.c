@@ -24,5 +24,5 @@ float _Complex csqrtf(float _Complex z)
     if (x == -INFINITY)
         return CMPLXF(y - y, copysignf(x, y));
 
-    return __csqrt(x, y);
+    return _csqrt(x, y);
 }

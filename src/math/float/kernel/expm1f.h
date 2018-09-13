@@ -23,7 +23,7 @@
  * \param x - The argument in \f$ \left[ -\frac{\ln2}{2}, \frac{\ln2}{2} \right] \f$
  * \return  Approximate \f$ \exp x - 1 \f$ as precise as \c float.
  */
-static double __kernel_expm1f(double x)
+static double _kernel_expm1f(double x)
 {
     const double c[] = {
         1.000000010775500705,

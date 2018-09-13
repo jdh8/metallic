@@ -21,7 +21,7 @@ static double _finite(double c)
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> (DBL_MANT_DIG - 1);
     double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
-    return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+    return 2 * _kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
 }
 
 float acoshf(float x)

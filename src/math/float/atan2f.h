@@ -9,7 +9,7 @@
 #include "kernel/atanf.h"
 #include <math.h>
 
-static double __atan2f(float y, float x)
+static double _atan2f(float y, float x)
 {
     const double pi = 3.14159265358979324;
 
@@ -17,9 +17,9 @@ static double __atan2f(float y, float x)
     float absx = fabsf(x);
 
     if (absy > absx)
-        return copysign(pi / 2, y) - __kernel_atanf(x / (double)y);
+        return copysign(pi / 2, y) - _kernel_atanf(x / (double)y);
 
-    double sharp = absy == absx ? copysign(pi / 4, y) : __kernel_atanf(y / (double)absx);
+    double sharp = absy == absx ? copysign(pi / 4, y) : _kernel_atanf(y / (double)absx);
 
     return signbit(x) ? copysign(pi, y) - sharp : sharp;
 }

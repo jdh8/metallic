@@ -18,7 +18,7 @@ static double _kernel(double x)
     if (i == 0 || i >= 0x7FF0000000000000)
         return x;
 
-    i = 0x2A9F7AF196E8E6E8 + __normalize(i) / 3;
+    i = 0x2A9F7AF196E8E6E8 + _normalize(i) / 3;
 
     double y = reinterpret(double, i);
 

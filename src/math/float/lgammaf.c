@@ -23,7 +23,7 @@ static double _logf(double x)
 
     x = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
-    return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
+    return 2 * _kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }
 
 static double _lnproduct(float z)
@@ -48,8 +48,8 @@ float lgammaf(float z)
         if (rintf(z) == z)
             return HUGE_VALF;
 
-        return _logf(pi / fabs(__prec_sinpif(z) * __gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
+        return _logf(pi / fabs(_sinpif(z) * _gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
     }
 
-    return _lnproduct(z) + _logf(__gamma_lanczos_sum(z));
+    return _lnproduct(z) + _logf(_gamma_lanczos_sum(z));
 }

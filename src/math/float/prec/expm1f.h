@@ -14,7 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double __prec_expm1f(float x)
+static double _expm1f(float x)
 {
     const float minimum = -103.972077083991796;
     const float maximum = 88.7228391116729996;
@@ -29,7 +29,7 @@ static double __prec_expm1f(float x)
         return x * HUGE_VALF;
 
     float n = rintf(x * log2e) + 0;
-    double y = __kernel_expm1f(x - n * ln2);
+    double y = _kernel_expm1f(x - n * ln2);
 
     if (n == 0)
         return y;

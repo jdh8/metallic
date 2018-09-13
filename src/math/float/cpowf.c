@@ -18,7 +18,7 @@ static double _real(float x, float y)
     if (isinf(x) || isinf(y))
         return INFINITY;
 
-    return __prec_loghypotf(x, y);
+    return _loghypotf(x, y);
 }
 
 float _Complex cpowf(float _Complex base, float _Complex exp)
@@ -26,7 +26,7 @@ float _Complex cpowf(float _Complex base, float _Complex exp)
     float x = base;
     float y = cimagf(base);
 
-    double _Complex z = CMPLX(_real(x, y), __atan2f(y, x)) * exp;
+    double _Complex z = CMPLX(_real(x, y), _atan2f(y, x)) * exp;
 
-    return __prec_expf(z) * __cisf(cimag(z));
+    return _expf(z) * _cisf(cimag(z));
 }

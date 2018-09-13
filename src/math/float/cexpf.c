@@ -12,5 +12,5 @@
 
 float _Complex cexpf(float _Complex z)
 {
-    return __prec_expf(z) * __cisf(cimagf(z));
+    return _expf(z) * _cisf(cimagf(z));
 }

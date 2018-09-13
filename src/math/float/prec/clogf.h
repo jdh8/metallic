@@ -11,10 +11,10 @@
 #include "loghypotf.h"
 #include <complex.h>
 
-static double _Complex __prec_clogf(double _Complex z)
+static double _Complex _clogf(double _Complex z)
 {
     double x = z;
     double y = cimag(z);
 
-    return CMPLX(__prec_loghypotf(x, y), __prec_atan2f(y, x));
+    return CMPLX(_loghypotf(x, y), _atan2f(y, x));
 }

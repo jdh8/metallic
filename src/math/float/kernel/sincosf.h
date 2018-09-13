@@ -8,7 +8,7 @@
  */
 int __rem_pio2f(float x, double y[static 1]);
 
-static double __kernel_sinf(double x)
+static double _kernel_sinf(double x)
 {
     const double c[] = {
         9.9999999692634277740e-1,
@@ -22,7 +22,7 @@ static double __kernel_sinf(double x)
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-static double __kernel_cosf(double x)
+static double _kernel_cosf(double x)
 {
     const double c[] = {
         9.9999997242332292107e-1,

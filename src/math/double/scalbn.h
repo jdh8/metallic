@@ -19,7 +19,7 @@ double SCALBN(double x, Integer exp)
     if (i == 0 || i >= 0x7FF0000000000000)
         return x;
 
-    i = __normalize(i);
+    i = _normalize(i);
 
     int64_t biased = exp + (i >> (DBL_MANT_DIG - 1));
 

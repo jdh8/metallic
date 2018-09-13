@@ -11,7 +11,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static double __prec_log1pf(double x)
+static double _log1pf(double x)
 {
     const double ln2 = 0.69314718055994530942;
 
@@ -20,7 +20,7 @@ static double __prec_log1pf(double x)
     double y = reinterpret(double, i - (exponent << (DBL_MANT_DIG - 1)));
 
     if (exponent)
-        return 2 * __kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+        return 2 * _kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return 2 * __kernel_atanhf(x / (2 + x));
+        return 2 * _kernel_atanhf(x / (2 + x));
 }

@@ -19,7 +19,7 @@ static double _Complex _sinh_acosh(float _Complex z)
     double y = cimagf(z);
     double re = (x + y) * (x - y) - 1;
     double im = 2 * x * y;
-    double _Complex right = __csqrt(re, im);
+    double _Complex right = _csqrt(re, im);
 
     return signbit((float)z) ? -right : right;
 }
@@ -49,5 +49,5 @@ float _Complex cacoshf(float _Complex z)
     if (isinf(y))
         return CMPLXF(HUGE_VALF, x == x ? copysignf(0.5 * pi, x) : x);
 
-    return __prec_clogf(z + _sinh_acosh(z));
+    return _clogf(z + _sinh_acosh(z));
 }

@@ -11,7 +11,7 @@
 
 #include "../prec/expf.h"
 
-static double __kernel_erfcf(double x)
+static double _kernel_erfcf(double x)
 {
     const double c[] = {
        -1.265512220104944281,
@@ -30,7 +30,7 @@ static double __kernel_erfcf(double x)
     double t2 = t * t;
     double t4 = t2 * t2;
 
-    return t * __prec_expf(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
+    return t * _expf(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
         + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
         + (c[8] + c[9] * t) * (t4 * t4)
         - x * x);

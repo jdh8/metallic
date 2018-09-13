@@ -11,7 +11,7 @@
 
 float erfcf(float x)
 {
-    double t = __kernel_erfcf(fabsf(x));
+    double t = _kernel_erfcf(fabsf(x));
 
     return signbit(x) ? 2 - t : t;
 }

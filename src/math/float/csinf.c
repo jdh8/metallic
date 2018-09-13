@@ -12,9 +12,9 @@
 
 float _Complex csinf(float _Complex z)
 {
-    double _Complex circular = __cisf(z);
+    double _Complex circular = _cisf(z);
 
-    double exp = __prec_expf(cimagf(z));
+    double exp = _expf(cimagf(z));
     double cosh = 0.5 * exp + 0.5 / exp;
     double sinh = 0.5 * exp - 0.5 / exp;
 

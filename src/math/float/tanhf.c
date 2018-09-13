@@ -11,7 +11,7 @@
 
 static float _right(float x)
 {
-    double y = __prec_expm1f(2 * x);
+    double y = _expm1f(2 * x);
 
     return y < 2 ? y / (y + 2) : 1 - 2 / (y + 2);
 }

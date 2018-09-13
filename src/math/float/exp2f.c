@@ -20,7 +20,7 @@ float exp2f(float x)
         return x * HUGE_VALF;
 
     float n = rintf(x);
-    double y = 1 + __kernel_exp2m1f(x - n);
+    double y = 1 + _kernel_exp2m1f(x - n);
     int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
     return reinterpret(double, shifted);

@@ -19,7 +19,7 @@ static float _finite(int32_t i)
     int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
     double x = reinterpret(float, i - (exponent << (FLT_MANT_DIG - 1)));
 
-    return 2 * __kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
+    return 2 * _kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }
 
 float logf(float x)
@@ -30,7 +30,7 @@ float logf(float x)
         return i << 1 == 0 ? -HUGE_VALF : NAN;
 
     if (i < 0x7F800000)
-        return _finite(__normalizef(i));
+        return _finite(_normalizef(i));
 
     return x;
 }

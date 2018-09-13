@@ -22,7 +22,7 @@ float log1pf(float x)
         return NAN;
 
     if (i < 0x7F800000)
-        return __prec_log1pf(x);
+        return _log1pf(x);
 
     return x;
 }

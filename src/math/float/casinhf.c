@@ -18,7 +18,7 @@ static double _Complex _cosh_asinh(float _Complex z)
     double re = (x + y) * (x - y) + 1;
     double im = 2 * x * y;
 
-    return __csqrt(re, im);
+    return _csqrt(re, im);
 }
 
 float _Complex casinhf(float _Complex z)
@@ -34,5 +34,5 @@ float _Complex casinhf(float _Complex z)
     if (isinf(y))
         return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, x) : x);
 
-    return __prec_clogf(z + _cosh_asinh(z));
+    return _clogf(z + _cosh_asinh(z));
 }

@@ -10,5 +10,5 @@
 
 float expm1f(float x)
 {
-    return __prec_expm1f(x);
+    return _expm1f(x);
 }

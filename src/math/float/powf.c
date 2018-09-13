@@ -24,7 +24,7 @@ static float _unsigned(float x, float y)
         return signbit(y) ? 0 : HUGE_VALF;
 
     if (x > 0)
-        return __prec_exp2f(y * __prec_log2f(x));
+        return _exp2f(y * _log2f(x));
 
     return NAN;
 }
