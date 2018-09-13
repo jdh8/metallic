@@ -10,5 +10,5 @@
 
 float roundf(float x)
 {
-    return truncf(x + copysignf(0.5, x));
+    return trunc(x + copysign(0.5, x));
 }
