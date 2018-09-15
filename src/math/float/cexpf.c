@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -12,5 +12,19 @@
 
 float _Complex cexpf(float _Complex z)
 {
-    return _expf(z) * _cisf(cimagf(z));
+    float x = z;
+    float y = cimagf(z);
+
+    if (x != x)
+        return CMPLXF(x, y ? x : y);
+
+    if (y - y) {
+        if (x == INFINITY)
+            return CMPLXF(x, y - y);
+
+        if (x == -INFINITY)
+            return 0;
+    }
+
+    return _expf(x) * _cisf(y);
 }
