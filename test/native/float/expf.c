@@ -22,7 +22,7 @@ int main(void)
     const float step = 1.337e-5;
 
     for (float x = min; x < max; x += step)
-        verify(approx(expf(x), exp(x)), x);
+        verify(faithful(expf(x), exp(x)), x);
 
     for (uint32_t i = reinterpret(uint32_t, max); i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
@@ -31,7 +31,7 @@ int main(void)
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(approxf(expf(x), exp(x)), x);
+        verify(approx(expf(x), exp(x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {

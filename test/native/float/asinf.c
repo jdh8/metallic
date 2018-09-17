@@ -15,8 +15,8 @@ int main(void)
     for (int32_t i = 0; i < 0x3F800000; i += 81) {
         float x = reinterpret(float, i);
         double y = asin(x);
-        verify(approx(asinf(x), y), x);
-        verify(approx(asinf(-x), -y), x);
+        verify(faithful(asinf(x), y), x);
+        verify(faithful(asinf(-x), -y), x);
     }
 
     for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {

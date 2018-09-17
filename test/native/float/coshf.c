@@ -20,7 +20,7 @@ int main(void)
 
     for (float x = 0; x < max; x += step) {
         float y = coshf(x);
-        verify(approx(y, cosh(x)), x);
+        verify(faithful(y, cosh(x)), x);
         verify(identical(y, coshf(-x)), x);
     }
 

@@ -18,7 +18,7 @@ int main(void)
 
     for (int32_t i = 0; i < 0x7F800000; i += 77) {
         float x = reinterpret(float, i);
-        verify(approx(log2f(x), log2(x)), x);
+        verify(faithful(log2f(x), log2(x)), x);
     }
 
     for (uint32_t i = 0x80000001; i >> 31; i += 12345) {

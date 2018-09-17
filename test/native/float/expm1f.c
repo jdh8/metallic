@@ -19,12 +19,12 @@ int main(void)
 
     for (uint32_t i = 0; i < max; i += 77) {
         float x = reinterpret(float, i);
-        verify(approx(expm1f(x), expm1(x)), x);
+        verify(faithful(expm1f(x), expm1(x)), x);
     }
 
     for (uint32_t i = 0x80000000u; i < 0xFF800000u; i += 111) {
         float x = reinterpret(float, i);
-        verify(approx(expm1f(x), expm1(x)), x);
+        verify(faithful(expm1f(x), expm1(x)), x);
     }
 
     for (uint32_t i = max; i < 0x7F800000; i += 777) {

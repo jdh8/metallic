@@ -17,8 +17,8 @@ int main(void)
 
     for (int32_t i = 0; i < 0x3F800000; i += 81) {
         float x = reinterpret(float, i);
-        verify(approx(acosf(x), acos(x)), x);
-        verify(approx(acosf(-x), acos(-x)), x);
+        verify(faithful(acosf(x), acos(x)), x);
+        verify(faithful(acosf(-x), acos(-x)), x);
     }
 
     for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {
