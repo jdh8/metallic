@@ -15,7 +15,15 @@ int main(void)
     assert(erfcf(INFINITY) == 0);
     assert(erfcf(-INFINITY) == 2);
 
-    for (uint32_t i = 0; i < 0x7F800000; i += 111) {
+    const uint32_t erfcinvmin = 0x41131CE0;
+
+    for (uint32_t i = 0; i < erfcinvmin; i += 111) {
+        float x = reinterpret(float, i);
+        verify(faithful(erfcf(x), erfc(x)), x);
+        verify(faithful(erfcf(-x), erfc(-x)), x);
+    }
+
+    for (uint32_t i = erfcinvmin; i < 0x7F800000; i += 137) {
         float x = reinterpret(float, i);
         verify(approx(erfcf(x), erfc(x)), x);
         verify(approx(erfcf(-x), erfc(-x)), x);
