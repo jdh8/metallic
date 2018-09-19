@@ -16,8 +16,8 @@
 
 static double _expf(double x)
 {
-    const double minimum = -103.972077083991796;
-    const double maximum = 88.7228391116729996;
+    const double minimum = -708.39641853226410622;
+    const double maximum = 709.78271289338399684;
 
     const double log2e = 1.442695040888963407;
     const double ln2 = 0.6931471805599453094;
@@ -36,5 +36,3 @@ static double _expf(double x)
 }
 
 #endif
-
-/* vim: set ft=c: */

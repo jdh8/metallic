@@ -16,10 +16,10 @@
 
 static double _exp2f(double x)
 {
-    if (x < -150)
+    if (x < -1022)
         return 0;
 
-    if (x > 128)
+    if (x >= 1024)
         return x * HUGE_VALF;
 
     double n = rint(x);
