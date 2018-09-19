@@ -15,10 +15,17 @@ int main(void)
     assert(erff(INFINITY) == 1);
     assert(erff(-INFINITY) == -1);
 
-    for (uint32_t i = 0; i < 0x7F800000; i += 77) {
+    for (uint32_t i = 0; i < 0x00800000; i += 77) {
         float x = reinterpret(float, i);
         float y = erff(x);
         verify(approx(y, erf(x)), x);
+        verify(identical(-y, erff(-x)), x);
+    }
+
+    for (uint32_t i = 0x00800000; i < 0x7F800000; i += 77) {
+        float x = reinterpret(float, i);
+        float y = erff(x);
+        verify(faithful(y, erf(x)), x);
         verify(identical(-y, erff(-x)), x);
     }
 
