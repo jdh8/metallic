@@ -16,8 +16,8 @@
 
 static double _expm1f(float x)
 {
-    const float minimum = -103.972077083991796;
-    const float maximum = 88.7228391116729996;
+    const float minimum = -37.42994775023704671;
+    const float maximum = 709.78271289338399684;
 
     const float log2e = 1.442695040888963407;
     const double ln2 = 0.6931471805599453094;
