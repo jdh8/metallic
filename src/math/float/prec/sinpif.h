@@ -56,5 +56,3 @@ static double _sinpif(float x)
 
     __builtin_unreachable();
 }
-
-/* vim: set ft=c: */

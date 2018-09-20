@@ -128,5 +128,3 @@ static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, un
 }
 
 #endif /* udivmodti4.h */
-
-/* vim: set ft=c: */

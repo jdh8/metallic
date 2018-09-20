@@ -40,5 +40,3 @@ _Noreturn void abort(void);
     fprintf(stderr, "Assertion `"#cond"' failed at %g (%#"PRIx32")\n", y, reinterpret(uint32_t, y)); \
     abort();                                                                                         \
 }
-
-/* vim: set ft=c: */

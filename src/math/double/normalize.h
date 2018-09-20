@@ -40,5 +40,3 @@ static int64_t _normalize(int64_t i)
 }
 
 #endif
-
-/* vim: set ft=c: */

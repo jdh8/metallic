@@ -42,5 +42,3 @@ static void test_modf(void)
         test_modf_finite(-x);
     }
 }
-
-/* vim: set ft=c: */

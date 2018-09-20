@@ -75,5 +75,3 @@ static void test_frexp(void)
     test_frexp_mantissa(SUFFIX(0.501));
     test_frexp_mantissa(SUFFIX(0.60792710185402662866327677925836583));
 }
-
-/* vim: set ft=c: */

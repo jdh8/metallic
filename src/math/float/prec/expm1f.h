@@ -39,4 +39,3 @@ static double _expm1f(float x)
     return reinterpret(double, shifted) - 1;
 }
 #endif
-/* vim: set ft=c: */

@@ -37,4 +37,3 @@ static double _kernel_exp2(double x, double y)
 }
 
 #endif
-/* vim: set ft=c: */

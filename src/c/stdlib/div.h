@@ -22,5 +22,3 @@ Result CAT(PREFIX, div)(Integer numerator, Integer denominator)
 
     return result;
 }
-
-/* vim: set ft=c: */

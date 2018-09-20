@@ -57,4 +57,3 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
     
     return CMPLX(x, y);
 }
-// vim: ft=c

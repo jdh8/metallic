@@ -51,5 +51,3 @@ static long double floatuntitf(unsigned __int128 a)
 }
 
 #endif /* floatuntitf.h */
-
-/* vim: set ft=c: */

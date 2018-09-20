@@ -54,5 +54,3 @@ static void test_scalbn(void)
     metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, -20)) == i0);
     metallic_assert(reinterpret(Unsigned, scalbn(-11111 * min, INT_MIN)) == i0);
 }
-
-/* vim: set ft=c: */

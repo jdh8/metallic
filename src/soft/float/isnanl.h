@@ -23,5 +23,3 @@ static int __isnanl(long double x)
 }
 
 #endif /* isnanl.h */
-
-/* vim: set ft=c: */

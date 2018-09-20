@@ -39,4 +39,3 @@ static double _kernel_expm1f(double x)
     return x * (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx));
 }
 #endif
-/* vim: set ft=c: */

@@ -13,5 +13,3 @@ Integer CAT(PREFIX, abs)(Integer a)
 {
     return a < 0 ? -a : a ? a : 0;
 }
-
-/* vim: set ft=c: */
