@@ -20,7 +20,7 @@ static double _exp2f(double x)
         return 0;
 
     if (x >= 1024)
-        return x * HUGE_VALF;
+        return x * HUGE_VAL;
 
     double n = rint(x);
     double y = 1 + _kernel_exp2m1f(x - n);

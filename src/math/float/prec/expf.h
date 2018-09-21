@@ -26,7 +26,7 @@ static double _expf(double x)
         return 0;
 
     if (x > maximum)
-        return x * HUGE_VALF;
+        return x * HUGE_VAL;
 
     double n = rint(x * log2e);
     double y = 1 + _kernel_expm1f(x - n * ln2);
