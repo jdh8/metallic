@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/atanhf.h"
-#include "prec/sinpif.h"
+#include "finite/sinpif.h"
 #include "../gamma.h"
 #include "../reinterpret.h"
 #include <float.h>

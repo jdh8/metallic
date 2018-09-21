@@ -9,8 +9,8 @@
 #ifndef METALLIC_EXPM1F_H
 #define METALLIC_EXPM1F_H
 
-#include "../kernel/expm1f.h"
-#include "../../reinterpret.h"
+#include "kernel/expm1f.h"
+#include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
 

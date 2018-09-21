@@ -8,8 +8,8 @@
  */
 #include "atan2f.h"
 #include "cisf.h"
-#include "prec/expf.h"
-#include "prec/loghypotf.h"
+#include "expf.h"
+#include "finite/loghypotf.h"
 #include <complex.h>
 #include <math.h>
 

@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "cisf.h"
-#include "prec/expf.h"
+#include "expf.h"
 #include <complex.h>
 
 float _Complex cexpf(float _Complex z)

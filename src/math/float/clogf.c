@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "atan2f.h"
-#include "prec/loghypotf.h"
+#include "finite/loghypotf.h"
 #include <complex.h>
 #include <math.h>
 
