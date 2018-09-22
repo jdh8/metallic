@@ -8,13 +8,10 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
-#include <float.h>
+#include <stdint.h>
 
-float floorf(float x)
+static float _floorf(float x)
 {
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-    return __builtin_floorf(x);
-#else
     int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
 
@@ -27,5 +24,17 @@ float floorf(float x)
     int32_t mask = 0x007FFFFF >> ((magnitude >> 23) - 127);
 
     return reinterpret(float, (bits + (bits < 0) * mask) & ~mask);
+}
+
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
+#define FLOORF __builtin_floorf
+#else
+#define FLOORF _floorf
 #endif
+
+float floorf(float x)
+{
+    (void)_floorf;
+
+    return FLOORF(x);
 }
