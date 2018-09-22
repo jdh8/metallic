@@ -8,7 +8,11 @@
  */
 #include <math.h>
 
-float roundf(float x)
+static float _roundf(float x)
 {
     return trunc(x + copysign(0.5, x));
 }
+
+#ifdef _METALLIC
+float roundf(float x) { return _roundf(x); }
+#endif
