@@ -13,18 +13,18 @@
 
 int ilogbf(float x)
 {
-    int32_t word = reinterpret(int32_t, x) & 0x7FFFFFFF;
+    int32_t magnitude = reinterpret(int32_t, x) & 0x7FFFFFFF;
 
-    if (word == 0)
+    if (magnitude == 0)
         return FP_ILOGB0;
 
-    if (word < 0x00800000)
-        return -(118 + __builtin_clz(word));
+    if (magnitude < 0x00800000)
+        return -(118 + __builtin_clz(magnitude));
 
-    if (word < 0x7F800000)
-        return (word >> 23) - 127;
+    if (magnitude < 0x7F800000)
+        return (magnitude >> 23) - 127;
 
-    if (FP_ILOGBNAN != INT_MAX && word == 0x7F800000)
+    if (FP_ILOGBNAN != INT_MAX && magnitude == 0x7F800000)
         return INT_MAX;
 
     return FP_ILOGBNAN;
