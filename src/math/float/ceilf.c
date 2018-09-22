@@ -8,13 +8,10 @@
  */
 #include "../reinterpret.h"
 #include <math.h>
-#include <float.h>
+#include <stdint.h>
 
-float ceilf(float x)
+static float _ceilf(float x)
 {
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-    return __builtin_ceilf(x);
-#else
     int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
 
@@ -22,10 +19,22 @@ float ceilf(float x)
         return x;
 
     if (magnitude < 0x3F800000) /* 1 */
-        return bits >> 31;
+        return -(float)~(bits >> 31);
 
     int32_t mask = 0x007FFFFF >> ((magnitude >> 23) - 127);
 
     return reinterpret(float, (bits + (bits >= 0) * mask) & ~mask);
+}
+
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
+#define CEILF __builtin_ceilf
+#else
+#define CEILF _ceilf
 #endif
+
+float ceilf(float x)
+{
+    (void)_ceilf;
+
+    return CEILF(x);
 }
