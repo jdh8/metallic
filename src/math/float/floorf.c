@@ -35,6 +35,5 @@ static float _floorf(float x)
 float floorf(float x)
 {
     (void)_floorf;
-
     return FLOORF(x);
 }

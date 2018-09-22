@@ -35,6 +35,5 @@ static float _ceilf(float x)
 float ceilf(float x)
 {
     (void)_ceilf;
-
     return CEILF(x);
 }

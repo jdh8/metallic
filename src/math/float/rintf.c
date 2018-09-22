@@ -30,7 +30,6 @@ static float _rintf(float x)
 float rintf(float x)
 {
     (void)_rintf;
-
     return RINTF(x);
 }
 

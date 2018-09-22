@@ -33,6 +33,5 @@ static float _truncf(float x)
 float truncf(float x)
 {
     (void)_truncf;
-
     return TRUNCF(x);
 }
