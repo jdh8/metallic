@@ -25,7 +25,12 @@ int main(void)
 {
     assert(atan2f(INFINITY, INFINITY) == (float)atan(1));
 
-    for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE)
+    for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE) {
+        float y = reinterpret(float, j);
+        run(y, INFINITY);
+        run(INFINITY, y);
+
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(reinterpret(float, j), reinterpret(float, i));
+            run(y, reinterpret(float, i));
+    }
 }

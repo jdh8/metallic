@@ -36,7 +36,12 @@ int main(void)
 
     assert(isnan(_fmodf(NAN, NAN)));
 
-    for (uint32_t j = 6; j < 0x7F800000; j += 0x000ABCDE)
+    for (uint32_t j = 6; j < 0x7F800000; j += 0x000ABCDE) {
+        float y = reinterpret(float, j);
+        run(y, INFINITY);
+        assert(isnan(_fmodf(INFINITY, y)));
+
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(reinterpret(float, i), reinterpret(float, j));
+            run(reinterpret(float, i), y);
+    }
 }
