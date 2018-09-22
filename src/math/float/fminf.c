@@ -8,5 +8,5 @@
  */
 float fminf(float x, float y)
 {
-    return y != y || x < y ? x : y;
+    return x <= y || y != y ? x : y;
 }
