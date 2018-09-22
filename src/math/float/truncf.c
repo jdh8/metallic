@@ -7,12 +7,10 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../reinterpret.h"
+#include <stdint.h>
 
-float truncf(float x)
+static float _truncf(float x)
 {
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-    return __builtin_truncf(x);
-#else
     const int32_t mask = 0xFF800000;
     int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
@@ -24,5 +22,17 @@ float truncf(float x)
         return reinterpret(float, mask >> ((magnitude >> 23) - 127) & bits);
 
     return x;
+}
+
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
+#define TRUNCF __builtin_truncf
+#else
+#define TRUNCF _truncf
 #endif
+
+float truncf(float x)
+{
+    (void)_truncf;
+
+    return TRUNCF(x);
 }
