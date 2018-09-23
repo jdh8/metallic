@@ -8,6 +8,7 @@
  */
 #include "../../../src/math/reinterpret.h"
 #include "../../assert.h"
+#include "identical.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -41,8 +42,8 @@ int main(void)
     metallic_assert(frexpf(INFINITY, &exp) == INFINITY);
     metallic_assert(frexpf(-INFINITY, &exp) == -INFINITY);
 
-    metallic_assert(reinterpret(uint32_t, frexpf(0, &exp)) == 0 && exp == 0);
-    metallic_assert(reinterpret(uint32_t, frexpf(-0.0f, &exp)) == 0x80000000u && exp == 0);
+    metallic_assert(identical(frexpf(0, &exp), 0) && exp == 0);
+    metallic_assert(identical(frexpf(-0.0f, &exp), -0.0f) && exp == 0);
 
     for (int32_t i = 0x00800000; i < 0x01000000; i += 11) {
         normal(reinterpret(float, i));
