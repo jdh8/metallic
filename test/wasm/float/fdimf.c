@@ -24,4 +24,7 @@ int main(void)
     for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE)
         for (uint32_t i = j; i < 0x7F800000; i += 0x00098765)
             run(reinterpret(float, i), reinterpret(float, j));
+
+    metallic_assert(reinterpret(uint32_t, fdimf(INFINITY, INFINITY)) == 0);
+    metallic_assert(reinterpret(uint32_t, fdimf(-INFINITY, -INFINITY)) == 0);
 }
