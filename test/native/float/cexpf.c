@@ -11,16 +11,49 @@
 #include "../../../src/math/float/rem_pio2f.c"
 #include <assert.h>
 
-static void run(float x, float y)
+static void good(float x, float y)
 {
     float _Complex z = CMPLXF(x, y);
 
     verify2(capprox(cexpf(z), cexp(z)), x, y);
 }
 
+static void bad(float x, float y)
+{
+    float _Complex z = cexpf(CMPLXF(x, y));
+
+    verify2(isnan(crealf(z)), x, y);
+    verify2(isnan(cimagf(z)), x, y);
+}
+
+static void run(void f(float, float), float x, float y)
+{
+    f(x, y);
+    f(x, -y);
+    f(-x, y);
+    f(-x, -y);
+}
+
+static void ugly(float x)
+{
+    verify(isinf(crealf(cexpf(CMPLXF(INFINITY, x)))), x);
+    verify(isnan(cimagf(cexpf(CMPLXF(INFINITY, x)))), x);
+    verify(cexpf(CMPLXF(-INFINITY, x)) == 0, x);
+}
+
 int main(void)
 {
-    for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE)
-        for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(reinterpret(float, i), reinterpret(float, j));
+    for (uint32_t j = 0; j < 0x7F800000; j += 0x00135769)
+        for (uint32_t i = 0; i < 0x7F800000; i += 0x00123456)
+            run(good, reinterpret(float, i), reinterpret(float, j));
+
+    for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769)
+        for (uint32_t i = 0; i < 0x7F800000; i += 0x00123456)
+            run(bad, reinterpret(float, i), reinterpret(float, j));
+
+    for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769) {
+        float x = reinterpret(float, j);
+        ugly(x);
+        ugly(-x);
+    }
 }
