@@ -35,8 +35,14 @@ static inline _Bool capprox(float _Complex x, float _Complex y)
 
 _Noreturn void abort(void);
 
-#define verify(cond, x) if (!(cond)) {                                                               \
-    float y = x;                                                                                     \
-    fprintf(stderr, "Assertion `"#cond"' failed at %g (%#"PRIx32")\n", y, reinterpret(uint32_t, y)); \
-    abort();                                                                                         \
+#define verify(cond, x) if (!(cond)) {                                    \
+    fprintf(stderr, "Assertion `"#cond"' failed at %g [0x%08"PRIx32"]\n", \
+        (float)(x), reinterpret(uint32_t, (float)(x)));                   \
+    abort();                                                              \
+}
+
+#define verify2(cond, x, y) if (!(cond)) {                                                             \
+    fprintf(stderr, "Assertion `"#cond"' failed at (%g, %g) [0x%08"PRIx32" 0x%08"PRIx32"]\n",          \
+        (float)(x), (float)(y), reinterpret(uint32_t, (float)(x)), reinterpret(uint32_t, (float)(y))); \
+    abort();                                                                                           \
 }

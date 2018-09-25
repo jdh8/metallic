@@ -11,14 +11,16 @@
 #include "../../../src/math/float/rem_pio2f.c"
 #include <assert.h>
 
-static void run(float _Complex z)
+static void run(float x, float y)
 {
-    assert(capprox(cexpf(z), cexp(z)));
+    float _Complex z = CMPLXF(x, y);
+
+    verify2(capprox(cexpf(z), cexp(z)), x, y);
 }
 
 int main(void)
 {
     for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE)
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(CMPLXF(reinterpret(float, i), reinterpret(float, j)));
+            run(reinterpret(float, i), reinterpret(float, j));
 }
