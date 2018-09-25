@@ -18,15 +18,15 @@ static float _unsigned(float x, float y)
         return 1;
 
     if (x == 0)
-        return signbit(y) ? HUGE_VALF : 0;
+        return signbit(y) ? INFINITY : 0;
 
     if (isinf(x))
-        return signbit(y) ? 0 : HUGE_VALF;
+        return signbit(y) ? 0 : INFINITY;
 
-    if (x > 0)
-        return _exp2f(y * _log2f(x));
+    if (signbit(x))
+        return NAN;
 
-    return NAN;
+    return _exp2f(y * _log2f(x));
 }
 
 float powf(float x, float y)
