@@ -11,6 +11,11 @@ static inline _Bool identical(float x, float y)
     return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
 }
 
+static inline _Bool cidentical(float _Complex x, float _Complex y)
+{
+    return reinterpret(uint64_t, x) == reinterpret(uint64_t, y);
+}
+
 static inline _Bool faithful(double x, double y)
 {
     const uint64_t mask = (1L << (DBL_MANT_DIG - FLT_MANT_DIG)) - 1;

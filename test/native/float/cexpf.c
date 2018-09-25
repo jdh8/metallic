@@ -14,24 +14,27 @@
 static void good(float x, float y)
 {
     float _Complex z = CMPLXF(x, y);
+    float _Complex expz = cexpf(z);
 
-    verify2(capprox(cexpf(z), cexp(z)), x, y);
+    verify2(capprox(expz, cexp(z)), x, y);
+    verify2(cidentical(conjf(expz), cexpf(conjf(z))), x, y);
 }
 
 static void bad(float x, float y)
 {
-    float _Complex z = cexpf(CMPLXF(x, y));
+    float _Complex upper = cexpf(CMPLXF(x, y));
+    float _Complex lower = cexpf(CMPLXF(x, -y));
 
-    verify2(isnan(crealf(z)), x, y);
-    verify2(isnan(cimagf(z)), x, y);
+    verify2(isnan(crealf(upper)), x, y);
+    verify2(isnan(cimagf(upper)), x, y);
+    verify2(isnan(crealf(lower)), x, -y);
+    verify2(isnan(cimagf(lower)), x, -y);
 }
 
 static void run(void f(float, float), float x, float y)
 {
     f(x, y);
-    f(x, -y);
     f(-x, y);
-    f(-x, -y);
 }
 
 static void ugly(float x)
