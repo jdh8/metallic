@@ -47,7 +47,7 @@ static void ugly(float x)
 int main(void)
 {
     for (uint32_t j = 0; j < 0x7F800000; j += 0x00135769)
-        for (uint32_t i = 0; i < 0x7F800000; i += 0x00123456)
+        for (uint32_t i = 0; i <= 0x7F800000; i += 0x00100000)
             run(good, reinterpret(float, i), reinterpret(float, j));
 
     for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769)
