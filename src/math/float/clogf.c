@@ -7,16 +7,38 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "atan2f.h"
-#include "finite/loghypotf.h"
+#include "kernel/atanhf.h"
+#include "../reinterpret.h"
 #include <complex.h>
 #include <math.h>
+#include <stdint.h>
 
-static float _real(float x, float y)
+static float _kernel(double x)
 {
-    if (isinf(x) || isinf(y))
+    return _kernel_atanhf(x / (2 + x));
+}
+
+static float _first(float x, float y)
+{
+    const double ln2 = 0.69314718055994530942;
+
+    if (x == INFINITY || y == INFINITY)
         return INFINITY;
 
-    return _loghypotf(x, y);
+    double a = x;
+    double b = y;
+    int64_t i = reinterpret(int64_t, a * a + b * b);
+    int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
+
+    if (!exponent) {
+        if (x == 1)
+            return _kernel(b * b);
+        if (y == 1)
+            return _kernel(a * a);
+    }
+
+    double c = reinterpret(double, i - (exponent << 52));
+    return _kernel_atanhf((c - 1) / (c + 1)) + ln2 / 2 * exponent;
 }
 
 float _Complex clogf(float _Complex z)
@@ -24,5 +46,5 @@ float _Complex clogf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    return CMPLXF(z ? _real(x, y) : -INFINITY, _atan2f(y, x));
+    return CMPLXF(z ? _first(fabsf(x), fabsf(y)) : -INFINITY, _atan2f(y, x));
 }

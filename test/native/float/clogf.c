@@ -28,7 +28,7 @@ static void run(void f(float, float), float x, float y)
 
 int main(void)
 {
-    for (uint32_t j = 0; j < 0x7F800000; j += 0x00135769)
-        for (uint32_t i = 0; i < 0x7F800000; i += 0x00123456)
+    for (uint32_t j = 0; j < 0x7F800000; j += 0x00100000)
+        for (uint32_t i = 0; i < 0x7F800000; i += 0x00100000)
             run(good, reinterpret(float, i), reinterpret(float, j));
 }
