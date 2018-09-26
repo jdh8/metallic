@@ -16,7 +16,7 @@ float logbf(float x)
     int32_t word = reinterpret(int32_t, y);
 
     if (word == 0)
-        return -HUGE_VALF;
+        return -INFINITY;
 
     if (word < 0x00800000)
         return -(118 + __builtin_clz(word));

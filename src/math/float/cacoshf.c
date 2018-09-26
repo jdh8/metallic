@@ -41,13 +41,13 @@ float _Complex cacoshf(float _Complex z)
     float y = cimagf(z);
 
     if (x == INFINITY)
-        return CMPLXF(HUGE_VALF, isinf(y) ? copysignf(0.25 * pi, y) : 0 * y);
+        return CMPLXF(INFINITY, isinf(y) ? copysignf(0.25 * pi, y) : 0 * y);
 
     if (x == -INFINITY)
-        return CMPLXF(HUGE_VALF, copysignf(_resolve(y), y));
+        return CMPLXF(INFINITY, copysignf(_resolve(y), y));
 
     if (isinf(y))
-        return CMPLXF(HUGE_VALF, x == x ? copysignf(0.5 * pi, x) : x);
+        return CMPLXF(INFINITY, x == x ? copysignf(0.5 * pi, x) : x);
 
     return _clogf(z + _sinh_acosh(z));
 }

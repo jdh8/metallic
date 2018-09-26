@@ -9,6 +9,7 @@
 #include "kernel/expm1f.h"
 #include "../reinterpret.h"
 #include <math.h>
+#include <float.h>
 #include <stdint.h>
 
 float expf(float x)
@@ -23,7 +24,7 @@ float expf(float x)
         return 0;
 
     if (x > maximum)
-        return x * HUGE_VALF;
+        return maximum * FLT_MAX;
 
     float n = rintf(x * log2e);
     double y = 1 + _kernel_expm1f(x - n * ln2);

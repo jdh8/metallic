@@ -11,6 +11,7 @@
 #include "finite/sinpif.h"
 #include "../gamma.h"
 #include <math.h>
+#include <float.h>
 
 static double _product(float z)
 {
@@ -29,7 +30,7 @@ static double _right(float z)
     const float max = 35.0400984199;
 
     if (z > max)
-        return HUGE_VALF;
+        return max * FLT_MAX;
 
     return _product(z) * _gamma_lanczos_sum(z);
 }

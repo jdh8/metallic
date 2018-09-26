@@ -16,7 +16,7 @@ float _Complex csqrtf(float _Complex z)
     float y = cimagf(z);
 
     if (isinf(y))
-        return CMPLXF(HUGE_VALF, y);
+        return CMPLXF(INFINITY, y);
 
     if (x == INFINITY)
         return CMPLXF(x, 0 * y);

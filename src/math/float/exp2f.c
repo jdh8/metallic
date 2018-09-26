@@ -9,6 +9,7 @@
 #include "kernel/exp2m1f.h"
 #include "../reinterpret.h"
 #include <math.h>
+#include <float.h>
 #include <stdint.h>
 
 float exp2f(float x)
@@ -17,7 +18,7 @@ float exp2f(float x)
         return 0;
 
     if (x > 128)
-        return x * HUGE_VALF;
+        return 128 * FLT_MAX;
 
     float n = rintf(x);
     double y = 1 + _kernel_exp2m1f(x - n);

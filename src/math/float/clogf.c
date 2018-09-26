@@ -14,7 +14,7 @@
 static float _real(float x, float y)
 {
     if (isinf(x) || isinf(y))
-        return HUGE_VALF;
+        return INFINITY;
 
     return _loghypotf(x, y);
 }

@@ -31,7 +31,7 @@ float atanhf(float x)
     float absx = fabsf(x);
 
     if (absx == 1)
-        return copysignf(HUGE_VALF, x);
+        return copysignf(INFINITY, x);
 
     if (absx < 1)
         return _finite(x);

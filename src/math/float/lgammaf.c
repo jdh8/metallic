@@ -46,7 +46,7 @@ float lgammaf(float z)
 
     if (z < 0.5f) {
         if (rintf(z) == z)
-            return HUGE_VALF;
+            return INFINITY;
 
         return _logf(pi / fabs(_sinpif(z) * _gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
     }

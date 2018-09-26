@@ -16,7 +16,7 @@ float log1pf(float x)
     int32_t i = reinterpret(int32_t, x);
 
     if (i == 0xBF800000u)
-        return -HUGE_VALF;
+        return -INFINITY;
 
     if (i > 0xBF800000u)
         return NAN;
