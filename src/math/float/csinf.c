@@ -6,17 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "cisf.h"
-#include "expm1f.h"
-#include <complex.h>
+#include "csinhf.h"
 
 float _Complex csinf(float _Complex z)
 {
-    double _Complex circular = _cisf(z);
+    z = _csinhf(cimagf(z), z);
 
-    double y = _expm1f(fabsf(cimagf(z)));
-    double cosh = 0.5 * (y + 1) + 0.5 / (y + 1);
-    double sinh = copysign(y * (0.5 + 0.5 / (y + 1)), cimagf(z));
-
-    return CMPLXF(cosh * cimag(circular), sinh * (double)circular);
+    return CMPLXF(cimagf(z), z);
 }
