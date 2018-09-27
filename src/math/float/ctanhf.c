@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -24,11 +24,14 @@ float _Complex ctanhf(float _Complex z)
     double cos = circular;
     double sin = cimag(circular);
 
+    if (x != x && y == 0)
+        return z;
+
     if (isinf(x))
         return CMPLXF(copysignf(1, x), copysignf(0, y));
 
-    if (y == 0)
-        return CMPLXF(sinh / cosh, y);
+    if (t >= 0x1p53)
+        return CMPLXF(copysignf(1, x), sin * cos * 4 / (t * t));
 
     return CMPLX(sinh * cosh, sin * cos) / (sinh * sinh + cos * cos);
 }
