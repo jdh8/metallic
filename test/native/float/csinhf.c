@@ -30,20 +30,20 @@ static void bad(float x, float y)
     verify2(isnan(cimagf(z)), x, y);
 }
 
-static void ugly(float x, float y)
-{
-    float _Complex z = csinhf(CMPLXF(x, y));
-
-    verify2(fabsf(x) == fabsf(crealf(z)), x, y);
-    verify2(isnan(cimagf(z)), x, y);
-}
-
-static void weird(float x, float y)
+static void ugly0(float x, float y)
 {
     float _Complex z = csinhf(CMPLXF(x, y));
 
     verify2(isnan(crealf(z)), x, y);
     verify2(cimagf(z) == 0, x, y);
+}
+
+static void ugly1(float x, float y)
+{
+    float _Complex z = csinhf(CMPLXF(x, y));
+
+    verify2(fabsf(x) == fabsf(crealf(z)), x, y);
+    verify2(isnan(cimagf(z)), x, y);
 }
 
 static void run(void f(float, float), float x, float y)
@@ -68,12 +68,12 @@ int main(void)
         for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 0x00123456)
             run(bad, reinterpret(float, i), reinterpret(float, j));
 
+    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 0x00123456)
+        run(ugly0, reinterpret(float, i), 0);
+
     for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769) {
         float y = reinterpret(float, j);
-        run(ugly, 0, y);
-        run(ugly, INFINITY, y);
+        run(ugly1, 0, y);
+        run(ugly1, INFINITY, y);
     }
-
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 0x00123456)
-        run(weird, reinterpret(float, i), 0);
 }
