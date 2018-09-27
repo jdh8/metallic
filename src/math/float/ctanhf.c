@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "expf.h"
 #include "cisf.h"
+#include "expm1f.h"
 #include <complex.h>
 #include <math.h>
 
@@ -16,19 +16,19 @@ float _Complex ctanhf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    if (isinf(x))
-        return CMPLXF(copysignf(1, x), copysignf(0, y));
-
-    if (x != x)
-        return CMPLXF(x, y ? x : y);
+    double t = _expm1f(fabsf(x));
+    double cosh = 0.5 * (t + 1) + 0.5 / (t + 1);
+    double sinh = copysign(t * (0.5 + 0.5 / (t + 1)), x);
 
     double _Complex circular = _cisf(y);
     double cos = circular;
     double sin = cimag(circular);
 
-    double exp = _expf(x);
-    double cosh = 0.5 * exp + 0.5 / exp;
-    double sinh = 0.5 * exp - 0.5 / exp;
+    if (isinf(x))
+        return CMPLXF(copysignf(1, x), copysignf(0, y));
+
+    if (y == 0)
+        return CMPLXF(sinh / cosh, y);
 
     return CMPLX(sinh * cosh, sin * cos) / (sinh * sinh + cos * cos);
 }
