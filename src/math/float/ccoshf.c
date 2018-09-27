@@ -12,11 +12,24 @@
 
 float _Complex ccoshf(float _Complex z)
 {
-    double _Complex circular = _cisf(cimagf(z));
+    float x = z;
+    float y = cimagf(z);
 
-    double y = _expm1f(fabsf((float)z));
-    double cosh = 0.5 * (y + 1) + 0.5 / (y + 1);
-    double sinh = copysign(y * (0.5 + 0.5 / (y + 1)), z);
+    double t = _expm1f(fabsf(x));
+    double cosh = 0.5 * (t + 1) + 0.5 / (t + 1);
+    double sinh = copysign(t * (0.5 + 0.5 / (t + 1)), x);
+    double _Complex circular = _cisf(y);
 
-    return CMPLXF(cosh * (double)circular, sinh * cimag(circular));
+    if (y == 0)
+        return CMPLXF(cosh, y);
+
+    if (y - y) {
+        if (x == 0)
+            return CMPLXF(y - y, x);
+
+        if (isinf(x))
+            return CMPLXF(INFINITY, y - y);
+    }
+
+    return CMPLXF(cosh * creal(circular), sinh * cimag(circular));
 }
