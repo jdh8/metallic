@@ -17,8 +17,11 @@ static float _Complex _ccoshf(float x, float y)
     double sinh = copysign(t * (0.5 + 0.5 / (t + 1)), x);
     double _Complex circular = _cisf(y);
 
-    if (y == 0)
-        return CMPLXF(cosh, y);
+    if (y == 0) {
+        uint32_t i = reinterpret(uint32_t, copysignf(0, x));
+        uint32_t j = reinterpret(uint32_t, y);
+        return CMPLXF(cosh, reinterpret(float, i ^ j));
+    }
 
     if (y - y) {
         if (x == 0)
