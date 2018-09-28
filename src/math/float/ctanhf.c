@@ -27,11 +27,11 @@ float _Complex ctanhf(float _Complex z)
     if (x != x && y == 0)
         return z;
 
-    if (isinf(x))
-        return CMPLXF(copysignf(1, x), copysignf(0, y));
+    if (y - y)
+        return isinf(x) ? copysignf(1, x) : CMPLXF(y - y, y - y);
 
-    if (t >= 0x1p128)
-        return CMPLXF(copysignf(1, x), sin * cos * 4 / (t * t));
+    if (t >= 0x1p53)
+        return CMPLXF(copysignf(1, x), sin * cos / (0.25 * t));
 
     return CMPLX(sinhcosh, sin * cos) / (sinhsinh + cos * cos);
 }
