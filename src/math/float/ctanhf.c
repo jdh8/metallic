@@ -16,9 +16,9 @@ float _Complex ctanhf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    double t = _expm1f(fabsf(x));
-    double cosh = 0.5 * (t + 1) + 0.5 / (t + 1);
-    double sinh = copysign(t, x) * (0.5 + 0.5 / (t + 1));
+    double t = _expm1f(2 * fabsf(x));
+    double sinhcosh = copysign(t, x) * (0.25 + 0.25 / (t + 1));
+    double sinhsinh = 0.25 * t * t / (t + 1);
 
     double _Complex circular = _cisf(y);
     double cos = circular;
@@ -30,8 +30,8 @@ float _Complex ctanhf(float _Complex z)
     if (isinf(x))
         return CMPLXF(copysignf(1, x), copysignf(0, y));
 
-    if (t >= 0x1p53)
+    if (t >= 0x1p128)
         return CMPLXF(copysignf(1, x), sin * cos * 4 / (t * t));
 
-    return CMPLX(sinh * cosh, sin * cos) / (sinh * sinh + cos * cos);
+    return CMPLX(sinhcosh, sin * cos) / (sinhsinh + cos * cos);
 }
