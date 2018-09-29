@@ -11,7 +11,7 @@
 #include "../../../src/math/float/rem_pio2f.c"
 #include <assert.h>
 
-static void good(float x, float y)
+static void convergent(float x, float y)
 {
     float _Complex z = CMPLXF(x, y);
     float _Complex sinhz = csinhf(z);
@@ -22,7 +22,7 @@ static void good(float x, float y)
     verify2(cidentical(-conjf(sinhz), csinhf(-conjf(z))), x, y);
 }
 
-static void bad(float x, float y)
+static void divergent(float x, float y)
 {
     float _Complex z = csinhf(CMPLXF(x, y));
 
@@ -30,7 +30,7 @@ static void bad(float x, float y)
     verify2(isnan(cimagf(z)), x, y);
 }
 
-static void ugly0(float x, float y)
+static void realnan(float x, float y)
 {
     float _Complex z = csinhf(CMPLXF(x, y));
 
@@ -38,7 +38,7 @@ static void ugly0(float x, float y)
     verify2(cimagf(z) == 0, x, y);
 }
 
-static void ugly1(float x, float y)
+static void imagnan(float x, float y)
 {
     float _Complex z = csinhf(CMPLXF(x, y));
 
@@ -58,22 +58,22 @@ int main(void)
 {
     for (uint32_t j = 0; j < 0x7F800000; j += 0x00135769)
         for (uint32_t i = 0; i <= 0x7F800000; i += 0x00100000)
-            good(reinterpret(float, i), reinterpret(float, j));
+            convergent(reinterpret(float, i), reinterpret(float, j));
 
     for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769)
         for (uint32_t i = 1; i < 0x7F800000; i += 0x00123456)
-            run(bad, reinterpret(float, i), reinterpret(float, j));
+            run(divergent, reinterpret(float, i), reinterpret(float, j));
 
     for (uint32_t j = 1; j < 0x7F800000; j += 0x00135769)
         for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 0x00123456)
-            run(bad, reinterpret(float, i), reinterpret(float, j));
+            run(divergent, reinterpret(float, i), reinterpret(float, j));
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 0x00123456)
-        run(ugly0, reinterpret(float, i), 0);
+        run(realnan, reinterpret(float, i), 0);
 
     for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769) {
         float y = reinterpret(float, j);
-        run(ugly1, 0, y);
-        run(ugly1, INFINITY, y);
+        run(imagnan, 0, y);
+        run(imagnan, INFINITY, y);
     }
 }
