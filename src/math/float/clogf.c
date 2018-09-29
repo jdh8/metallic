@@ -30,6 +30,12 @@ static float _first(float x, float y)
     int64_t i = reinterpret(int64_t, a * a + b * b);
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
 
+    if (!i)
+        return -INFINITY;
+
+    if (i > 0x7FF0000000000000)
+        return NAN;
+
     if (!exponent) {
         if (x == 1)
             return _kernel(b * b);
@@ -38,6 +44,7 @@ static float _first(float x, float y)
     }
 
     double c = reinterpret(double, i - (exponent << 52));
+
     return _kernel_atanhf((c - 1) / (c + 1)) + ln2 / 2 * exponent;
 }
 
@@ -46,5 +53,5 @@ float _Complex clogf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    return CMPLXF(z ? _first(fabsf(x), fabsf(y)) : -INFINITY, _atan2f(y, x));
+    return CMPLXF(_first(fabsf(x), fabsf(y)), _atan2f(y, x));
 }

@@ -20,15 +20,46 @@ static void convergent(float x, float y)
     verify2(cidentical(conjf(logz), clogf(conjf(z))), x, y);
 }
 
-static void run(void f(float, float), float x, float y)
+static void divergent(float x, float y)
+{
+    float _Complex z = clogf(CMPLXF(x, y));
+
+    verify2(isnan(crealf(z)), x, y);
+    verify2(isnan(cimagf(z)), x, y);
+}
+
+static void pole(float x, float y)
+{
+    float _Complex z = clogf(CMPLXF(x, y));
+
+    verify2(crealf(z) == INFINITY, x, y);
+    verify2(isnan(cimagf(z)), x, y);
+}
+
+static void run2(void f(float, float), float x, float y)
 {
     f(x, y);
     f(-x, y);
+}
+
+static void run8(void f(float, float), float x, float y)
+{
+    run2(f, x, y);
+    run2(f, x, -y);
+    run2(f, y, x);
+    run2(f, y, -x);
 }
 
 int main(void)
 {
     for (uint32_t j = 0; j <= 0x7F800000; j += 0x00100000)
         for (uint32_t i = 0; i <= 0x7F800000; i += 0x00100000)
-            run(convergent, reinterpret(float, i), reinterpret(float, j));
+            run2(convergent, reinterpret(float, i), reinterpret(float, j));
+
+    for (uint32_t j = 0x7FC00000; j < 0x80000000u; j += 0x00135769)
+        for (uint32_t i = 0; i < 0x80000000u; i += 0x00123456)
+            run8(divergent, reinterpret(float, i), reinterpret(float, j));
+
+    for (uint32_t j = 0x7FC00000; j < 0x80000000u; j += 0x00135769)
+        run8(pole, INFINITY, reinterpret(float, j));
 }
