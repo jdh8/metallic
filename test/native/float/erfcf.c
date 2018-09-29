@@ -25,8 +25,8 @@ int main(void)
 
     for (uint32_t i = erfcinvmin; i < 0x7F800000; i += 137) {
         float x = reinterpret(float, i);
-        verify(approx(erfcf(x), erfc(x)), x);
-        verify(approx(erfcf(-x), erfc(-x)), x);
+        verify(approx(erfcf(x), erfc(x), 1), x);
+        verify(approx(erfcf(-x), erfc(-x), 1), x);
     }
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {

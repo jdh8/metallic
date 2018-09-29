@@ -16,7 +16,7 @@ static void good(float x, float y)
     float _Complex z = CMPLXF(x, y);
     float _Complex expz = cexpf(z);
 
-    verify2(capprox(expz, cexp(z)), x, y);
+    verify2(capprox(expz, cexp(z), 1, 1), x, y);
     verify2(cidentical(conjf(expz), cexpf(conjf(z))), x, y);
 }
 

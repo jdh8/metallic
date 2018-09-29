@@ -15,10 +15,10 @@ static void run(float y, float x)
     double first = atan2(y, x);
     double second = atan2(y, -x);
 
-    assert(approx(first, atan2f(y, x)));
-    assert(approx(second, atan2f(y, -x)));
-    assert(approx(-first, atan2f(-y, x)));
-    assert(approx(-second, atan2f(-y, -x)));
+    assert(approx(first, atan2f(y, x), 1));
+    assert(approx(second, atan2f(y, -x), 1));
+    assert(approx(-first, atan2f(-y, x), 1));
+    assert(approx(-second, atan2f(-y, -x), 1));
 }
 
 int main(void)

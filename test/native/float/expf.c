@@ -31,7 +31,7 @@ int main(void)
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(approx(expf(x), exp(x)), x);
+        verify(approx(expf(x), exp(x), 1), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {

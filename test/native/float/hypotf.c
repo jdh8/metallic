@@ -14,14 +14,14 @@ static void run(float x, float y)
 {
     double r = hypot(x, y);
 
-    assert(approx(r, hypotf(x, y)));
-    assert(approx(r, hypotf(y, x)));
-    assert(approx(r, hypotf(-x, y)));
-    assert(approx(r, hypotf(-y, x)));
-    assert(approx(r, hypotf(-x, -y)));
-    assert(approx(r, hypotf(-y, -x)));
-    assert(approx(r, hypotf(x, -y)));
-    assert(approx(r, hypotf(y, -x)));
+    assert(approx(r, hypotf(x, y), 1));
+    assert(approx(r, hypotf(y, x), 1));
+    assert(approx(r, hypotf(-x, y), 1));
+    assert(approx(r, hypotf(-y, x), 1));
+    assert(approx(r, hypotf(-x, -y), 1));
+    assert(approx(r, hypotf(-y, -x), 1));
+    assert(approx(r, hypotf(x, -y), 1));
+    assert(approx(r, hypotf(y, -x), 1));
 }
 
 int main(void)

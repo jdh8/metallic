@@ -12,14 +12,14 @@
 
 static void real(float x, float y)
 {
-    assert(approx(powf(x, y), pow(x, y)));
-    assert(approx(powf(x, -y), pow(x, -y)));
+    assert(approx(powf(x, y), pow(x, y), 1));
+    assert(approx(powf(x, -y), pow(x, -y), 1));
 }
 
 static void integral(float x, float y)
 {
-    assert(approx(powf(x, y), pow(x, y)));
-    assert(approx(powf(-x, y), pow(-x, y)));
+    assert(approx(powf(x, y), pow(x, y), 1));
+    assert(approx(powf(-x, y), pow(-x, y), 1));
 }
 
 int main(void)
