@@ -14,8 +14,11 @@ static double _Complex _csqrt(double x, double y)
     double s = sqrt(0.5 * (fabs(x) + sqrt(x * x + y * y)));
     double t = 0.5 * y / s;
 
+    if (x == 0)
+        return CMPLX(s, copysign(s, y));
+
     if (signbit(x))
         return CMPLX(fabs(t), copysign(s, y));
-    else
-        return CMPLX(s, t);
+
+    return CMPLX(s, t);
 }
