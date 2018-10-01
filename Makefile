@@ -8,8 +8,8 @@ metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 
 check: $(patsubst %.c, %.run, $(wildcard test/*/*/*.c))
 
-test/wasm/%.run: test/wasm/%.out test/wasm/index.mjs
-	node --experimental-modules test/wasm/index.mjs $< > $@
+test/wasm/%.run: test/wasm/index.mjs test/wasm/%.out
+	node --experimental-modules $^ > $@
 
 %.out: %.c metallic.bc
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.bc
