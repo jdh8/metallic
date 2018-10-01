@@ -43,12 +43,6 @@ static void negative(float y, float unused)
     verify(isinf(cimagf(z)), y);
 }
 
-static void mirror(void f(float, float), float x, float y)
-{
-    f(x, y);
-    f(-x, y);
-}
-
 int main(void)
 {
     for (uint32_t j = 0; j <= 0x7F800000; j += 0x00100000)

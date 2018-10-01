@@ -6,13 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "unary.h"
-
-#define verify2(cond, x, y) if (!(cond)) {                                                             \
-    fprintf(stderr, "Assertion `"#cond"' failed at (%g, %g) [0x%08"PRIx32" 0x%08"PRIx32"]\n",          \
-        (float)(x), (float)(y), reinterpret(uint32_t, (float)(x)), reinterpret(uint32_t, (float)(y))); \
-    abort();                                                                                           \
-}
+#include "binary.h"
 
 float cimagf(float _Complex);
 

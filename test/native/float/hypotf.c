@@ -6,41 +6,39 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "common.h"
+#include "binary.h"
 #include "../../../src/math/float/hypotf.c"
 #include <assert.h>
 
-static void run(float x, float y)
+static void convergent(float x, float y)
 {
-    double r = hypot(x, y);
+    float r = hypotf(x, y);
 
-    assert(approx(r, hypotf(x, y), 1));
-    assert(approx(r, hypotf(y, x), 1));
-    assert(approx(r, hypotf(-x, y), 1));
-    assert(approx(r, hypotf(-y, x), 1));
-    assert(approx(r, hypotf(-x, -y), 1));
-    assert(approx(r, hypotf(-y, -x), 1));
-    assert(approx(r, hypotf(x, -y), 1));
-    assert(approx(r, hypotf(y, -x), 1));
+    verify2(approx(r, hypot(x, y), 1), x, y);
+    verify2(identical(r, hypotf(y, x)), x, y);
+    verify2(identical(r, hypotf(-x, y)), x, y);
+    verify2(identical(r, hypotf(-y, x)), x, y);
+    verify2(identical(r, hypotf(-x, -y)), x, y);
+    verify2(identical(r, hypotf(-y, -x)), x, y);
+    verify2(identical(r, hypotf(x, -y)), x, y);
+    verify2(identical(r, hypotf(y, -x)), x, y);
+}
+
+static void divergent(float x, float y)
+{
+    verify2(isnan(hypotf(x, y)), x, y);
 }
 
 int main(void)
 {
-    assert(hypotf(INFINITY, INFINITY) == INFINITY);
-    assert(hypotf(-INFINITY, INFINITY) == INFINITY);
-    assert(hypotf(-INFINITY, -INFINITY) == INFINITY);
-    assert(hypotf(INFINITY, -INFINITY) == INFINITY);
+    for (uint32_t j = 0; j <= 0x7F800000; j += 0x00100000)
+        for (uint32_t i = j; i <= 0x7F800000; i += 0x00100000)
+            convergent(reinterpret(float, i), reinterpret(float, j));
 
-    assert(hypotf(INFINITY, NAN) == INFINITY);
-    assert(hypotf(-INFINITY, NAN) == INFINITY);
-    assert(hypotf(NAN, INFINITY) == INFINITY);
-    assert(hypotf(NAN, -INFINITY) == INFINITY);
+    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x000ABCDE)
+        convergent(INFINITY, reinterpret(float, j));
 
-    for (uint32_t j = 0; j < 0x7F800000; j += 0x000ABCDE) {
-        float y = reinterpret(float, j);
-        run(y, INFINITY);
-
-        for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(reinterpret(float, i), y);
-    }
+    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x000ABCDE)
+        for (uint32_t i = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x00098765)
+            quadrants(divergent, reinterpret(float, i), reinterpret(float, j));
 }

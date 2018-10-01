@@ -6,42 +6,39 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "common.h"
+#include "binary.h"
 #include "../../../src/math/float/fmodf.c"
 #include <assert.h>
 #include <stdint.h>
 
-static void run(float numerator, float denominator)
+static void convergent(float x, float y)
 {
-    float r0 = fmodf(numerator, denominator);
+    float r = fmodf(x, y);
 
-    assert(identical(r0, _fmodf(numerator, denominator)));
-    assert(identical(r0, _fmodf(numerator, -denominator)));
-    assert(identical(-r0, _fmodf(-numerator, denominator)));
-    assert(identical(-r0, _fmodf(-numerator, -denominator)));
+    verify2(identical(r, _fmodf(x, y)), x, y);
+    verify2(identical(r, _fmodf(x, -y)), x, y);
+    verify2(identical(-r, _fmodf(-x, y)), x, y);
+    verify2(identical(-r, _fmodf(-x, -y)), x, y);
+}
+
+static void divergent(float x, float y)
+{
+    verify2(isnan(_fmodf(x, y)), x, y);
 }
 
 int main(void)
 {
-    assert(isnan(_fmodf(INFINITY, INFINITY)));
-    assert(isnan(_fmodf(-INFINITY, INFINITY)));
-    assert(isnan(_fmodf(-INFINITY, -INFINITY)));
-    assert(isnan(_fmodf(INFINITY, -INFINITY)));
-
-    assert(isnan(_fmodf(NAN, INFINITY)));
-    assert(isnan(_fmodf(NAN, -INFINITY)));
-
-    assert(isnan(_fmodf(INFINITY, NAN)));
-    assert(isnan(_fmodf(-INFINITY, NAN)));
-
-    assert(isnan(_fmodf(NAN, NAN)));
-
-    for (uint32_t j = 6; j < 0x7F800000; j += 0x000ABCDE) {
-        float y = reinterpret(float, j);
-        run(y, INFINITY);
-        assert(isnan(_fmodf(INFINITY, y)));
-
+    for (uint32_t j = 6; j < 0x7F800000; j += 0x000ABCDE)
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
-            run(reinterpret(float, i), y);
-    }
+            convergent(reinterpret(float, i), reinterpret(float, j));
+
+    for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
+        convergent(reinterpret(float, i), INFINITY);
+
+    for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
+        quadrants(divergent, reinterpret(float, i), 0);
+
+    for (uint32_t j = 0; j <= 0x7FFFFFFF; j += 0x00100000)
+        for (uint32_t i = 0x7F800000; i <= 0x7FFFFFFF; i += 0x00098765)
+            quadrants(divergent, reinterpret(float, i), reinterpret(float, j));
 }
