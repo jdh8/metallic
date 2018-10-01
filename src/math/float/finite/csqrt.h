@@ -8,17 +8,23 @@
  */
 #include <complex.h>
 #include <math.h>
-
+/*!
+ * \brief Complex square root
+ *
+ * This function computes principal square root of a finite nonzero complex
+ * number.
+ *
+ * \param x - Real part of the parameter
+ * \param y - Imaginary part of the parameter
+ * \return  Approximate \f$ \sqrt \left( x + iy \right) \f$.
+ */
 static double _Complex _csqrt(double x, double y)
 {
     double s = sqrt(0.5 * (fabs(x) + sqrt(x * x + y * y)));
     double t = 0.5 * y / s;
 
-    if (x == 0)
-        return CMPLX(s, copysign(s, y));
-
     if (signbit(x))
         return CMPLX(fabs(t), copysign(s, y));
-
-    return CMPLX(s, t);
+    else
+        return CMPLX(s, t);
 }
