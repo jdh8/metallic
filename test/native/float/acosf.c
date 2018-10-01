@@ -21,7 +21,7 @@ int main(void)
         verify(faithful(acosf(-x), acos(-x)), x);
     }
 
-    for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {
+    for (uint32_t i = 0x3F800100; i <= 0x7FFFFFFF; i += 0x100) {
         float x = reinterpret(float, i);
         assert(isnan(acosf(x)));
         assert(isnan(acosf(-x)));

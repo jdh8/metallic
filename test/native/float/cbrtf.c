@@ -12,17 +12,14 @@
 
 int main(void)
 {
-    assert(cbrtf(INFINITY) == INFINITY);
-    assert(cbrtf(-INFINITY) == -INFINITY);
-
-    for (uint32_t i = 0; i < 0x7F800000; i += 543) {
+    for (uint32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
         float y = cbrtf(x);
         verify(faithful(y, cbrt(x)), x);
         verify(identical(-y, cbrtf(-x)), x);
     }
     
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(cbrtf(x)));
         assert(isnan(cbrtf(-x)));

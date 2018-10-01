@@ -13,15 +13,12 @@
 
 int main(void)
 {
-    assert(isnan(sinf(INFINITY)));
-    assert(isnan(sinf(-INFINITY)));
-
     for (int32_t i = 0; i < 0x7F800000; i += 81) {
         float x = reinterpret(float, i);
         verify(faithful(sinf(x), sin(x)), x);
     }
 
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+    for (uint32_t i = 0x7F800000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(sinf(x)));
         assert(isnan(sinf(-x)));

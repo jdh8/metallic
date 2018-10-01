@@ -12,21 +12,22 @@
 
 int main(void)
 {
-    assert(log1pf(-1) == -INFINITY);
-    assert(log1pf(INFINITY) == INFINITY);
-    assert(isnan(log1pf(-INFINITY)));
-
-    for (int32_t i = 0; i < 0x7F800000; i += 77) {
+    for (uint32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
         verify(faithful(log1pf(x), log1p(x)), x);
     }
 
-    for (uint32_t i = 0xBF800001; i >> 31; i += 12345) {
+    for (uint32_t i = 0x80000000u; i <= 0xBF800000u; i += 64) {
+        float x = reinterpret(float, i);
+        verify(faithful(log1pf(x), log1p(x)), x);
+    }
+
+    for (uint32_t i = 0xBF800100; i; i += 256) {
         float x = reinterpret(float, i);
         verify(isnan(log1pf(x)), x);
     }
     
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(log1pf(x)));
         assert(isnan(log1pf(-x)));

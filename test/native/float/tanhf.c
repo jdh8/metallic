@@ -12,17 +12,14 @@
 
 int main(void)
 {
-    assert(tanhf(INFINITY) == 1);
-    assert(tanhf(-INFINITY) == -1);
-
-    for (uint32_t i = 0; i < 0x7F800000; i += 77) {
+    for (uint32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
         float y = tanhf(x);
         verify(faithful(y, tanh(x)), x);
         verify(identical(-y, tanhf(-x)), x);
     }
 
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(tanhf(x)));
         assert(isnan(tanhf(-x)));

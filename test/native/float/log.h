@@ -6,24 +6,22 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/float/acoshf.c"
 #include "unary.h"
-#include <assert.h>
 
-int main(void)
+static void test(float f(float), double g(double))
 {
-    for (int32_t i = 0x3F800000; i <= 0x7F800000; i += 64) {
+    for (int32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
-        verify(faithful(acoshf(x), acosh(x)), x);
+        verify(faithful(f(x), g(x)), x);
     }
 
-    for (uint32_t i = 0; i < 0x3F800000; i += 193) {
+    for (uint32_t i = 0x80000100; i; i += 256) {
         float x = reinterpret(float, i);
-        verify(isnan(acoshf(x)), x);
+        verify(isnan(f(x)), x);
     }
-
-    for (uint32_t i = 0x7FC00000; i; i += 256) {
+    
+    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
-        verify(isnan(acoshf(x)), x);
+        verify(isnan(f(x)), x);
     }
 }

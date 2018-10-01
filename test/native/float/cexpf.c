@@ -44,11 +44,11 @@ int main(void)
         for (uint32_t i = 0; i <= 0x7F800000; i += 0x00100000)
             mirror(convergent, reinterpret(float, i), reinterpret(float, j));
 
-    for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769)
+    for (uint32_t j = 0x7F800000; j <= 0x7FFFFFFF; j += 0x00135769)
         for (uint32_t i = 0; i < 0x7F800000; i += 0x00123456)
             mirror(divergent, reinterpret(float, i), reinterpret(float, j));
 
-    for (uint32_t j = 0x7F800000; j < 0x80000000u; j += 0x00135769) {
+    for (uint32_t j = 0x7F800000; j <= 0x7FFFFFFF; j += 0x00135769) {
         float x = reinterpret(float, j);
         pole(x);
         pole(-x);

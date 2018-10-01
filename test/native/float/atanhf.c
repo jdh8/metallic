@@ -12,17 +12,14 @@
 
 int main(void)
 {
-    assert(atanhf(1) == INFINITY);
-    assert(atanhf(-1) == -INFINITY);
-
-    for (int32_t i = 0; i < 0x3F800000; i += 81) {
+    for (int32_t i = 0; i <= 0x3F800000; i += 64) {
         float x = reinterpret(float, i);
         double y = atanhf(x);
         verify(faithful(y, atanh(x)), x);
         verify(identical(-y, atanhf(-x)), x);
     }
 
-    for (uint32_t i = 0x3F800100; i < 0x80000000u; i += 0x100) {
+    for (uint32_t i = 0x3F800100; i <= 0x7FFFFFFF; i += 256) {
         float x = reinterpret(float, i);
         assert(isnan(atanhf(x)));
         assert(isnan(atanhf(-x)));
