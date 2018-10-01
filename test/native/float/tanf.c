@@ -6,9 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "unary.h"
 #include "../../../src/math/float/tanf.c"
 #include "../../../src/math/float/rem_pio2f.c"
+#include "unary.h"
 #include <assert.h>
 
 int main(void)
