@@ -14,8 +14,8 @@
  * This function computes principal square root of a finite nonzero complex
  * number.
  *
- * \param x - Real part of the parameter
- * \param y - Imaginary part of the parameter
+ * \param x - Real part of the mathematical parameter
+ * \param y - Imaginary part of the mathematical parameter
  * \return  Approximate \f$ \sqrt \left( x + iy \right) \f$.
  */
 static double _Complex _csqrt(double x, double y)
