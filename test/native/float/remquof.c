@@ -9,7 +9,6 @@
 #include "../../../src/math/float/remquof.c"
 #include "unary.h"
 #include <assert.h>
-#include <stdint.h>
 
 static _Bool coterminal(unsigned q0, unsigned q1)
 {

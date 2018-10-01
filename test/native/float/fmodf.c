@@ -9,7 +9,6 @@
 #include "../../../src/math/float/fmodf.c"
 #include "binary.h"
 #include <assert.h>
-#include <stdint.h>
 
 static void convergent(float x, float y)
 {
