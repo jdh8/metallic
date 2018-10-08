@@ -49,11 +49,11 @@ int main(void)
         for (uint32_t i = 0; i <= 0x7F800000; i += 0x00100000)
             mirror(convergent, reinterpret(float, i), reinterpret(float, j));
 
-    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 0x00123456)
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 0x00123456)
         mirror(convergent, reinterpret(float, i), INFINITY);
 
-    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x00135769) {
-        for (uint32_t i = 0; i <= 0x7FFFFFFF; i += 0x00123456) {
+    for (uint32_t j = 0x7FC00000; j < 0x80000000; j += 0x00135769) {
+        for (uint32_t i = 0; i < 0x80000000; i += 0x00123456) {
             float x = reinterpret(float, i);
             float y = reinterpret(float, j);
             mirror(divergent, x, y);
@@ -63,9 +63,9 @@ int main(void)
         }
     }
 
-    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x00135769)
+    for (uint32_t j = 0x7FC00000; j < 0x80000000; j += 0x00135769)
         mirror(positive, reinterpret(float, j), 0);
 
-    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x00135769)
+    for (uint32_t j = 0x7FC00000; j < 0x80000000; j += 0x00135769)
         mirror(negative, reinterpret(float, j), 0);
 }

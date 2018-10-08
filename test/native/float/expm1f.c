@@ -22,7 +22,7 @@ int main(void)
         verify(faithful(expm1f(x), expm1(x)), x);
     }
 
-    for (uint32_t i = 0x80000000u; i < 0xFF800000u; i += 111) {
+    for (uint32_t i = 0x80000000; i < 0xFF800000; i += 111) {
         float x = reinterpret(float, i);
         verify(faithful(expm1f(x), expm1(x)), x);
     }
@@ -32,7 +32,7 @@ int main(void)
         verify(expm1f(x) == HUGE_VALF, x);
     }
 
-    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(expm1f(x)));
         assert(isnan(expm1f(-x)));

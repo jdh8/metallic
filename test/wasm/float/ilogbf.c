@@ -42,7 +42,7 @@ int main(void)
         subnormal(i);
     }
    
-    for (uint32_t i = 0x7FC00000; i < 0x80000000u; i += 81) {
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         metallic_assert(ilogbf(x) == FP_ILOGBNAN);
         metallic_assert(ilogbf(-x) == FP_ILOGBNAN);

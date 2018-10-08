@@ -17,7 +17,7 @@ int main(void)
         verify(faithful(log1pf(x), log1p(x)), x);
     }
 
-    for (uint32_t i = 0x80000000u; i <= 0xBF800000u; i += 64) {
+    for (uint32_t i = 0x80000000; i <= 0xBF800000; i += 64) {
         float x = reinterpret(float, i);
         verify(faithful(log1pf(x), log1p(x)), x);
     }
@@ -27,7 +27,7 @@ int main(void)
         verify(isnan(log1pf(x)), x);
     }
     
-    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(log1pf(x)));
         assert(isnan(log1pf(-x)));

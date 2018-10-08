@@ -37,7 +37,7 @@ int main(void)
     for (uint32_t i = 0; i < 0x7F800000; i += 0x00098765)
         quadrants(divergent, reinterpret(float, i), 0);
 
-    for (uint32_t j = 0; j <= 0x7FFFFFFF; j += 0x00100000)
-        for (uint32_t i = 0x7F800000; i <= 0x7FFFFFFF; i += 0x00098765)
+    for (uint32_t j = 0; j < 0x80000000; j += 0x00100000)
+        for (uint32_t i = 0x7F800000; i < 0x80000000; i += 0x00098765)
             quadrants(divergent, reinterpret(float, i), reinterpret(float, j));
 }

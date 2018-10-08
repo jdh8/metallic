@@ -19,7 +19,7 @@ int main(void)
         verify(identical(-y, asinf(-x)), x);
     }
 
-    for (uint32_t i = 0x3F800100; i <= 0x7FFFFFFF; i += 256) {
+    for (uint32_t i = 0x3F800100; i < 0x80000000; i += 256) {
         float x = reinterpret(float, i);
         assert(isnan(asinf(x)));
         assert(isnan(asinf(-x)));

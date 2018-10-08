@@ -18,7 +18,7 @@ int main(void)
         verify(identical(roundf(-x), _roundf(-x)), x);
     }
     
-    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(_roundf(x)));
         assert(isnan(_roundf(-x)));

@@ -39,7 +39,7 @@ int main(void)
         for (int y = 0; y < 1024; ++y)
             quadrants(swapped, y, reinterpret(float, i));
 
-    for (uint32_t i = 0x80000001u; i < 0xFF800000u; i += 0x00098765)
+    for (uint32_t i = 0x80000001; i < 0xFF800000; i += 0x00098765)
         for (float y = -1023.4; y < 1024; ++y)
             assert(isnan(powf(reinterpret(float, i), y)));
 }

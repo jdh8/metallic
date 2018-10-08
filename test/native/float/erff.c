@@ -26,7 +26,7 @@ int main(void)
         verify(identical(-y, erff(-x)), x);
     }
 
-    for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
+    for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(erff(x)));
         assert(isnan(erff(-x)));

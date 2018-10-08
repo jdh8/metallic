@@ -52,7 +52,7 @@ float remquof(float numerator, float denominator, int quotient[static 1])
 
     *quotient = from < 0 ? -q : q;
 
-    uint32_t to = (from & 0x80000000u) ^ reinterpret(uint32_t, numerator);
+    uint32_t to = (from & 0x80000000) ^ reinterpret(uint32_t, numerator);
 
     return reinterpret(float, to);
 }

@@ -35,10 +35,10 @@ int main(void)
         for (uint32_t i = j; i <= 0x7F800000; i += 0x00100000)
             convergent(reinterpret(float, i), reinterpret(float, j));
 
-    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x000ABCDE)
+    for (uint32_t j = 0x7FC00000; j < 0x80000000; j += 0x000ABCDE)
         convergent(INFINITY, reinterpret(float, j));
 
-    for (uint32_t j = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x000ABCDE)
-        for (uint32_t i = 0x7FC00000; j <= 0x7FFFFFFF; j += 0x00098765)
+    for (uint32_t j = 0x7FC00000; j < 0x80000000; j += 0x000ABCDE)
+        for (uint32_t i = 0x7FC00000; j < 0x80000000; j += 0x00098765)
             quadrants(divergent, reinterpret(float, i), reinterpret(float, j));
 }
