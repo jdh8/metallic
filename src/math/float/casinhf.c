@@ -11,14 +11,30 @@
 #include <complex.h>
 #include <math.h>
 
-static double _Complex _coshasinh(float _Complex z)
+static double _Complex _cube(double x, double y)
 {
-    double x = z;
-    double y = cimagf(z);
+    double xx = x * x;
+    double yy = y * y;
+
+    return CMPLX(x * (xx - 3 * yy), y * (3 * xx - yy));
+}
+
+static double _Complex _coshasinh(float x, float y)
+{
     double re = (x + y) * (x - y) + 1;
     double im = 2 * x * y;
 
     return _csqrt(re, im);
+}
+
+static float _Complex _first(float x, float y)
+{
+    float _Complex z = CMPLXF(x, y);
+
+    if (x < 0.01 || y < 0.01)
+        return z - 1/6. * _cube(x, y);
+
+    return _clogf(z + _coshasinh(x, y));
 }
 
 float _Complex casinhf(float _Complex z)
@@ -34,5 +50,7 @@ float _Complex casinhf(float _Complex z)
     if (isinf(y))
         return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, x) : x);
 
-    return _clogf(z + _coshasinh(z));
+    float _Complex first = _first(fabsf(x), fabsf(y));
+
+    return CMPLXF(copysignf(first, x), copysignf(cimagf(first), y));
 }
