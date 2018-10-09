@@ -14,10 +14,9 @@
 
 _Noreturn void abort(void);
 
-#define verify(cond, x) if (!(cond)) {                                    \
-    fprintf(stderr, "Assertion `"#cond"' failed at %g [0x%08"PRIx32"]\n", \
-        (float)(x), reinterpret(uint32_t, (float)(x)));                   \
-    abort();                                                              \
+#define verify(cond, x) if (!(cond)) {                                  \
+    fprintf(stderr, "Assertion `"#cond"' failed at %a\n", (double)(x)); \
+    abort();                                                            \
 }
 
 static inline _Bool identical(float x, float y)

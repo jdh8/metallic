@@ -8,10 +8,9 @@
  */
 #include "unary.h"
 
-#define verify2(cond, x, y) if (!(cond)) {                                                             \
-    fprintf(stderr, "Assertion `"#cond"' failed at (%g, %g) [0x%08"PRIx32" 0x%08"PRIx32"]\n",          \
-        (float)(x), (float)(y), reinterpret(uint32_t, (float)(x)), reinterpret(uint32_t, (float)(y))); \
-    abort();                                                                                           \
+#define verify2(cond, x, y) if (!(cond)) {                                                 \
+    fprintf(stderr, "Assertion `"#cond"' failed at (%a, %a)\n", (double)(x), (double)(y)); \
+    abort();                                                                               \
 }
 
 static inline void mirror(void f(float, float), float x, float y)
