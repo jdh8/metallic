@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef METALLIC_KERNEL_ATANHF_H
+#define METALLIC_KERNEL_ATANHF_H
 /*!
  * \brief Kernel of atanhf
  *
@@ -34,3 +36,4 @@ static double _kernel_atanhf(double x)
 
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
+#endif

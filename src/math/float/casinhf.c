@@ -8,18 +8,11 @@
  */
 #include "finite/clogf.h"
 #include "finite/csqrt.h"
+#include "finite/log1pf.h"
 #include <complex.h>
 #include <math.h>
 
-static double _Complex _cube(double x, double y)
-{
-    double xx = x * x;
-    double yy = y * y;
-
-    return CMPLX(x * (xx - 3 * yy), y * (3 * xx - yy));
-}
-
-static double _Complex _coshasinh(float x, float y)
+static double _Complex _coshasinh(double x, double y)
 {
     double re = (x + y) * (x - y) + 1;
     double im = 2 * x * y;
@@ -27,14 +20,35 @@ static double _Complex _coshasinh(float x, float y)
     return _csqrt(re, im);
 }
 
-static float _Complex _first(float x, float y)
+static float _Complex _first(double x, double y)
 {
-    float _Complex z = CMPLXF(x, y);
+    if (x < 0.5) {
+        double xx = x * x;
 
-    if (x < 0.01 || y < 0.01)
-        return z - 1/6. * _cube(x, y);
+        if (y < 1) {
+            double yy = y * y;
+            double s = xx * (2 + xx + 2 * yy);
+            double t = 1 - yy;
+            double u = sqrt(s + t * t) + t;
+            double dx = sqrt(0.5 * (u + xx));
+            double dy = x * y / dx;
+            double re = 0.5 * _log1pf(xx + s / u + 2 * (x * dx + y * dy));
+            double im = _atan2f(y + dy, x + dx);
 
-    return _clogf(z + _coshasinh(x, y));
+            return CMPLXF(re, im);
+        }
+        if (y == 1) {
+            double r = x * sqrt(4 + xx);
+            double dx = sqrt(0.5 * (r + xx));
+            double dy = sqrt(0.5 * (r - xx));
+            double re = 0.5 * _log1pf(xx + r + 2 * (x * dx + dy));
+            double im = _atan2f(1 + dy, x + dx);
+
+            return CMPLXF(re, im);
+        }
+    }
+
+    return _clogf(CMPLXF(x, y) + _coshasinh(x, y));
 }
 
 float _Complex casinhf(float _Complex z)
@@ -48,7 +62,7 @@ float _Complex casinhf(float _Complex z)
         return CMPLXF(x, isinf(y) ? copysignf(pi / 4, y) : 0 * y);
 
     if (isinf(y))
-        return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, x) : x);
+        return CMPLXF(copysignf(y, x), x == x ? copysignf(pi / 2, y) : x);
 
     float _Complex first = _first(fabsf(x), fabsf(y));
 
