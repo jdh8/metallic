@@ -24,6 +24,6 @@ static void run(float _Complex z)
 int main(void)
 {
     for (uint32_t j = 0; j < 0x80000000; j += 0x00100000)
-        for (uint32_t i = 0; i < 0x80000000; i += 0x00100000)
-            run(CMPLXF(reinterpret(float, i), reinterpret(float, j)));
+        for (uint32_t i = 0; i < 1 << 12; ++i)
+            run(CMPLXF(reinterpret(float, i << 20), reinterpret(float, j)));
 }
