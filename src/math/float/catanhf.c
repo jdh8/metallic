@@ -1,16 +1,18 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <complex.h>
+#include "catanf.h"
 
 float _Complex catanhf(float _Complex z)
 {
-    z = catanf(CMPLXF(cimagf(z), z));
+    float x = z;
+    float y = cimagf(z);
+    float _Complex first = _catanf(fabsf(y), fabsf(x));
 
-    return CMPLXF(cimagf(z), z);
+    return CMPLXF(copysignf(cimagf(first), x), copysignf(first, y));
 }
