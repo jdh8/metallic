@@ -9,6 +9,15 @@
 #include "csqrt.h"
 #include "log1pf.h"
 #include "loghypotf.h"
+#include "../kernel/atanf.h"
+
+static double _carg(double x, double y)
+{
+    const double pi = 3.14159265358979323846;
+
+    return x < y ? pi / 2 - _kernel_atanf(x / y) : _kernel_atanf(y / x);
+}
+
 /*!
  * \brief Kernel of complex inverse hyperbolic functions
  *

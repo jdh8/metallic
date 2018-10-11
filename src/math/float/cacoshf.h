@@ -8,18 +8,23 @@
  */
 #include "finite/cashf.h"
 
-static float _Complex _casinhf(float x, float y)
+static double _atan2(double y, double x)
+{
+    return _carg(x, y);
+}
+
+static double _Complex _cacoshf(float x, float y)
 {
     const double pi = 3.14159265358979323846;
 
     if (x == INFINITY)
-        return CMPLXF(INFINITY, y == INFINITY ? pi / 4 : 0 * y);
+        return CMPLX(INFINITY, y == INFINITY ? pi / 4 : 0 * y);
 
     if (y == INFINITY)
-        return CMPLXF(INFINITY, x == x ? pi / 2 : x);
+        return CMPLX(INFINITY, x == x ? pi / 2 : x);
 
     if (isunordered(x, y))
-        return CMPLXF(NAN, y ? NAN : 0);
+        return CMPLX(NAN, x ? NAN : pi / 2);
 
-    return _cashf(x, y, _carg);
+    return _cashf(y, x, _atan2);
 }
