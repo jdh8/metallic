@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../../../src/math/float/casinhf.c"
-#include "../../../src/math/float/rem_pio2f.c"
 #include "complex.h"
 #include <assert.h>
 
@@ -16,7 +15,7 @@ static void convergent(float x, float y)
     float _Complex z = CMPLXF(x, y);
     float _Complex asinhz = casinhf(z);
 
-    verify2(capprox(asinhz, casinh(z), 7, 7), x, y);
+    verify2(capprox(asinhz, casinh(z), 1, 1), x, y);
     verify2(cidentical(conjf(asinhz), casinhf(conjf(z))), x, y);
     verify2(cidentical(-asinhz, casinhf(-z)), x, y);
     verify2(cidentical(-conjf(asinhz), casinhf(-conjf(z))), x, y);
