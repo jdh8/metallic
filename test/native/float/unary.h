@@ -14,9 +14,10 @@
 
 _Noreturn void abort(void);
 
-#define verify(cond, x) if (!(cond)) {                                  \
-    fprintf(stderr, "Assertion `"#cond"' failed at %a\n", (double)(x)); \
-    abort();                                                            \
+#define verify(cond, x) if (!(cond)) {                               \
+    fprintf(stderr, "%s:%d: %s: Assertion `"#cond"' failed at %a\n", \
+        __FILE__, __LINE__, __func__, (double)(x));                  \
+    abort();                                                         \
 }
 
 static inline _Bool identical(float x, float y)
