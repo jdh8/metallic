@@ -34,5 +34,11 @@ static float _Complex _catanf(float x, float y)
     if (x == 0 && y == 1)
         return CMPLXF(0, INFINITY);
 
+    if (y != y)
+        return CMPLXF(y, y);
+
+    if (x != x)
+        return CMPLXF(x, y ? x : y);
+
     return _finite_catanf(x, y);
 }
