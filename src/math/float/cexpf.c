@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -8,7 +8,6 @@
  */
 #include "cisf.h"
 #include "expf.h"
-#include <complex.h>
 
 float _Complex cexpf(float _Complex z)
 {

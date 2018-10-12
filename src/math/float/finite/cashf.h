@@ -8,8 +8,21 @@
  */
 #include "csqrt.h"
 #include "log1pf.h"
-#include "loghypotf.h"
 #include "../kernel/atanf.h"
+#include "../kernel/atanhf.h"
+#include "../../reinterpret.h"
+#include <stdint.h>
+
+static double _real_clogf(double x, double y)
+{
+    const double ln2 = 0.69314718055994530942;
+
+    int64_t i = reinterpret(int64_t, x * x + y * y);
+    int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
+    double z = reinterpret(double, i - (exponent << 52));
+
+    return _kernel_atanhf((z - 1) / (z + 1)) + ln2 / 2 * exponent;
+}
 
 static double _carg(double x, double y)
 {
@@ -63,5 +76,5 @@ static double _Complex _cashf(double x, double y, double arg(double, double))
     double re = z;
     double im = cimag(z);
 
-    return CMPLX(_loghypotf(re, im), arg(re, im));
+    return CMPLX(_real_clogf(re, im), arg(re, im));
 }
