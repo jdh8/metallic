@@ -6,9 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include <limits.h>
+
 typedef char Character;
 typedef unsigned long long Integer;
 typedef unsigned long long Unsigned;
 
-#define STRTOL strtoull
-#include "strtol.h"
+static const unsigned long _max = -1;
+static const unsigned long _min = 0;
+
+#define CONVERT strtoull
+#include "strtoi.h"
