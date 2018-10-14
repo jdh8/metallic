@@ -7,8 +7,8 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 typedef char Character;
-typedef long Integer;
+typedef unsigned long Integer;
 typedef unsigned long Unsigned;
 
-#define STRTOL strtol
+#define STRTOL strtoul
 #include "strtol.h"

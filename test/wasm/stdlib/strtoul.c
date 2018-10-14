@@ -15,14 +15,14 @@ int main(void)
 {
     char* dummy;
 
-    metallic_assert(strtol("13579", &dummy, 0) == 13579);
-    metallic_assert(strtol("0x6234", &dummy, 0) == 0x6234);
-    metallic_assert(strtol("-0654", &dummy, 0) == -0654);
+    metallic_assert(strtoul("13579", &dummy, 0) == 13579);
+    metallic_assert(strtoul("0x6234", &dummy, 0) == 0x6234);
+    metallic_assert(strtoul("-0654", &dummy, 0) == -0654);
     metallic_assert(!errno);
 
     metallic_assert(strtoul("nonsense", &dummy, 0) == 0);
 
-    metallic_assert(strtol("-321f5a16ga5s1g65as05vs", &dummy, 36) == LONG_MIN);
-    metallic_assert(strtol("154165asjndiniasndi3sd", &dummy, 36) == LONG_MAX);
+    metallic_assert(strtoul("-321f5a16ga5s1g65as05vs", &dummy, 36) == -1);
+    metallic_assert(strtoul("154165asjndiniasndi3sd", &dummy, 36) == -1);
     metallic_assert(errno == ERANGE);
 }
