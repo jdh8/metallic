@@ -36,7 +36,7 @@ struct Conversion
 
 static struct Conversion _convert(const char s[restrict static 1], int base)
 {
-    unsigned long max = ULONG_MAX / base;
+    unsigned long max = (unsigned long)-1 / base;
     unsigned long value = 0;
     _Bool overflow = 0;
 
