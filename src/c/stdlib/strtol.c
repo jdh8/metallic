@@ -27,6 +27,28 @@ static int _extract(int c)
     return INT_MAX;
 }
 
+struct Conversion
+{
+    unsigned long value;
+    const char* tail;
+    _Bool overflow;
+};
+
+static struct Conversion _convert(const char s[restrict static 1], int base)
+{
+    unsigned long max = ULONG_MAX / base;
+    unsigned long value = 0;
+    _Bool overflow = 0;
+
+    for (int digit = _extract(*s); digit < base; digit = _extract(*++s)) {
+        unsigned long result = value * base + digit;
+        overflow |= max < value || result < digit;
+        value = result;
+    }
+
+    return (struct Conversion){ value, s, overflow };
+}
+
 long strtol(const char s[restrict static 1], char** restrict end, int base)
 {
     long overflow = LONG_MAX;
