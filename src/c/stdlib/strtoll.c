@@ -12,8 +12,5 @@ typedef char Character;
 typedef long long Integer;
 typedef unsigned long long Unsigned;
 
-static const long long _max = LLONG_MAX;
-static const long long _min = LLONG_MIN;
-
 #define CONVERT strtoll
 #include "strtoi.h"

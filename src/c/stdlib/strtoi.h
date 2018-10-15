@@ -8,11 +8,12 @@
  */
 #include <ctype.h>
 #include <limits.h>
+#include <stdint.h>
 #include <errno.h>
 
 static int _toupper(int c)
 {
-    return c & ~0x20u;
+    return c & ~0x20;
 }
 
 static int _atoi(int c)
@@ -37,13 +38,13 @@ struct Conversion
 
 static struct Conversion _convert(const Character s[static 1], int base)
 {
-    Unsigned max = (Unsigned)-1 / base;
+    Unsigned threshold = (Unsigned)-1 / base;
     Unsigned value = 0;
     _Bool overflow = 0;
 
     for (int digit = _atoi(*s); digit < base; digit = _atoi(*++s)) {
         Unsigned result = value * base + digit;
-        overflow |= max < value || result < digit;
+        overflow |= threshold < value || result < digit;
         value = result;
     }
 
@@ -52,8 +53,20 @@ static struct Conversion _convert(const Character s[static 1], int base)
 
 Integer CONVERT(const Character s[restrict static 1], Character** restrict end, int base)
 {
+    const Integer maximum = _Generic((Integer)0,
+        long: LONG_MAX,
+        long long: LLONG_MAX,
+        default: _Generic((Integer)0, intmax_t: INTMAX_MAX, default: -1)
+    );
+
+    const Integer minimum = _Generic((Integer)0,
+        long: LONG_MIN,
+        long long: LLONG_MIN,
+        default: _Generic((Integer)0, intmax_t: INTMAX_MIN, default: 0)
+    );
+
     const Character* begin = s;
-    Integer extreme = _max;
+    Integer extreme = maximum;
     Unsigned threshold = extreme;
     _Bool negative = 0;
 
@@ -65,7 +78,7 @@ Integer CONVERT(const Character s[restrict static 1], Character** restrict end, 
             negative = 1;
 
             if ((Integer)-1 < 0) {
-                extreme = _min;
+                extreme = minimum;
                 threshold = -(Unsigned)extreme;
             }
             /* fallthrough */
