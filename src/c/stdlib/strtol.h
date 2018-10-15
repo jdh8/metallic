@@ -11,7 +11,7 @@
 #include <stdint.h>
 #include <errno.h>
 
-static int _atoi(int c)
+static int _digit(int c)
 {
     if (c - '0' < 10u)
         return c - '0';
@@ -37,7 +37,7 @@ static struct Conversion _convert(const Character s[static 1], int base)
     Unsigned value = 0;
     _Bool overflow = 0;
 
-    for (int digit = _atoi(*s); digit < base; digit = _atoi(*++s)) {
+    for (int digit = _digit(*s); digit < base; digit = _digit(*++s)) {
         Unsigned result = value * base + digit;
         overflow |= threshold < value || result < digit;
         value = result;
