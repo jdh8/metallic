@@ -12,5 +12,5 @@ typedef char Character;
 typedef unsigned long Integer;
 typedef unsigned long Unsigned;
 
-#define CONVERT strtoul
+#define STRTOL strtoul
 #include "strtol.h"

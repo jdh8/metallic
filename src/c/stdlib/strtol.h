@@ -24,14 +24,14 @@ static int _digit(int c)
     return INT_MAX;
 }
 
-struct Conversion
+struct Scan
 {
     Unsigned value;
     const Character* tail;
     _Bool overflow;
 };
 
-static struct Conversion _convert(const Character s[static 1], int base)
+static struct Scan _scan(const Character s[static 1], int base)
 {
     Unsigned threshold = (Unsigned)-1 / base;
     Unsigned value = 0;
@@ -43,10 +43,10 @@ static struct Conversion _convert(const Character s[static 1], int base)
         value = result;
     }
 
-    return (struct Conversion){ value, s, overflow };
+    return (struct Scan){ value, s, overflow };
 }
 
-Integer CONVERT(const Character s[restrict static 1], Character** restrict end, int base)
+Integer STRTOL(const Character s[restrict static 1], Character** restrict end, int base)
 {
     const Integer maximum = _Generic((Integer)0,
         long: LONG_MAX,
@@ -92,17 +92,17 @@ Integer CONVERT(const Character s[restrict static 1], Character** restrict end, 
     else if (!base)
         base = 10;
 
-    struct Conversion conversion = _convert(s, base);
+    struct Scan scan = _scan(s, base);
 
     if (end)
-        *end = (Character*)(s == conversion.tail ? begin : conversion.tail);
+        *end = (Character*)(s == scan.tail ? begin : scan.tail);
 
-    if (conversion.overflow || threshold < conversion.value) {
+    if (scan.overflow || threshold < scan.value) {
         errno = ERANGE;
         return extreme;
     }
 
-    Integer result = conversion.value;
+    Integer result = scan.value;
 
     return negative ? -result : result;
 }
