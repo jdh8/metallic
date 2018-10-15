@@ -8,6 +8,7 @@
  */
 #include <ctype.h>
 #include <wctype.h>
+#include <wchar.h>
 #include <limits.h>
 #include <stdint.h>
 #include <errno.h>
@@ -66,7 +67,7 @@ Integer STRTOL(const Character s[restrict static 1], Character** restrict end, i
     Unsigned threshold = extreme;
     _Bool negative = 0;
 
-    while (_Generic(*s, char: isspace, default: iswspace)(*s))
+    while (_Generic(*s, char: isspace, wchar_t: iswspace)(*s))
         ++s;
 
     switch (*s) {
