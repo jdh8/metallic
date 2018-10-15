@@ -13,4 +13,4 @@ typedef long long Integer;
 typedef unsigned long long Unsigned;
 
 #define CONVERT strtoll
-#include "strtoi.h"
+#include "strtol.h"
