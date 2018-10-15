@@ -11,20 +11,15 @@
 #include <stdint.h>
 #include <errno.h>
 
-static int _toupper(int c)
-{
-    return c & ~0x20;
-}
-
 static int _atoi(int c)
 {
     if (c - '0' < 10u)
         return c - '0';
 
-    c = _toupper(c);
+    c |= 32;
 
-    if (c - 'A' < 26u)
-        return c - 'A' + 10;
+    if (c - 'a' < 26u)
+        return c - 'a' + 10;
 
     return INT_MAX;
 }
@@ -87,7 +82,7 @@ Integer CONVERT(const Character s[restrict static 1], Character** restrict end, 
     }
 
     if (*s == '0') {
-        if ((!base || base == 16) && _toupper(s[1]) == 'X') {
+        if ((!base || base == 16) && (s[1] | 32) == 'x') {
             s += 2;
             base = 16;
         }
