@@ -7,6 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <ctype.h>
+#include <wctype.h>
 #include <limits.h>
 #include <stdint.h>
 #include <errno.h>
@@ -65,7 +66,7 @@ Integer STRTOL(const Character s[restrict static 1], Character** restrict end, i
     Unsigned threshold = extreme;
     _Bool negative = 0;
 
-    while (isspace(*s))
+    while (_Generic(*s, char: isspace, default: iswspace)(*s))
         ++s;
 
     switch (*s) {
