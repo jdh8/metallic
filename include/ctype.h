@@ -13,21 +13,24 @@
 extern "C" {
 #endif
 
-int iscntrl(int c);
-int isprint(int c);
-int isblank(int c);
-int isspace(int c);
-int isgraph(int c);
+int iscntrl(int);
+int isprint(int);
+int isblank(int);
+int isspace(int);
+int isgraph(int);
 
-int isupper(int c);
-int islower(int c);
-int isalpha(int c);
+int isupper(int);
+int islower(int);
+int isalpha(int);
 
-int isdigit(int c);
-int isxdigit(int c);
+int isdigit(int);
+int isxdigit(int);
 
-int isalnum(int c);
-int ispunct(int c);
+int isalnum(int);
+int ispunct(int);
+
+int toupper(int);
+int tolower(int);
 
 #ifdef __cplusplus
 }
