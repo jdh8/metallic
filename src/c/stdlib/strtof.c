@@ -11,36 +11,6 @@
 #include <stdint.h>
 #include <math.h>
 
-static size_t _match(const char s[static 1], const char t[static 1])
-{
-    size_t i;
-    for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
-    return i;
-}
-
-struct Scan
-{
-    float value;
-    const char* tail;
-};
-
-static struct Scan _nan(const char s[static 1])
-{
-    float value = NAN;
-
-    if (*s == '(') {
-        const char* t;
-        for (t = s + 1; isalnum(*t); ++t);
-
-        if (*t == ')') {
-            value = nanf(s + 1);
-            s = t + 1;
-        }
-    }
-
-    return (struct Scan){ value, s };
-}
-
 static int _xdigit(int c)
 {
     if (c - '0' < 10u)
@@ -54,23 +24,47 @@ static int _xdigit(int c)
     return -1;
 }
 
-static struct Scan _hexadecimal(const char s[static 1])
+static size_t _match(const char s[static 1], const char t[static 1])
 {
-    struct Scan fallback = { 0, s - 2 };
+    size_t i;
+    for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
+    return i;
+}
 
+static float _nan(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    float value = NAN;
+
+    if (*s == '(') {
+        const char* t;
+        for (t = s + 1; isalnum(*t); ++t);
+
+        if (*t == ')') {
+            value = nanf(s + 1);
+            s = t + 1;
+        }
+    }
+    *end = s;
+    return value;
+}
+
+static float _hexadecimal(const char s[restrict static 1], const char* end[restrict static 1])
+{
     uint32_t x = 0;
     int shift = 0;
-    _Bool valid = 0;
     _Bool pointed = 0;
 
+    *end = s;
+    s += 2;
+
     for (; *s == '0'; ++s)
-        valid = 1;
+        *end = s;
 
     if (*s == '.') {
         pointed = 1;
 
         for (; *++s == '0'; --shift)
-            valid = 1;
+            *end = s;
     }
 
     for (int i = 0; ;) {
@@ -79,7 +73,7 @@ static struct Scan _hexadecimal(const char s[static 1])
         if (digit >= 0) {
             if (i < 8)
                 x = x << 4 | digit;
-            valid = 1;
+            *end = s;
             ++i;
         }
         else if (!pointed) {
@@ -90,35 +84,36 @@ static struct Scan _hexadecimal(const char s[static 1])
         else break;
     }
 
-    return fallback;
+    return 0;
 }
 
-static struct Scan _decimal(const char s[static 1])
+static float _decimal(const char s[restrict static 1], const char* end[restrict static 1])
 {
-    float value = 0;
-
-    return (struct Scan){ value, s };
+    *end = s;
+    return 0;
 }
 
-static struct Scan _scan(const char s[static 1])
+static float _scan(const char s[restrict static 1], const char* end[restrict static 1])
 {
     size_t match = _match(s, "infinity");
 
-    if (match >= 3)
-        return (struct Scan){ INFINITY, s + 3 + 5 * (match == 8) };
+    if (match >= 3) {
+        *end = s + (match == 8 ? 8 : 3);
+        return INFINITY;
+    }
 
     if (_match(s, "nan") == 3)
-        return _nan(s + 3);
+        return _nan(s + 3, end);
 
     if (s[0] == '0' && (s[1] | 32) == 'x')
-        return _hexadecimal(s + 2);
+        return _hexadecimal(s, end);
 
-    return _decimal(s);
+    return _decimal(s, end);
 }
 
 float strtof(const char s[restrict static 1], char** restrict end)
 {
-    const char* begin = s;
+    const char* tail = s;
     float sign = 1;
 
     while (isspace(*s))
@@ -132,10 +127,10 @@ float strtof(const char s[restrict static 1], char** restrict end)
             ++s;
     }
 
-    struct Scan scan = _scan(s);
+    float result = sign * _scan(s, &tail);
 
     if (end)
-        *end = (char*)(s == scan.tail ? begin : scan.tail);
+        *end = (char*)tail;
 
-    return sign * scan.value;
+    return result;
 }
