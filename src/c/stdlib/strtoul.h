@@ -8,14 +8,11 @@
  */
 #include "adigit.h"
 #include <ctype.h>
-#include <limits.h>
 #include <errno.h>
 
-long long strtoll(const char s[restrict static 1], char** restrict end, int base)
+Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
 {
     const char* tail = s;
-    long long extreme = LLONG_MAX;
-    unsigned long long max = LLONG_MAX;
     _Bool negative = 0;
 
     while (isspace(*s))
@@ -24,8 +21,6 @@ long long strtoll(const char s[restrict static 1], char** restrict end, int base
     switch (*s) {
         case '-':
             negative = 1;
-            extreme = LLONG_MIN;
-            max = -(unsigned long long)extreme;
             /* fallthrough */
         case '+':
             ++s;
@@ -42,12 +37,12 @@ long long strtoll(const char s[restrict static 1], char** restrict end, int base
     else if (!base)
         base = 10;
 
-    unsigned long long threshold = (unsigned long long)-1 / base;
-    unsigned long long value = 0;
+    Unsigned threshold = (Unsigned)-1 / base;
+    Unsigned value = 0;
     _Bool overflow = 0;
 
     for (int digit = _adigit(*s); digit < base; digit = _adigit(*++s)) {
-        unsigned long long next = value * base + digit;
+        Unsigned next = value * base + digit;
         overflow |= threshold < value || next < digit;
         value = next;
         tail = s;
@@ -56,12 +51,10 @@ long long strtoll(const char s[restrict static 1], char** restrict end, int base
     if (end)
         *end = (char*)tail;
 
-    if (overflow || max < value) {
+    if (overflow) {
         errno = ERANGE;
-        return extreme;
+        return -1;
     }
 
-    long long result = value;
-
-    return negative ? -result : result;
+    return negative ? -value : value;
 }
