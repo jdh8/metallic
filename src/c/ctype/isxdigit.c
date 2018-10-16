@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include <ctype.h>
+
 int isxdigit(int c)
 {
     return isdigit(c) || (c | 32) - 'a' < 6u;
