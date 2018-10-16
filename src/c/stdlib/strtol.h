@@ -6,9 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <ctype.h>
-#include <wctype.h>
-#include <wchar.h>
+#include "is.h"
 #include <limits.h>
 #include <stdint.h>
 #include <errno.h>
@@ -67,7 +65,7 @@ Integer STRTOL(const Character s[restrict static 1], Character** restrict end, i
     Unsigned threshold = extreme;
     _Bool negative = 0;
 
-    while (_Generic(*s, char: isspace, wchar_t: iswspace)(*s))
+    while (_is(space, *s))
         ++s;
 
     switch (*s) {
