@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "is.h"
+#include <ctype.h>
 #include <limits.h>
 #include <stdint.h>
 #include <errno.h>
@@ -27,11 +27,11 @@ static int _digit(int c)
 struct Scan
 {
     Unsigned value;
-    const Character* tail;
+    const char* tail;
     _Bool overflow;
 };
 
-static struct Scan _scan(const Character s[static 1], int base)
+static struct Scan _scan(const char s[static 1], int base)
 {
     Unsigned threshold = (Unsigned)-1 / base;
     Unsigned value = 0;
@@ -46,7 +46,7 @@ static struct Scan _scan(const Character s[static 1], int base)
     return (struct Scan){ value, s, overflow };
 }
 
-Integer STRTOL(const Character s[restrict static 1], Character** restrict end, int base)
+Integer STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
     const Integer maximum = _Generic((Integer)0,
         long: LONG_MAX,
@@ -60,12 +60,12 @@ Integer STRTOL(const Character s[restrict static 1], Character** restrict end, i
         default: _Generic((Integer)0, intmax_t: INTMAX_MIN, default: 0)
     );
 
-    const Character* begin = s;
+    const char* begin = s;
     Integer extreme = maximum;
     Unsigned threshold = extreme;
     _Bool negative = 0;
 
-    while (_is(space, *s))
+    while (isspace(*s))
         ++s;
 
     switch (*s) {
@@ -95,7 +95,7 @@ Integer STRTOL(const Character s[restrict static 1], Character** restrict end, i
     struct Scan scan = _scan(s, base);
 
     if (end)
-        *end = (Character*)(s == scan.tail ? begin : scan.tail);
+        *end = (char*)(s == scan.tail ? begin : scan.tail);
 
     if (scan.overflow || threshold < scan.value) {
         errno = ERANGE;
