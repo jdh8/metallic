@@ -41,11 +41,11 @@ Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
     Unsigned value = 0;
     _Bool overflow = 0;
 
-    for (int digit = _adigit(*s); digit < base; digit = _adigit(*++s)) {
+    for (int digit = _adigit(*s); digit < base; digit = _adigit(*s)) {
         Unsigned next = value * base + digit;
         overflow |= threshold < value || next < digit;
         value = next;
-        tail = s;
+        tail = ++s;
     }
 
     if (end)
