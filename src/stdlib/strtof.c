@@ -20,10 +20,7 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
     int read = 0;
     _Bool pointed = 0;
 
-    *end = s;
-    s += 2;
-
-    for (; *s == '0'; ++s)
+    for (s += 2; *s == '0'; ++s)
         *end = s;
 
     if (*s == '.') {
@@ -58,7 +55,6 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
 
 static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
 {
-    *end = s;
     return 0;
 }
 
