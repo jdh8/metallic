@@ -55,7 +55,41 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
 
 static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
 {
-    return 0;
+    const uint32_t exp10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+    uint32_t x = 0;
+    int places = 0;
+    int read = 0;
+    _Bool pointed = 0;
+
+    while (*s == '0')
+        *end = s++;
+
+    if (*s == '.') {
+        pointed = 1;
+
+        for (; *++s == '0'; --places)
+            *end = s;
+    }
+
+    for (;; *end = ++s) {
+        if (*s - '0' < 10u) {
+            if (++read <= 9)
+                x = 10 * x + (*s - '0');
+        }
+        else if (*s == '.' && !pointed) {
+            places = read;
+            pointed = 1;
+        }
+        else break;
+    }
+
+    if (read < 9)
+        x *= exp10[9 - read];
+
+    if (!pointed)
+        places = read;
+
+    return _scal10n(x, places - 9 + _exp('e', s, end));
 }
 
 static int _match(const char s[static 1], const char t[static 1])
