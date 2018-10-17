@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include <stdlib.h>
+
 static int _xdigit(int c)
 {
     if (c - '0' < 10u)
@@ -53,4 +55,17 @@ static int _exp(int c, const char s[restrict static 1], const char* end[restrict
         *end = s;
 
     return sign * _unsigned(s, end);
+}
+
+static Scalar _scal10n(Scalar x, int e)
+{
+    Scalar factor = e < 0 ? (Scalar)0.1 : 10;
+
+    for (e = abs(e); e; e >>= 1) {
+        if (e & 1)
+            x *= factor;
+        factor *= factor;
+    }
+
+    return x;
 }
