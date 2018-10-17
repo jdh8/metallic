@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <ctype.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <math.h>
 
@@ -69,9 +68,9 @@ static float _decimal(const char s[restrict static 1], const char* end[restrict 
     return 0;
 }
 
-static size_t _match(const char s[static 1], const char t[static 1])
+static int _match(const char s[static 1], const char t[static 1])
 {
-    size_t i;
+    int i;
     for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
     return i;
 }
@@ -95,7 +94,7 @@ static float _nan(const char s[restrict static 1], const char* end[restrict stat
 
 static float _scan(const char s[restrict static 1], const char* end[restrict static 1])
 {
-    size_t match = _match(s, "infinity");
+    int match = _match(s, "infinity");
 
     if (match >= 3) {
         *end = s + (match == 8 ? 8 : 3);
