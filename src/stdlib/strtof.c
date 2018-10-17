@@ -24,30 +24,6 @@ static int _xdigit(int c)
     return -1;
 }
 
-static size_t _match(const char s[static 1], const char t[static 1])
-{
-    size_t i;
-    for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
-    return i;
-}
-
-static float _nan(const char s[restrict static 1], const char* end[restrict static 1])
-{
-    float value = NAN;
-
-    if (*s == '(') {
-        const char* t;
-        for (t = s + 1; isalnum(*t); ++t);
-
-        if (*t == ')') {
-            value = nanf(s + 1);
-            s = t + 1;
-        }
-    }
-    *end = s;
-    return value;
-}
-
 static float _hexadecimal(const char s[restrict static 1], const char* end[restrict static 1])
 {
     uint32_t x = 0;
@@ -91,6 +67,30 @@ static float _decimal(const char s[restrict static 1], const char* end[restrict 
 {
     *end = s;
     return 0;
+}
+
+static size_t _match(const char s[static 1], const char t[static 1])
+{
+    size_t i;
+    for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
+    return i;
+}
+
+static float _nan(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    *end = s;
+
+    if (*s == '(') {
+        while (isalnum(*++s));
+
+        if (*s == ')') {
+            float value = nanf(*end + 1);
+            *end = s + 1;
+            return value;
+        }
+    }
+
+    return NAN;
 }
 
 static float _scan(const char s[restrict static 1], const char* end[restrict static 1])
