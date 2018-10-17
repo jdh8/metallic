@@ -74,11 +74,8 @@ static float _nan(const char s[restrict static 1], const char* end[restrict stat
     if (*s == '(') {
         while (isalnum(*++s));
 
-        if (*s == ')') {
-            float value = nanf(*end + 1);
+        if (*s == ')')
             *end = s + 1;
-            return value;
-        }
     }
 
     return NAN;
