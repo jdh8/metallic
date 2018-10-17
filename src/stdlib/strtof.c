@@ -23,7 +23,7 @@ static int _xdigit(int c)
     return -1;
 }
 
-static float _hexadecimal(const char s[restrict static 1], const char* end[restrict static 1])
+static float _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
 {
     uint32_t x = 0;
     int shift = 0;
@@ -62,7 +62,7 @@ static float _hexadecimal(const char s[restrict static 1], const char* end[restr
     return 0;
 }
 
-static float _decimal(const char s[restrict static 1], const char* end[restrict static 1])
+static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
 {
     *end = s;
     return 0;
@@ -105,9 +105,9 @@ static float _scan(const char s[restrict static 1], const char* end[restrict sta
         return _nan(s + 3, end);
 
     if (s[0] == '0' && (s[1] | 32) == 'x')
-        return _hexadecimal(s, end);
+        return _hexfloat(s, end);
 
-    return _decimal(s, end);
+    return _scientific(s, end);
 }
 
 float strtof(const char s[restrict static 1], char** restrict end)
