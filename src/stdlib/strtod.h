@@ -59,7 +59,7 @@ static int _exp(int c, const char s[restrict static 1], const char* end[restrict
 
 static Scalar _scal10n(Scalar x, int e)
 {
-    Scalar factor = e < 0 ? (Scalar)0.1 : 10;
+    Scalar factor = e < 0 ? (Scalar)1/10 : 10;
 
     for (e = abs(e); e; e >>= 1) {
         if (e & 1)
