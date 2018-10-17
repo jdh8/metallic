@@ -6,27 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "strtod.h"
 #include <ctype.h>
 #include <stdint.h>
 #include <math.h>
 
-static int _xdigit(int c)
-{
-    if (c - '0' < 10u)
-        return c - '0';
-
-    c |= 32;
-
-    if (c - 'a' < 6u)
-        return c - 'a' + 10;
-
-    return -1;
-}
-
 static float _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
 {
     uint32_t x = 0;
-    int shift = 0;
+    int places = 0;
+    int read = 0;
     _Bool pointed = 0;
 
     *end = s;
@@ -38,28 +27,31 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
     if (*s == '.') {
         pointed = 1;
 
-        for (; *++s == '0'; --shift)
+        for (; *++s == '0'; --places)
             *end = s;
     }
 
-    for (int i = 0; ;) {
+    for (;; *end = ++s) {
         int digit = _xdigit(*s);
 
         if (digit >= 0) {
-            if (i < 8)
+            if (++read <= 8)
                 x = x << 4 | digit;
-            *end = s;
-            ++i;
         }
-        else if (!pointed) {
-            shift = i;
-            if (*s == '.') pointed = 1;
-            else break;
+        else if (*s == '.' && !pointed) {
+            places = read;
+            pointed = 1;
         }
         else break;
     }
 
-    return 0;
+    if (read < 8)
+        x <<= (8 - read) << 2;
+
+    if (!pointed)
+        places = read;
+
+    return ldexpf(x, 4 * places - 32 + _exp('p', s, end));
 }
 
 static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
