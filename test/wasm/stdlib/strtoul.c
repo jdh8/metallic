@@ -17,7 +17,7 @@
 static unsigned long check(const char s[static 1], int base, ptrdiff_t length)
 {
     char* end;
-    unsigned long x = strtol(s, &end, base);
+    unsigned long x = strtoul(s, &end, base);
     metallic_assert(end == s + length);
     return x;
 }
