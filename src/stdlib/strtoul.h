@@ -6,20 +6,21 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/strtoul.h"
+#include "strtol/digit.h"
 #include <ctype.h>
+#include <errno.h>
 
 Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
 {
+    Unsigned sign = 1;
     const char* tail = s;
-    _Bool negative = 0;
 
     while (isspace(*s))
         ++s;
 
     switch (*s) {
         case '-':
-            negative = 1;
+            sign = -1;
             /* fallthrough */
         case '+':
             ++s;
@@ -36,10 +37,24 @@ Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
     else if (!base)
         base = 10;
 
-    Unsigned magnitude = _kernel_strtoul(s, &tail, base, -1);
+    Unsigned threshold = (Unsigned)-1 / base;
+    Unsigned magnitude = 0;
+    _Bool overflow = 0;
+
+    for (int digit = _strtol_digit(*s); digit < base; digit = _strtol_digit(*s)) {
+        Unsigned next = magnitude * base + digit;
+        overflow |= threshold < magnitude || next < digit;
+        magnitude = next;
+        tail = ++s;
+    }
 
     if (end)
         *end = (char*)tail;
 
-    return negative ? -magnitude : magnitude;
+    if (overflow) {
+        errno = ERANGE;
+        return -1;
+    }
+
+    return sign * magnitude;
 }

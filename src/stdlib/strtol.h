@@ -6,28 +6,24 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/strtoul.h"
+#include "strtol/digit.h"
 #include <ctype.h>
+#include <errno.h>
 #include <limits.h>
-
-static Signed _copysign(Signed magnitude, Signed sign)
-{
-    return sign < 0 ? -magnitude : magnitude;
-}
 
 Signed STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
+    Unsigned max = _Generic((Signed)0, long: LONG_MAX, long long: LLONG_MAX);
+    Signed sign = 1;
     const char* tail = s;
-    Signed extreme = _Generic(extreme, long: LONG_MAX, long long: LLONG_MAX);
-    Unsigned max = extreme;
 
     while (isspace(*s))
         ++s;
 
     switch (*s) {
         case '-':
-            extreme = _Generic(extreme, long: LONG_MIN, long long: LLONG_MIN);
-            max = -(Unsigned)extreme;
+            max = -(Unsigned)_Generic((Signed)0, long: LONG_MIN, long long: LLONG_MIN);
+            sign = -1;
             /* fallthrough */
         case '+':
             ++s;
@@ -44,10 +40,24 @@ Signed STRTOL(const char s[restrict static 1], char** restrict end, int base)
     else if (!base)
         base = 10;
 
-    Unsigned magnitude = _kernel_strtoul(s, &tail, base, max);
+    Unsigned threshold = (Unsigned)-1 / base;
+    Unsigned magnitude = 0;
+    _Bool overflow = 0;
+
+    for (int digit = _strtol_digit(*s); digit < base; digit = _strtol_digit(*s)) {
+        Unsigned next = magnitude * base + digit;
+        overflow |= threshold < magnitude || next < digit;
+        magnitude = next;
+        tail = ++s;
+    }
 
     if (end)
         *end = (char*)tail;
 
-    return _copysign(magnitude, extreme);
+    if (overflow || max < magnitude) {
+        errno = ERANGE;
+        magnitude = max;
+    }
+
+    return sign * (Signed)magnitude;
 }
