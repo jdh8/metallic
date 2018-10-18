@@ -8,6 +8,7 @@
  */
 #include "../../assert.h"
 #include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
 #include <errno.h>
@@ -29,12 +30,21 @@ int main(void)
     canonical(  0x000fdead, "gf");
     canonical(   -0232776532, "9");
 
+    canonical(2147483647, "junk");
+    canonical(-2147483648, "junk");
+
     metallic_assert(run("", "jdh8", 0) == 0);
     metallic_assert(run("", "jdh8", 19) == 0);
     metallic_assert(run("jdh8", "#1993", 20) == 157548);
     metallic_assert(run("\tjdh8", "", 25) == 305433);
     metallic_assert(run("\n+jdh8", "whatever", 30) == 525218);
     metallic_assert(run(" -jdh8", "", 36) == -903932);
+
+    metallic_assert(run("553032005531", "666", 6) == INT32_MAX);
+    metallic_assert(run("-553032005532", "666", 6) == INT32_MIN);
+
+    metallic_assert(run("zik0zj", "...", 36) == INT32_MAX);
+    metallic_assert(run("-zik0zk", "...", 36) == INT32_MIN);
 
     metallic_assert(!errno);
 
