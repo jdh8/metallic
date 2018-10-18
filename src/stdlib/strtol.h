@@ -8,18 +8,26 @@
  */
 #include "kernel/strtoul.h"
 #include <ctype.h>
+#include <limits.h>
 
-Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
+static Signed _copysign(Signed magnitude, Signed sign)
+{
+    return sign < 0 ? -magnitude : magnitude;
+}
+
+Signed STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
     const char* tail = s;
-    _Bool negative = 0;
+    Signed extreme = _Generic(extreme, long: LONG_MAX, long long: LLONG_MAX);
+    Unsigned max = extreme;
 
     while (isspace(*s))
         ++s;
 
     switch (*s) {
         case '-':
-            negative = 1;
+            extreme = _Generic(extreme, long: LONG_MIN, long long: LLONG_MIN);
+            max = -(Unsigned)extreme;
             /* fallthrough */
         case '+':
             ++s;
@@ -36,10 +44,10 @@ Unsigned STRTOUL(const char s[restrict static 1], char** restrict end, int base)
     else if (!base)
         base = 10;
 
-    Unsigned magnitude = _kernel_strtoul(s, &tail, base, -1);
+    Unsigned magnitude = _kernel_strtoul(s, &tail, base, max);
 
     if (end)
         *end = (char*)tail;
 
-    return negative ? -magnitude : magnitude;
+    return _copysign(magnitude, extreme);
 }

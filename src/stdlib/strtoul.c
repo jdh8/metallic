@@ -7,5 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 typedef unsigned long Unsigned;
+
 #define STRTOUL strtoul
 #include "strtoul.h"
