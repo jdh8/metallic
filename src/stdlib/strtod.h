@@ -7,6 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <ctype.h>
+#include <errno.h>
 #include <math.h>
 #include <stdlib.h>
 
@@ -108,10 +109,14 @@ static Scalar _scan(const char s[restrict static 1], const char* end[restrict st
     if (_match(s, "nan") == 3)
         return _nan(s + 3, end);
 
-    if (s[0] == '0' && (s[1] | 32) == 'x')
-        return _hexfloat(s, end);
+    Scalar finite = (s[0] == '0' && (s[1] | 32) == 'x' ? _hexfloat : _scientific)(s, end);
 
-    return _scientific(s, end);
+#ifndef SUPPRESS_ERANGE
+    if (finite == INFINITY)
+        errno = ERANGE;
+#endif
+
+    return finite;
 }
 
 Scalar STRTOD(const char s[restrict static 1], char** restrict end)
