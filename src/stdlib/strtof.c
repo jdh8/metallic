@@ -15,6 +15,8 @@ typedef float Scalar;
 
 static float _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
 {
+    const int capacity = 8;
+
     uint32_t x = 0;
     int places = 0;
     int read = 0;
@@ -34,7 +36,7 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
         int digit = _xdigit(*s);
 
         if (digit >= 0) {
-            if (++read <= 8)
+            if (++read <= capacity)
                 x = x << 4 | digit;
         }
         else if (*s == '.' && !pointed) {
@@ -44,18 +46,20 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
         else break;
     }
 
-    if (read < 8)
-        x <<= (8 - read) << 2;
+    if (read < capacity)
+        x <<= (capacity - read) << 2;
 
     if (!pointed)
         places = read;
 
-    return ldexpf(x, 4 * places - 32 + _exp('p', s, end));
+    return ldexpf(x, 4 * (places - capacity) + _exp('p', s, end));
 }
 
 static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
 {
     const uint32_t exp10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
+    const int capacity = 9; // log10(0x1p32)
+
     uint32_t x = 0;
     int places = 0;
     int read = 0;
@@ -73,7 +77,7 @@ static float _scientific(const char s[restrict static 1], const char* end[restri
 
     for (;; *end = ++s) {
         if (*s - '0' < 10u) {
-            if (++read <= 9)
+            if (++read <= capacity)
                 x = 10 * x + (*s - '0');
         }
         else if (*s == '.' && !pointed) {
@@ -83,11 +87,11 @@ static float _scientific(const char s[restrict static 1], const char* end[restri
         else break;
     }
 
-    if (read < 9)
-        x *= exp10[9 - read];
+    if (read < capacity)
+        x *= exp10[capacity - read];
 
     if (!pointed)
         places = read;
 
-    return _scal10n(x, places - 9 + _exp('e', s, end));
+    return _scal10n(x, places - capacity + _exp('e', s, end));
 }
