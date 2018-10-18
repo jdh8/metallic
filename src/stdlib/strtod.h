@@ -6,6 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include <ctype.h>
+#include <math.h>
 #include <stdlib.h>
 
 static int _xdigit(int c)
@@ -68,4 +70,70 @@ static Scalar _scal10n(Scalar x, int e)
     }
 
     return x;
+}
+
+static int _match(const char s[static 1], const char t[static 1])
+{
+    int i;
+    for (i = 0; t[i] && (s[i] | 32) == t[i]; ++i);
+    return i;
+}
+
+static Scalar _nan(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    *end = s;
+
+    if (*s == '(') {
+        while (isalnum(*++s));
+
+        if (*s == ')')
+            *end = s + 1;
+    }
+
+    return NAN;
+}
+
+static Scalar _hexfloat(const char s[restrict static 1], const char* end[restrict static 1]);
+static Scalar _scientific(const char s[restrict static 1], const char* end[restrict static 1]);
+
+static Scalar _scan(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    int match = _match(s, "infinity");
+
+    if (match >= 3) {
+        *end = s + (match == 8 ? 8 : 3);
+        return INFINITY;
+    }
+
+    if (_match(s, "nan") == 3)
+        return _nan(s + 3, end);
+
+    if (s[0] == '0' && (s[1] | 32) == 'x')
+        return _hexfloat(s, end);
+
+    return _scientific(s, end);
+}
+
+Scalar STRTOD(const char s[restrict static 1], char** restrict end)
+{
+    const char* tail = s;
+    Scalar sign = 1;
+
+    while (isspace(*s))
+        ++s;
+
+    switch (*s) {
+        case '-':
+            sign = -1;
+            /* fallthrough */
+        case '+':
+            ++s;
+    }
+
+    Scalar result = sign * _scan(s, &tail);
+
+    if (end)
+        *end = (char*)tail;
+
+    return result;
 }
