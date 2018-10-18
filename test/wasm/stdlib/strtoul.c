@@ -6,17 +6,17 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../assert.h"
+#include "../assert.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <errno.h>
 
-#define run(s, junk, base) check(s junk, base, sizeof(s) - 1)
-#define canonical(x, junk) metallic_assert(run(#x, junk, 0) == x)
+#define RUN(s, junk, base) check(s junk, base, sizeof(s) - 1)
+#define CANONICAL(x, junk) metallic_assert(RUN(#x, junk, 0) == x)
 
-#define overflow(...) do {                   \
+#define OVERFLOW(...) do {                   \
     errno = 0;                               \
-    metallic_assert(run(__VA_ARGS__) == -1); \
+    metallic_assert(RUN(__VA_ARGS__) == -1); \
     metallic_assert(errno == ERANGE);        \
 } while (0)
 
@@ -30,24 +30,24 @@ static unsigned long check(const char s[static 1], int base, ptrdiff_t length)
 
 int main(void)
 {
-    canonical( +24680, "$foo");
-    canonical(  0xdeadbeef, "gf");
-    canonical(   -0232776532, "9");
+    CANONICAL( +24680, "$foo");
+    CANONICAL(  0xdeadbeef, "gf");
+    CANONICAL(   -0232776532, "9");
 
-    metallic_assert(run("", "jdh8", 0) == 0);
-    metallic_assert(run("", "jdh8", 19) == 0);
-    metallic_assert(run("jdh8", "#1993", 20) == 157548);
-    metallic_assert(run("\tjdh8", "", 25) == 305433);
-    metallic_assert(run("\n+jdh8", "whatever", 30) == 525218);
-    metallic_assert(run(" -jdh8", "", 36) == -903932);
+    metallic_assert(RUN("", "jdh8", 0) == 0);
+    metallic_assert(RUN("", "jdh8", 19) == 0);
+    metallic_assert(RUN("jdh8", "#1993", 20) == 157548);
+    metallic_assert(RUN("\tjdh8", "", 25) == 305433);
+    metallic_assert(RUN("\n+jdh8", "whatever", 30) == 525218);
+    metallic_assert(RUN(" -jdh8", "", 36) == -903932);
 
-    metallic_assert(run("3vvvvvv", "...", 32) == -1);
-    metallic_assert(run("-3vvvvvv", "...", 32) == 1);
+    metallic_assert(RUN("3vvvvvv", "...", 32) == -1);
+    metallic_assert(RUN("-3vvvvvv", "...", 32) == 1);
 
     metallic_assert(!errno);
 
-    overflow("4000000", "+++", 32);
-    overflow("-4000000", "+++", 32);
-    overflow("-321f5a16ga5s1g65as05vs", "", 36);
-    overflow("154165asjndiniasndi3sd", "", 36);
+    OVERFLOW("4000000", "+++", 32);
+    OVERFLOW("-4000000", "+++", 32);
+    OVERFLOW("-321f5a16ga5s1g65as05vs", "", 36);
+    OVERFLOW("154165asjndiniasndi3sd", "", 36);
 }
