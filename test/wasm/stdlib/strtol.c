@@ -16,6 +16,12 @@
 #define run(s, junk, base) check(s junk, base, sizeof(s) - 1)
 #define canonical(x, junk) metallic_assert(run(#x, junk, 0) == x)
 
+#define overflow(condition) do {      \
+    errno = 0;                        \
+    metallic_assert(condition);       \
+    metallic_assert(errno == ERANGE); \
+} while (0)
+
 static long check(const char s[static 1], int base, ptrdiff_t length)
 {
     char* end;
@@ -48,10 +54,6 @@ int main(void)
 
     metallic_assert(!errno);
 
-    metallic_assert(run("-321f5a16ga5s1g65as05vs", "", 36) == LONG_MIN);
-    metallic_assert(errno == ERANGE);
-
-    errno = 0;
-    metallic_assert(run("154165asjndiniasndi3sd", "", 36) == LONG_MAX);
-    metallic_assert(errno == ERANGE);
+    overflow(run("-321f5a16ga5s1g65as05vs", "", 36) == LONG_MIN);
+    overflow(run("154165asjndiniasndi3sd", "", 36) == LONG_MAX);
 }
