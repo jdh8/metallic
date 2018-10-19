@@ -6,10 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../stdlib/strtod/nanf.h"
+#include <ctype.h>
 
-float nanf(const char s[static 1])
+static const char* _strtod_skip(const char s[static 1])
 {
-    const char* dummy;
-    return _strtod_nanf(s, &dummy, '\0');
+    while (isspace(*s))
+        ++s;
+
+    if (*s == '+' || *s == '-')
+        ++s;
+
+    return s;
 }

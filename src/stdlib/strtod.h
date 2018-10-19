@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "strtod/nanf.h"
 #include <ctype.h>
 #include <errno.h>
 #include <math.h>
@@ -80,22 +81,9 @@ static int _match(const char s[static 1], const char t[static 1])
     return i;
 }
 
-static Scalar _nan(const char s[restrict static 1], const char* end[restrict static 1])
-{
-    *end = s;
-
-    if (*s == '(') {
-        while (isalnum(*++s));
-
-        if (*s == ')')
-            *end = s + 1;
-    }
-
-    return NAN;
-}
-
-static Scalar _hexfloat(const char s[restrict static 1], const char* end[restrict static 1]);
-static Scalar _scientific(const char s[restrict static 1], const char* end[restrict static 1]);
+static Scalar _nan(const char[restrict static 1], const char*[restrict static 1]);
+static Scalar _hexfloat(const char[restrict static 1], const char*[restrict static 1]);
+static Scalar _scientific(const char[restrict static 1], const char*[restrict static 1]);
 
 static Scalar _scan(const char s[restrict static 1], const char* end[restrict static 1])
 {

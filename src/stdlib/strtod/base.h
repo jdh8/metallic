@@ -6,16 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../reinterpret.h"
-#include <ctype.h>
-#include <math.h>
-#include <stdint.h>
-#include <stdlib.h>
-
-float _kernel_nanf(const char* s, char tail)
+static int _strtod_base(const char s[static 1])
 {
-    char* end;
-    uint32_t mantissa = isalnum(*s) * strtoul(s, &end, 0);
-    return reinterpret(float, 0x7FC00000 | (*end == tail) * mantissa);
-}
+    if (*s == '0')
+        return (s[1] | 32) == 'x' ? 16 : 8;
 
+    return 10;
+}

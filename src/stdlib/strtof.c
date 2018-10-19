@@ -11,6 +11,7 @@ typedef float Scalar;
 #define STRTOD strtof
 #include "strtod.h"
 #include <stdint.h>
+#include <float.h>
 #include <math.h>
 
 static float _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
@@ -58,7 +59,7 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
 static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
 {
     const uint32_t exp10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
-    const int capacity = 9; // log10(0x1p32)
+    const int capacity = FLT_DECIMAL_DIG;
 
     uint32_t x = 0;
     int places = 0;
@@ -94,4 +95,14 @@ static float _scientific(const char s[restrict static 1], const char* end[restri
         places = read;
 
     return _scal10n(x, places - capacity + _exp('e', s, end));
+}
+
+static float _nan(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    *end = s;
+
+    if (*s == '(')
+        return _strtod_nanf(s + 1, end, ')');
+
+    return NAN;
 }

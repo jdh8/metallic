@@ -6,10 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../stdlib/strtod/nanf.h"
-
-float nanf(const char s[static 1])
+static int _strtod_xdigit(int c)
 {
-    const char* dummy;
-    return _strtod_nanf(s, &dummy, '\0');
+    if (c - '0' < 10u)
+        return c - '0';
+
+    c |= 32;
+
+    if (c - 'a' < 6u)
+        return c - 'a' + 10;
+
+    return -1;
 }
