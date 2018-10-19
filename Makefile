@@ -1,4 +1,4 @@
-CC := clang --target=wasm32-unknown-none-wasm
+CC := clang --target=wasm32-unknown-unknown-wasm
 CPPFLAGS := -MMD -MP -Iinclude -D_METALLIC
 CFLAGS := -pipe -O3 -Wall -flto
 LDFLAGS := -nostdlib
