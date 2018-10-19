@@ -46,7 +46,7 @@ _Scalar _MATHCALL(fma)(_Scalar, _Scalar, _Scalar);
 _Scalar _MATHCALL(fmax)(_Scalar, _Scalar);
 _Scalar _MATHCALL(fmin)(_Scalar, _Scalar);
 _Scalar _MATHCALL(fdim)(_Scalar, _Scalar);
-_Scalar _MATHCALL(nan)(const char*);
+_Scalar _MATHCALL(nan)(const char[_STATIC 1]);
 
 _Scalar _MATHCALL(exp2)(_Scalar);
 _Scalar _MATHCALL(expm1)(_Scalar);
