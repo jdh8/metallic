@@ -7,25 +7,38 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../assert.h"
-#include <stdint.h>
 #include <stdlib.h>
 
 int compare(const void* a, const void* b)
 {
-    return (const int*)a - (const int*)b;
+    unsigned x = *(const unsigned*)a;
+    unsigned y = *(const unsigned*)b;
+
+    return (x > y) - (x < y);
 }
 
 int main(void)
 {
-    enum { count = 1024 };
+    const int count = 1024;
 
-    int random[count];
+    unsigned random[count];
+    unsigned checksum = 0;
 
     random[0] = 1337;
 
     for (int i = 0; i < count - 1; ++i)
-        random[i + 1] = random[i] * 48271u % 2147483647;
+        random[i + 1] = random[i] * 48271 % 2147483647;
 
-    qsort(random, count, sizeof(int), compare);
+    for (int i = 0; i < count; ++i)
+        checksum += random[i];
 
+    qsort(random, count, sizeof(unsigned), compare);
+
+    for (int i = 0; i < count - 1; ++i)
+        metallic_assert(random[i] <= random[i + 1]);
+
+    for (int i = 0; i < count; ++i)
+        checksum -= random[i];
+
+    metallic_assert(!checksum);
 }
