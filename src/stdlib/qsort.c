@@ -7,40 +7,43 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stddef.h>
-#include <string.h>
 
-static void _swap(void* restrict a, void* restrict b, size_t size)
+static void _swap(unsigned char* restrict a, unsigned char* restrict b, size_t size)
 {
-    unsigned char c[size];
-
-    memcpy(c, a, size);
-    memcpy(a, b, size);
-    memcpy(b, c, size);
+    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
+    #pragma clang loop vectorize(enable)
+    #endif
+    for (size_t i = 0; i < size; ++i) {
+        char c = a[i];
+        a[i] = b[i];
+        b[i] = c;
+    }
 }
 
-static size_t _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
+static void* _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    char* front = data;
-    char* middle = front + size * (count >> 1);
-    char* back = front + size * (count - 1);
+    unsigned char* front = data;
+    unsigned char* middle = front + size * (count >> 1);
+    unsigned char* back = front + size * (count - 1);
 
     if (compare(middle, front) < 0)
-        _swap(front, middle);
+        _swap(front, middle, size);
 
     if (compare(back, front) < 0)
-        _swap(front, back)
+        _swap(front, back, size);
 
     if (compare(middle, back) < 0)
-        _swap(middle, back);
+        _swap(middle, back, size);
 
     void* pivot = back;
 
-    for (;; _swap(front, back)) {
+    for (;; _swap(front, back, size)) {
         while (compare(front += size, pivot) < 0);
-        while (compare(back -= size, pivot) > 0);
+        while (compare(pivot, back -= size) < 0);
 
         if (front >= back) {
-            _swap(back, pivot);
+            _swap(front, pivot, size);
+            return front;
         }
     }
 }
@@ -50,8 +53,8 @@ void qsort(void* data, size_t count, size_t size, int compare(const void*, const
     if (count < 2)
         return;
 
-    size_t index = _partition(data, count, size, compare);
-    void* pivot = (char*)data + index * size;
+    void* pivot = _partition(data, count, size, compare);
+    size_t index = ((char*)pivot - (char*)data) / size;
 
     qsort(data, index, size, compare);
     qsort(pivot, count - index, size, compare);
