@@ -14,7 +14,7 @@ static void _swap(unsigned char* restrict a, unsigned char* restrict b, size_t s
     #pragma clang loop vectorize(enable)
     #endif
     for (size_t i = 0; i < size; ++i) {
-        char c = a[i];
+        unsigned char c = a[i];
         a[i] = b[i];
         b[i] = c;
     }
