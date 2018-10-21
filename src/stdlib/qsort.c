@@ -18,30 +18,30 @@
     }                                                           \
 }
 
-static void _swap64 MEMSWAP(uint_least64_t)
-static void _swap32 MEMSWAP(uint_least32_t)
-static void _swap16 MEMSWAP(uint_least16_t)
-static void _memswap MEMSWAP(unsigned char)
+static void _swap64 MEMSWAP(uint_least64_t);
+static void _swap32 MEMSWAP(uint_least32_t);
+static void _swap16 MEMSWAP(uint_least16_t);
+static void _memswap MEMSWAP(unsigned char);
 
-void _swap(void* restrict a, void* restrict b, size_t count)
+void _swap(void* restrict a, void* restrict b, size_t size)
 {
-    if (!(unsigned char)256) switch (count & -count) {
+    if (!(unsigned char)256) switch (size & -size) {
         top:
             if (sizeof(uint_least64_t) == 8)
-                return _swap64(a, b, count >> 3);
+                return _swap64(a, b, size >> 3);
         case 4:
             if (sizeof(uint_least32_t) == 4)
-                return _swap32(a, b, count >> 2);
+                return _swap32(a, b, size >> 2);
         case 2:
             if (sizeof(uint_least16_t) == 2)
-                return _swap16(a, b, count >> 1);
+                return _swap16(a, b, size >> 1);
         case 1:
             break;
         default:
             goto top;
     }
 
-    return _memswap(a, b, count);
+    return _memswap(a, b, size);
 }
 
 static void* _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
