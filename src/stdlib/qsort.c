@@ -9,6 +9,56 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define MEMCPY(T) (T destination[restrict], const T source[restrict], size_t count) \
+{                                                                                   \
+    for (size_t i = 0; i < count; ++i)                                              \
+        destination[i] = source[i];                                                 \
+}
+
+static void _copy64 MEMCPY(uint_least64_t);
+static void _copy32 MEMCPY(uint_least32_t);
+static void _copy16 MEMCPY(uint_least16_t);
+static void _memcpy MEMCPY(unsigned char);
+
+static void _assign(void* restrict destination, const void* restrict source, size_t size)
+{
+    if (!(unsigned char)256) switch (size & -size) {
+        top:
+            if (sizeof(uint_least64_t) == 8)
+                return _copy64(destination, source, size >> 3);
+        case 4:
+            if (sizeof(uint_least32_t) == 4)
+                return _copy32(destination, source, size >> 2);
+        case 2:
+            if (sizeof(uint_least16_t) == 2)
+                return _copy16(destination, source, size >> 1);
+        case 1:
+            break;
+        default:
+            goto top;
+    }
+
+    return _memcpy(destination, source, size);
+}
+
+static void _insertion_sort(void* data, size_t count, size_t size, int compare(const void*, const void*))
+{
+    unsigned char* begin = data;
+
+    for (size_t i = 1; i < count; ++i) {
+        unsigned char c[size];
+        unsigned char* a = begin + i * size;
+        unsigned char* b;
+
+        _assign(c, a, size);
+
+        for (b = a - size; b >= begin && compare(c, b) < 0; b -= size)
+            _assign(b + size, b, size);
+
+        _assign(b + size, c, size);
+    }
+}
+
 #define MEMSWAP(T) (T a[restrict], T b[restrict], size_t count) \
 {                                                               \
     for (size_t i = 0; i < count; ++i) {                        \
@@ -23,7 +73,7 @@ static void _swap32 MEMSWAP(uint_least32_t);
 static void _swap16 MEMSWAP(uint_least16_t);
 static void _memswap MEMSWAP(unsigned char);
 
-void _swap(void* restrict a, void* restrict b, size_t size)
+static void _swap(void* restrict a, void* restrict b, size_t size)
 {
     if (!(unsigned char)256) switch (size & -size) {
         top:
@@ -74,8 +124,8 @@ static void* _partition(void* data, size_t count, size_t size, int compare(const
 
 void qsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    if (count < 2)
-        return;
+    if (count <= 8)
+        return _insertion_sort(data, count, size, compare);
 
     void* pivot = _partition(data, count, size, compare);
     size_t index = ((char*)pivot - (char*)data) / size;
