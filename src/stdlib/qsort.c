@@ -43,12 +43,12 @@ static void _assign(void* restrict destination, const void* restrict source, siz
 
 static void _insertion_sort(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    unsigned char* begin = data;
+    char* begin = data;
 
     for (size_t i = 1; i < count; ++i) {
-        unsigned char c[size];
-        unsigned char* a = begin + i * size;
-        unsigned char* b;
+        char c[size];
+        char* a = begin + i * size;
+        char* b;
 
         _assign(c, a, size);
 
