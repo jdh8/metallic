@@ -7,24 +7,48 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stddef.h>
+#include <stdint.h>
 
-static void _swap(unsigned char* restrict a, unsigned char* restrict b, size_t size)
+#define MEMSWAP(T) (T a[restrict], T b[restrict], size_t count) \
+{                                                               \
+    for (size_t i = 0; i < count; ++i) {                        \
+        T c = a[i];                                             \
+        a[i] = b[i];                                            \
+        b[i] = c;                                               \
+    }                                                           \
+}
+
+static void _swap64 MEMSWAP(uint_least64_t)
+static void _swap32 MEMSWAP(uint_least32_t)
+static void _swap16 MEMSWAP(uint_least16_t)
+static void _memswap MEMSWAP(unsigned char)
+
+void _swap(void* restrict a, void* restrict b, size_t count)
 {
-    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
-    #pragma clang loop vectorize(enable)
-    #endif
-    for (size_t i = 0; i < size; ++i) {
-        unsigned char c = a[i];
-        a[i] = b[i];
-        b[i] = c;
+    if (!(unsigned char)256) switch (count & -count) {
+        top:
+            if (sizeof(uint_least64_t) == 8)
+                return _swap64(a, b, count >> 3);
+        case 4:
+            if (sizeof(uint_least32_t) == 4)
+                return _swap32(a, b, count >> 2);
+        case 2:
+            if (sizeof(uint_least16_t) == 2)
+                return _swap16(a, b, count >> 1);
+        case 1:
+            break;
+        default:
+            goto top;
     }
+
+    return _memswap(a, b, count);
 }
 
 static void* _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    unsigned char* front = data;
-    unsigned char* middle = front + size * (count >> 1);
-    unsigned char* back = front + size * (count - 1);
+    char* front = data;
+    char* middle = front + size * (count >> 1);
+    char* back = front + size * (count - 1);
 
     if (compare(middle, front) < 0)
         _swap(front, middle, size);
