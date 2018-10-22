@@ -96,6 +96,44 @@ static void _swap(void* restrict a, void* restrict b, size_t size)
     return _memswap(a, b, size);
 }
 
+static size_t _leaf(void* data, size_t i, size_t count, size_t size, int compare(const void*, const void*))
+{ 
+    while (2 * i < count) {
+        char* base = data;
+        i = 2 * i | (compare(base + (2 * i - 1) * size, base + 2 * i * size) < 0);
+    }
+    return i << (2 * i == count);
+}
+
+static void _siftdown(void* data, size_t stem, size_t count, size_t size, int compare(const void*, const void*))
+{
+    size_t offspring = _leaf(data, stem, count, size, compare);
+    char* base = data;
+    char buffer[size];
+
+    while (compare(base + size * (offspring - 1), base + size * (stem - 1)) < 0)
+        offspring >>= 1;
+
+    _assign(buffer, base + size * (offspring - 1), size);
+    _assign(base + size * (offspring - 1), base + size * (stem - 1), size);
+
+    while (stem < offspring) {
+        offspring >>= 1;
+        _swap(buffer, base + size * (offspring - 1), size);
+    }
+}
+
+static void _heapsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
+{
+    for (size_t parent = count >> 1; parent; --parent)
+        _siftdown(data, parent, count, size, compare);
+
+    while (count--) {
+        _swap(data, (char*)data + count * size, size);
+        _siftdown(data, 1, count, size, compare);
+    }
+}
+
 static void* _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
     char* front = data;
@@ -124,14 +162,24 @@ static void* _partition(void* data, size_t count, size_t size, int compare(const
     }
 }
 
-void qsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
+static void _introsort(void* data, size_t count, size_t size, int ttl, int compare(const void*, const void*))
 {
     if (count <= 8)
         return _insertion_sort(data, count, size, compare);
 
+    if (ttl < 0)
+        return _heapsort(data, count, size, compare);
+
     void* pivot = _partition(data, count, size, compare);
     size_t index = ((char*)pivot - (char*)data) / size;
 
-    qsort(data, index, size, compare);
-    qsort(pivot, count - index, size, compare);
+    _introsort(data, index, size, ttl - 1, compare);
+    _introsort(pivot, count - index, size, ttl - 1, compare);
+}
+
+void qsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
+{
+    int ttl = __builtin_clz(1) - __builtin_clz(count);
+
+    _introsort(data, count, size, ttl, compare);
 }
