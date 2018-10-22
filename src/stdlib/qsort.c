@@ -13,14 +13,16 @@
 {                                                                                   \
     for (size_t i = 0; i < count; ++i)                                              \
         destination[i] = source[i];                                                 \
+                                                                                    \
+    return destination;                                                             \
 }
 
-static void _copy64 MEMCPY(uint_least64_t);
-static void _copy32 MEMCPY(uint_least32_t);
-static void _copy16 MEMCPY(uint_least16_t);
-static void _memcpy MEMCPY(unsigned char);
+static void* _copy64 MEMCPY(uint_least64_t);
+static void* _copy32 MEMCPY(uint_least32_t);
+static void* _copy16 MEMCPY(uint_least16_t);
+static void* _memcpy MEMCPY(unsigned char);
 
-static void _assign(void* restrict destination, const void* restrict source, size_t size)
+static void* _assign(void* restrict destination, const void* restrict source, size_t size)
 {
     if (!(unsigned char)256) switch (size & -size) {
         top:
