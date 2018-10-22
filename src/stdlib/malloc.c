@@ -7,10 +7,14 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include <stddef.h>
+#include <stdint.h>
+
+void* sbrk(intptr_t);
 
 #define ABORT __builtin_trap()
 #define HAVE_MMAP 0
 #define LACKS_TIME_H
+#define LACKS_UNISTD_H
 #define LACKS_SYS_TYPES_H
 #define NO_MALLOC_STATS 1
 #define USE_LOCKS 0
