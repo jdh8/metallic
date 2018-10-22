@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -12,9 +12,7 @@
 #define HAVE_MMAP 0
 #define LACKS_TIME_H
 #define LACKS_SYS_TYPES_H
-#define MALLOC_ALIGNMENT ((size_t)16)
 #define NO_MALLOC_STATS 1
-#define USE_BUILTIN_FFS 1
 #define USE_LOCKS 0
 
 #define malloc_getpagesize 65536
