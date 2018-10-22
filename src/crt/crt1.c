@@ -6,15 +6,11 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <stdint.h>
-
 void __wasm_call_ctors(void);
-void* sbrk(intptr_t);
 int main(void);
 
 void _start(void)
 {
     __wasm_call_ctors();
-    sbrk((intptr_t)__builtin_frame_address(0));
     main();
 }
