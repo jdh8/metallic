@@ -10,26 +10,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-static void* _assign(void* restrict destination, const void* restrict source, size_t size)
-{
-    switch (size & -size) {
-        top:
-            return _copy64(destination, source, size >> 3);
-        case 4:
-            return _copy32(destination, source, size >> 2);
-        case 2:
-            return _copy16(destination, source, size >> 1);
-        case 1:
-            break;
-        default:
-            goto top;
-    }
-
-    return _copy8(destination, source, size);
-}
-
 static void _insertion_sort(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
+    size_t alignment = (uintptr_t)data | size;
     char* begin = data;
 
     for (size_t i = 1; i < count; ++i) {
@@ -37,12 +20,12 @@ static void _insertion_sort(void* data, size_t count, size_t size, int compare(c
         char* a = begin + i * size;
         char* b;
 
-        _assign(c, a, size);
+        _copy(c, a, size, alignment);
 
         for (b = a - size; b >= begin && compare(c, b) < 0; b -= size)
-            _assign(b + size, b, size);
+            _copy(b + size, b, size, alignment);
 
-        _assign(b + size, c, size);
+        _copy(b + size, c, size, alignment);
     }
 }
 
@@ -60,9 +43,9 @@ static void _swap32 MEMSWAP(uint32_t);
 static void _swap16 MEMSWAP(uint16_t);
 static void _swap8 MEMSWAP(unsigned char);
 
-static void _swap(void* restrict a, void* restrict b, size_t size)
+static void _swap(void* restrict a, void* restrict b, size_t size, size_t alignment)
 {
-    switch (size & -size) {
+    switch (alignment & -alignment) {
         top:
             return _swap64(a, b, size >> 3);
         case 4:
@@ -89,6 +72,7 @@ static size_t _leaf(void* data, size_t i, size_t count, size_t size, int compare
 
 static void _siftdown(void* data, size_t stem, size_t count, size_t size, int compare(const void*, const void*))
 {
+    size_t alignment = (uintptr_t)data | size;
     size_t offspring = _leaf(data, stem, count, size, compare);
     char* base = data;
     char buffer[size];
@@ -96,49 +80,52 @@ static void _siftdown(void* data, size_t stem, size_t count, size_t size, int co
     while (compare(base + size * (offspring - 1), base + size * (stem - 1)) < 0)
         offspring >>= 1;
 
-    _assign(buffer, base + size * (offspring - 1), size);
-    _assign(base + size * (offspring - 1), base + size * (stem - 1), size);
+    _copy(buffer, base + size * (offspring - 1), size, alignment);
+    _copy(base + size * (offspring - 1), base + size * (stem - 1), size, alignment);
 
     while (stem < offspring) {
         offspring >>= 1;
-        _swap(buffer, base + size * (offspring - 1), size);
+        _swap(buffer, base + size * (offspring - 1), size, alignment);
     }
 }
 
 static void _heapsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
+    size_t alignment = (uintptr_t)data | size;
+
     for (size_t parent = count >> 1; parent; --parent)
         _siftdown(data, parent, count, size, compare);
 
     while (count--) {
-        _swap(data, (char*)data + count * size, size);
+        _swap(data, (char*)data + count * size, size, alignment);
         _siftdown(data, 1, count, size, compare);
     }
 }
 
 static void* _partition(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
+    size_t alignment = (uintptr_t)data | size;
     char* front = data;
     char* middle = front + size * (count >> 1);
     char* back = front + size * (count - 1);
 
     if (compare(middle, front) < 0)
-        _swap(front, middle, size);
+        _swap(front, middle, size, alignment);
 
     if (compare(back, front) < 0)
-        _swap(front, back, size);
+        _swap(front, back, size, alignment);
 
     if (compare(middle, back) < 0)
-        _swap(middle, back, size);
+        _swap(middle, back, size, alignment);
 
     void* pivot = back;
 
-    for (;; _swap(front, back, size)) {
+    for (;; _swap(front, back, size, alignment)) {
         while (compare(front += size, pivot) < 0);
         while (compare(pivot, back -= size) < 0);
 
         if (front >= back) {
-            _swap(front, pivot, size);
+            _swap(front, pivot, size, alignment);
             return front;
         }
     }
