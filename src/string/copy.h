@@ -9,12 +9,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#define COPY(T) (T destination[restrict], const T source[restrict], size_t count) \
-{                                                                                 \
-    for (size_t i = 0; i < count; ++i)                                            \
-        destination[i] = source[i];                                               \
-                                                                                  \
-    return destination;                                                           \
+#define COPY(T) (T* destination, const T* source, size_t count) \
+{                                                               \
+    for (size_t i = 0; i < count; ++i)                          \
+        destination[i] = source[i];                             \
+                                                                \
+    return destination;                                         \
 }
 
 static void* _copy64 COPY(uint_least64_t);
@@ -22,7 +22,7 @@ static void* _copy32 COPY(uint_least32_t);
 static void* _copy16 COPY(uint_least16_t);
 static void* _copy8 COPY(unsigned char);
 
-static void* _copy(void* restrict destination, const void* restrict source, size_t size, size_t alignment)
+static void* _copy(void* destination, const void* source, size_t size, size_t alignment)
 {
     switch (alignment & -alignment) {
         top:

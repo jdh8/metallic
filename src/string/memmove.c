@@ -1,43 +1,50 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "copy.h"
 #include <stddef.h>
+#include <stdint.h>
 
-static void _forwards(unsigned char* output, const unsigned char* input, size_t length)
-{
-    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
-    #pragma clang loop vectorize(enable)
-    #endif
-    while (length--)
-        *output++ = *input++;
+#define REVERSE_COPY(T) (T* destination, const T* source, size_t count) \
+{                                                                       \
+    while (--count != -1)                                               \
+        destination[count] = source[count];                             \
+                                                                        \
+    return destination;                                                 \
 }
 
-static void _backwards(unsigned char* output, const unsigned char* input, size_t length)
-{
-    output += length;
-    input += length;
+static void* _rcopy64 REVERSE_COPY(uint_least64_t);
+static void* _rcopy32 REVERSE_COPY(uint_least32_t);
+static void* _rcopy16 REVERSE_COPY(uint_least16_t);
+static void* _rcopy8 REVERSE_COPY(unsigned char);
 
-    #if defined(__clang__) && defined(__OPTIMIZE__) && !defined(__OPTIMIZE_SIZE__)
-    #pragma clang loop vectorize(enable)
-    #endif
-    while (length--)
-        *--output = *--input;
+static void* _reverse_copy(void* destination, const void* source, size_t size, size_t alignment)
+{
+    switch (alignment & -alignment) {
+        top:
+            return _rcopy64(destination, source, size >> 3);
+        case 4:
+            return _rcopy32(destination, source, size >> 2);
+        case 2:
+            return _rcopy16(destination, source, size >> 1);
+        case 1:
+            return _rcopy8(destination, source, size);
+        default:
+            goto top;
+    }
 }
 
 void* memmove(void* destination, const void* source, size_t length)
 {
-    unsigned char* output = destination;
-    const unsigned char* input = source;
+    size_t alignment = (uintptr_t)destination | (uintptr_t)source | length;
 
-    if (output - input >= length)
-        _forwards(output, input, length);
-    else
-        _backwards(output, input, length);
+    if ((char*)destination - (const char*)source < length)
+        return _reverse_copy(destination, source, length, alignment);
 
-    return destination;
+    return _copy(destination, source, length, alignment);
 }
