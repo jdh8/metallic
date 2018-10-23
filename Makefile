@@ -1,6 +1,6 @@
 CC := clang --target=wasm32-unknown-unknown-wasm
 CPPFLAGS := -MMD -MP -Iinclude -D_METALLIC
-CFLAGS := -pipe -O3 -Wall -flto
+CFLAGS := -pipe -O3 -Wall -flto -fno-builtin-memcpy
 LDFLAGS := -nostdlib
 
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
