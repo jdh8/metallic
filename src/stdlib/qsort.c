@@ -6,41 +6,26 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../string/copy.h"
 #include <stddef.h>
 #include <stdint.h>
 
-#define MEMCPY(T) (T destination[restrict], const T source[restrict], size_t count) \
-{                                                                                   \
-    for (size_t i = 0; i < count; ++i)                                              \
-        destination[i] = source[i];                                                 \
-                                                                                    \
-    return destination;                                                             \
-}
-
-static void* _copy64 MEMCPY(uint_least64_t);
-static void* _copy32 MEMCPY(uint_least32_t);
-static void* _copy16 MEMCPY(uint_least16_t);
-static void* _memcpy MEMCPY(unsigned char);
-
 static void* _assign(void* restrict destination, const void* restrict source, size_t size)
 {
-    if (!(unsigned char)256) switch (size & -size) {
+    switch (size & -size) {
         top:
-            if (sizeof(uint_least64_t) == 8)
-                return _copy64(destination, source, size >> 3);
+            return _copy64(destination, source, size >> 3);
         case 4:
-            if (sizeof(uint_least32_t) == 4)
-                return _copy32(destination, source, size >> 2);
+            return _copy32(destination, source, size >> 2);
         case 2:
-            if (sizeof(uint_least16_t) == 2)
-                return _copy16(destination, source, size >> 1);
+            return _copy16(destination, source, size >> 1);
         case 1:
             break;
         default:
             goto top;
     }
 
-    return _memcpy(destination, source, size);
+    return _copy8(destination, source, size);
 }
 
 static void _insertion_sort(void* data, size_t count, size_t size, int compare(const void*, const void*))
@@ -70,30 +55,27 @@ static void _insertion_sort(void* data, size_t count, size_t size, int compare(c
     }                                                           \
 }
 
-static void _swap64 MEMSWAP(uint_least64_t);
-static void _swap32 MEMSWAP(uint_least32_t);
-static void _swap16 MEMSWAP(uint_least16_t);
-static void _memswap MEMSWAP(unsigned char);
+static void _swap64 MEMSWAP(uint64_t);
+static void _swap32 MEMSWAP(uint32_t);
+static void _swap16 MEMSWAP(uint16_t);
+static void _swap8 MEMSWAP(unsigned char);
 
 static void _swap(void* restrict a, void* restrict b, size_t size)
 {
-    if (!(unsigned char)256) switch (size & -size) {
+    switch (size & -size) {
         top:
-            if (sizeof(uint_least64_t) == 8)
-                return _swap64(a, b, size >> 3);
+            return _swap64(a, b, size >> 3);
         case 4:
-            if (sizeof(uint_least32_t) == 4)
-                return _swap32(a, b, size >> 2);
+            return _swap32(a, b, size >> 2);
         case 2:
-            if (sizeof(uint_least16_t) == 2)
-                return _swap16(a, b, size >> 1);
+            return _swap16(a, b, size >> 1);
         case 1:
             break;
         default:
             goto top;
     }
 
-    return _memswap(a, b, size);
+    return _swap8(a, b, size);
 }
 
 static size_t _leaf(void* data, size_t i, size_t count, size_t size, int compare(const void*, const void*))
