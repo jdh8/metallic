@@ -21,17 +21,15 @@ double SCALBN(double x, Integer exp)
 
     i = _normalize(i);
 
-    int64_t biased = exp + (i >> (DBL_MANT_DIG - 1));
+    int64_t biased = exp + (i >> 52);
 
-    if (biased >= 0x7FF || biased < -DBL_MANT_DIG)
+    if (biased >= 0x7FF || biased < -53)
         return x * (exp < 0 ? 0 : HUGE_VALF);
 
     i &= 0x000FFFFFFFFFFFFF;
 
     if (biased > 0)
-        i |= biased << (DBL_MANT_DIG - 1);
-    else
-        i = (i | 0x0010000000000000) >> (1 - biased);
+        return copysign(reinterpret(double, i | biased << 52), x);
 
-    return copysign(reinterpret(double, i), x);
+    return copysign(0x1p-53, x) * reinterpret(double, i | (biased + 53) << 52);
 }
