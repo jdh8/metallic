@@ -8,14 +8,31 @@
  */
 #include <math.h>
 
-double rint(double x)
+static double _rint(double x)
 {
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-    return __builtin_rint(x);
-#else
-    const double rectifier = 0x0010000000000000;
-    double y = fabs(x) + rectifier;
-    return copysign(y - rectifier, x);
-#endif
+    const double rectifier = 0x1p52;
+    double r = fabs(x);
+
+    if (r < rectifier) {
+        double y = r + rectifier;
+        return copysign(y - rectifier, x);
+    }
+
+    return x;
 }
 
+#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
+#define RINT(x) __builtin_rint(x)
+#else
+#define RINT(x) _rint(x)
+#endif
+
+double rint(double x)
+{
+    (void)_rint;
+    return RINT(x);
+}
+
+#ifdef __wasm__
+double nearbyint(double) __attribute__((alias("rint")));
+#endif

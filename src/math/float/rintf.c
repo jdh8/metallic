@@ -10,7 +10,7 @@
 
 static float _rintf(float x)
 {
-    const float rectifier = 0x00800000;
+    const float rectifier = 0x1p23f;
     float r = fabsf(x);
 
     if (r < rectifier) {
@@ -22,9 +22,9 @@ static float _rintf(float x)
 }
 
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define RINTF __builtin_rintf
+#define RINTF(x) __builtin_rintf(x)
 #else
-#define RINTF _rintf
+#define RINTF(x) _rintf(x)
 #endif
 
 float rintf(float x)
