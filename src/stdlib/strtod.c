@@ -6,20 +6,20 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef float Scalar;
+typedef double Scalar;
 
-#define STRTOD strtof
-#include "strtod/nanf.h"
+#define STRTOD strtod
+#include "strtod/nan.h"
 #include "strtod.h"
 #include <stdint.h>
 #include <float.h>
 #include <math.h>
 
-static float _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
+static double _hexfloat(const char s[restrict static 1], const char* end[restrict static 1])
 {
-    const int capacity = 8;
+    const int capacity = 16;
 
-    uint32_t x = 0;
+    uint64_t x = 0;
     int places = 0;
     int read = 0;
     _Bool pointed = 0;
@@ -54,15 +54,34 @@ static float _hexfloat(const char s[restrict static 1], const char* end[restrict
     if (!pointed)
         places = read;
 
-    return ldexpf(x, 4 * (places - capacity) + _exp('p', s, end));
+    return ldexp(x, 4 * (places - capacity) + _exp('p', s, end));
 }
 
-static float _scientific(const char s[restrict static 1], const char* end[restrict static 1])
+static uint64_t _scal10n_u64(uint64_t x, int i)
 {
-    const uint32_t exp10[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000 };
-    const int capacity = FLT_DECIMAL_DIG;
+    if (i & 1)
+        x *= 10;
 
-    uint32_t x = 0;
+    if (i & 2)
+        x *= 100;
+
+    if (i & 4)
+        x *= 10000;
+
+    if (i & 8)
+        x *= 100000000;
+
+    if (i & 16)
+        x *= 10000000000000000;
+
+    return x;
+}
+
+static double _scientific(const char s[restrict static 1], const char* end[restrict static 1])
+{
+    const int capacity = DBL_DECIMAL_DIG;
+
+    uint64_t x = 0;
     int places = 0;
     int read = 0;
     _Bool pointed = 0;
@@ -90,7 +109,7 @@ static float _scientific(const char s[restrict static 1], const char* end[restri
     }
 
     if (read < capacity)
-        x *= exp10[capacity - read];
+        x = _scal10n_u64(x, capacity - read);
 
     if (!pointed)
         places = read;
@@ -98,12 +117,12 @@ static float _scientific(const char s[restrict static 1], const char* end[restri
     return _scal10n(x, places - capacity + _exp('e', s, end));
 }
 
-static float _nan(const char s[restrict static 1], const char* end[restrict static 1])
+static double _nan(const char s[restrict static 1], const char* end[restrict static 1])
 {
     *end = s;
 
     if (*s == '(')
-        return _strtod_nanf(s + 1, end, ')');
+        return _strtod_nan(s + 1, end, ')');
 
     return NAN;
 }
