@@ -1,19 +1,25 @@
-CC := clang --target=wasm32-unknown-unknown-wasm
-CPPFLAGS := -MMD -MP -Iinclude -D_METALLIC
-CFLAGS := -pipe -O3 -Wall -flto -fno-builtin-memcpy
-LDFLAGS := -nostdlib
+override CPPFLAGS += -MMD -MP -MQ $@
+override CFLAGS += -pipe -O3 -Wall -flto
 
+WACC = clang --target=wasm32-unknown-unknown-wasm
+LDFLAGS = -march=native -lm
+
+metallic.bc: CC = $(WACC)
+metallic.bc: CPPFLAGS += -Iinclude -D_METALLIC
+metallic.bc: CFLAGS += -fno-builtin-memcpy
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
 check: $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c)) $(patsubst %.c, %.exe, $(wildcard test/native/*/*.c))
 
+%.out: CC = $(WACC)
+%.out: CPPFLAGS += -Iinclude
 %.out: %.c metallic.bc test/wasm/index.mjs
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.bc
+	$(CC) $(CPPFLAGS) $(CFLAGS) -nostdlib -o $@ $< metallic.bc
 	node --experimental-modules test/wasm/index.mjs $@
 
 %.exe: %.c
-	cc $(CFLAGS) -MMD -MP -MQ $@ -march=native -lm -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
 	$@
 
 clean:
