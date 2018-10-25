@@ -6,19 +6,15 @@ LDFLAGS := -nostdlib
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
-check: $(patsubst %.c, %.run, $(wildcard test/*/*/*.c))
+check: $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c)) $(patsubst %.c, %.exe, $(wildcard test/native/*/*.c))
 
-test/wasm/%.run: test/wasm/index.mjs test/wasm/%.out
-	node --experimental-modules $^ > $@
-
-%.out: %.c metallic.bc
+%.out: %.c metallic.bc test/wasm/index.mjs
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -MQ $@ -o $@ $< metallic.bc
-
-test/native/%.run: test/native/%.exe
-	$< > $@
+	node --experimental-modules test/wasm/index.mjs $@
 
 %.exe: %.c
 	cc $(CFLAGS) -MMD -MP -MQ $@ -march=native -lm -o $@ $<
+	$@
 
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}.{o,d,out,exe,run}
