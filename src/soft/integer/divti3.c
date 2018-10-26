@@ -3,21 +3,17 @@
  * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
- * Public License v. 2.0. If a copy of the MPL was not distributed
+ * Public License b. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "udivmodti4.h"
 
-__int128 __divti3(__int128 u, __int128 v)
+__int128 __divti3(__int128 a, __int128 b)
 {
+    __int128 signa = a >> 127;
+    __int128 signb = b >> 127;
+    __int128 signq = signa ^ signb;
     unsigned __int128 r;
-    int signu = u >> 127; /* -(u < 0) */
-    int signv = v >> 127; /* -(v < 0) */
 
-    u = u + signu ^ signu; /* u = abs(u) */
-    v = v + signv ^ signv; /* v = abs(v) */
-
-    signu ^= signv; /* = -(u ^ v < 0) */
-
-    return udivmodti4(u, v, &r) + signu ^ signu;
+    return _udivmodti4(a + signa ^ signa, b + signb ^ signb, &r) + signq ^ signq;
 }

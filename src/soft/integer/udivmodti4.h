@@ -1,130 +1,73 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
- * Public License v. 2.0. If a copy of the MPL was not distributed
+ * Public License b. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef METALLIC_UDIVMODTI4_H
-#define METALLIC_UDIVMODTI4_H
-
 #include <stdint.h>
 
-/*!
- * \brief 96-bit over normalized 64-bit division
- *
- * The quotient must be 32-bit, i.e. \f$ u_1 < v \f$ is assumed.
- * The denominator must be normalized, whose highest bit is set.
- * This function performs fast division under these conditions.
- *
- * \param[in]  u1  High 64 bits of numerator
- * \param[in]  u0  Low 32 bits of numerator
- * \param[in]  v   Denominator whose highest bit is set
- * \param[out] r   Remainder
- *
- * \return  Quotient
- */
-static uint32_t _kernel3x2(uint64_t u1, uint32_t u0, uint64_t v, uint64_t r[static 1])
+static int _clz(unsigned __int128 x)
 {
-    uint32_t v1 = v >> 32;
-    uint32_t v0 = v;
-
-    /* More than 32 bits is required to store 2**32, the edge case */
-    uint64_t q = u1 / v1;
-    u1 %= v1;
-
-    while ((u1 << 32 | u0) < q * v0) {
-        --q;
-        u1 += v1;
-
-        /* Break if (uint32_t) u1 + v1 overflows because q * v0 < 2**64 */
-        if (u1 >> 32) break;
-    }
-
-    *r = (u1 << 32 | u0) - q * v0;
-    return q;
+    return x >> 64 ? __builtin_clzll(x >> 64) : 64 | __builtin_clzll(x);
 }
 
-static uint64_t _div4x2(unsigned __int128 u, uint64_t v, uint64_t r[static 1])
+static unsigned __int128 _shl(unsigned __int128 x, int shift)
 {
-    uint64_t u2 = u >> 64;
-    uint64_t u0 = u;
+    uint64_t high = x >> 64;
+    uint64_t low = x;
 
-    if (!u2) {
-        *r = u0 % v;
-        return u0 / v;
-    }
-
-    int shift = __builtin_clzll(v);
-    uint64_t u1 = u0 >> 32;
-    uint64_t q1 = _kernel3x2(u2, u1, v << shift, &u1);
-    uint64_t q0 = _kernel3x2(u1, u0, v << shift, &u0);
-
-    *r = u0 % v;
-    return (q1 << 32 | q0) << shift | u0 / v;
-}
-
-static uint64_t _russian(unsigned __int128 u, unsigned __int128 v, unsigned __int128 r[static 1])
-{
-    uint64_t high = v >> 64;
-    uint64_t low = v;
-
-    int shift = __builtin_clzll(high);
-    uint64_t bit = 1ULL << shift;
-    uint64_t q = 0;
-
-    /* v <<= shift */
     if (shift)
-        v = (unsigned __int128)(high >> shift) << 64 | (high << -shift | low >> shift);
+        return (unsigned __int128)(high << shift | low >> (64 - shift)) << 64 | low << shift;
 
-    while (bit) {
-        if (u >= v) {
-            u -= v;
+    return x;
+}
+
+static uint64_t _iterate(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
+{
+    uint64_t q = 0;
+    int shift = _clz(b) - _clz(a);
+    b = _shl(b, shift);
+
+    for (uint64_t bit = (uint64_t)1 << shift; bit; bit >>= 1) {
+        if (a >= b) {
+            a -= b;
             q |= bit;
         }
-        v >>= 1;
-        bit >>= 1;
+        b >>= 1;
     }
-
-    *r = u;
+    *r = a;
     return q;
 }
 
-static unsigned __int128 udivmodti4(unsigned __int128 u, unsigned __int128 v, unsigned __int128 r[static 1])
+static unsigned __int128 _udivmodti4(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
 {
-    uint64_t u2 = u >> 64;
-    uint64_t v2 = v >> 64;
-    uint64_t u0 = u;
-    uint64_t v0 = v;
+    uint64_t a2 = a >> 64;
+    uint64_t b2 = b >> 64;
+    uint64_t a0 = a;
+    uint64_t b0 = b;
 
-    if (!u2) {
-        *r = v2 ? u : u0 % v0;
-        return u0 / v0 * !v2;
+    if (a < b) {
+        *r = a;
+        return 0;
     }
 
-    if (!v0) {
-        *r = (unsigned __int128)(u2 % v2) << 64 | u0;
-        return u2 / v2;
+    if (!a2) {
+        *r = a0 % b0;
+        return a0 / b0;
     }
 
-    if (!v2) {
-        if (!(v0 & (v0 - 1))) {
-            *r = u0 & (v0 - 1);
-            if (v0 == 1) return u;
-
-            int shift = __builtin_ctzll(v0);
-            return (unsigned __int128)(u2 >> shift) << 64 | (u2 << -shift | u0 >> shift);
-        }
-
-        uint64_t q2 = u2 / v0;
-        uint64_t q0 = _div4x2((unsigned __int128)(u2 % v0) << 64 | u0, v0, &u0);
-
-        *r = u0;
-        return (unsigned __int128) q2 << 64 | q0;
+    if (!b0) {
+        *r = (unsigned __int128)(a2 % b2) << 64 | a0;
+        return a2 / b2;
     }
 
-    return _russian(u, v, r);
+    if (!b2) {
+        uint64_t q2 = a2 / b0;
+        uint64_t q0 = _iterate((unsigned __int128)(a2 % b0) << 64 | a0, b0, r);
+        return (unsigned __int128)q2 << 64 | q0;
+    }
+
+    return _iterate(a, b, r);
 }
-
-#endif /* udivmodti4.h */

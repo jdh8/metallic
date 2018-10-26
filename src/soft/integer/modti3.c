@@ -8,14 +8,12 @@
  */
 #include "udivmodti4.h"
 
-__int128 __modti3(__int128 u, __int128 v)
+__int128 __modti3(__int128 a, __int128 b)
 {
     unsigned __int128 r;
-    int sign = u >> 127; /* -(u < 0) */
+    unsigned __int128 sign = a >> 127;
 
-    u = u + sign ^ sign; /* u = abs(u) */
-    v = v < 0 ? -v : v;
+    _udivmodti4(a + sign ^ sign, b < 0 ? -b : b, &r);
 
-    udivmodti4(u, v, &r);
     return r + sign ^ sign;
 }
