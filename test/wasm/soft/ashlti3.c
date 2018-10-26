@@ -8,9 +8,9 @@
  */
 #include "../assert.h"
 
-static void run(__int128 x)
+static void run(unsigned __int128 x)
 {
-    __int128 y = x;
+    unsigned __int128 y = x;
 
     for (int shift = 0; shift < 128; ++shift) {
         metallic_assert(x << shift == y);
@@ -20,19 +20,10 @@ static void run(__int128 x)
 
 int main(void)
 {
-    for (unsigned __int128 x = 1; !(x >> 127); x *= 2)
+    for (unsigned __int128 x = 1; x; x *= 2)
         run(x);
 
-    for (unsigned __int128 x = 1; !(x >> 127); x *= 3)
-        run(x);
-
-    for (unsigned __int128 x = 1; !(x >> 127); x *= 5)
-        run(x);
-
-    for (unsigned __int128 x = 1; !(x >> 127); x *= 7)
-        run(x);
-
-    for (unsigned __int128 x = 1; !(x >> 127); x += 0x70724BBC5F03E06C + (x >> 3))
+    for (unsigned __int128 x = 1; x >> 104 != 0x313370; x *= 3)
         run(x);
 }
 
