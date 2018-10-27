@@ -10,35 +10,25 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _easy(uint64_t a, uint64_t b)
+static double _normalized(uint64_t a, uint64_t b)
 {
-    double x = reinterpret(double, a);
-    double y = reinterpret(double, b);
-    return x - rint(x / y) * y;
-}
-
-static double _subnormal(uint64_t a, uint64_t b)
-{
-    if (!(b & (b - 1)))
-        return _easy(a, b);
     //TODO
-}
-
-static double _normal(uint64_t a, uint64_t b)
-{
-    if (!(b & 0x000FFFFFFFFFFFFF))
-        return _easy(a, b);
-    //TODO
+    return a;
 }
 
 static double _finite(uint64_t a, uint64_t b)
 {
     const uint64_t threshold = 0x0020000000000000;
 
-    if (b <= threshold)
-        return a <= threshold ? reinterpret(double, a % b) : _subnormal(a, b);
+    if (b <= threshold) {
+        if (a <= threshold)
+            return reinterpret(double, a % b);
 
-    return _normal(a, b);
+        int64_t shift = __builtin_clzll(b) - 11;
+        return _normalized(a, (b << shift) - (shift << 52));
+    }
+
+    return _normalized(a, b);
 }
 
 double fmod(double numerator, double denominator)
