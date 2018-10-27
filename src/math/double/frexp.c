@@ -8,7 +8,6 @@
  */
 #include "normalize.h"
 #include "../reinterpret.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 
@@ -22,7 +21,7 @@ double frexp(double x, int exp[static 1])
     }
 
     i = _normalize(i);
-    *exp = (i >> (DBL_MANT_DIG - 1)) - 1022;
+    *exp = (i >> 52) - 1022;
 
     return copysign(reinterpret(double, (i & 0x000FFFFFFFFFFFFF) | 0x3FE0000000000000), x);
 }

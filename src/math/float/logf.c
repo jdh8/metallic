@@ -9,15 +9,14 @@
 #include "normalizef.h"
 #include "kernel/atanhf.h"
 #include "../reinterpret.h"
-#include <float.h>
 #include <math.h>
 
 static float _finite(int32_t i)
 {
     const double ln2 = 0.69314718055994530942;
 
-    int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
-    double x = reinterpret(float, i - (exponent << (FLT_MANT_DIG - 1)));
+    int32_t exponent = (i - 0x3F3504F4) >> 23;
+    double x = reinterpret(float, i - (exponent << 23));
 
     return 2 * _kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }

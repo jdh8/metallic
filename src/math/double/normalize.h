@@ -9,7 +9,6 @@
 #ifndef METALLIC_NORMALIZE_H
 #define METALLIC_NORMALIZE_H
 
-#include <float.h>
 #include <stdint.h>
 /*!
  * \brief Normalize nonzero magnitude
@@ -32,9 +31,9 @@
  */
 static int64_t _normalize(int64_t i)
 {
-    if (i < 1LL << (DBL_MANT_DIG - 1)) {
-        int64_t shift = __builtin_clzll(i) - (64 - DBL_MANT_DIG);
-        return (i << shift) - (shift << (DBL_MANT_DIG - 1));
+    if (i < 0x0010000000000000) {
+        int64_t shift = __builtin_clzll(i) - 11;
+        return (i << shift) - (shift << 52);
     }
     return i;
 }

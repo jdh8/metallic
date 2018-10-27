@@ -8,7 +8,6 @@
  */
 #include "normalizef.h"
 #include "../reinterpret.h"
-#include <float.h>
 #include <math.h>
 #include <stdint.h>
 
@@ -22,7 +21,7 @@ float frexpf(float x, int exp[static 1])
     }
 
     i = _normalizef(i);
-    *exp = (i >> (FLT_MANT_DIG - 1)) - 126;
+    *exp = (i >> 23) - 126;
 
     return copysignf(reinterpret(float, (i & 0x007FFFFF) | 0x3F000000), x);
 }

@@ -9,7 +9,6 @@
 #include "normalizef.h"
 #include "kernel/atanhf.h"
 #include "../reinterpret.h"
-#include <float.h>
 #include <math.h>
 
 static float _finite(int32_t i)
@@ -17,8 +16,8 @@ static float _finite(int32_t i)
     const double log10_e = 0.43429448190325182765;
     const double log10_2 = 0.30102999566398119521;
 
-    int32_t exponent = (i - 0x3F3504F4) >> (FLT_MANT_DIG - 1);
-    double x = reinterpret(float, i - (exponent << (FLT_MANT_DIG - 1)));
+    int32_t exponent = (i - 0x3F3504F4) >> 23;
+    double x = reinterpret(float, i - (exponent << 23));
 
     return 2 * log10_e * _kernel_atanhf((x - 1) / (x + 1)) + exponent * log10_2;
 }
