@@ -10,11 +10,11 @@
 #include <math.h>
 #include <stdint.h>
 
-static uint_least32_t _remshift(uint_least32_t a, uint_least32_t b, uint_least32_t exp)
+static uint32_t _remshift(uint32_t a, uint32_t b, uint32_t exp)
 {
-    uint_least64_t remainder = ((uint_least64_t)a << (exp & 31)) % b;
+    uint_fast64_t remainder = ((uint_fast64_t)a << (exp & 31)) % b;
 
-    for (uint_least32_t shift = exp >> 5; shift; --shift)
+    for (uint32_t shift = exp >> 5; shift; --shift)
         remainder = (remainder << 32) % b;
 
     return remainder;
