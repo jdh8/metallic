@@ -10,29 +10,58 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _subnormal(uint64_t a, uint64_t b)
+static uint64_t _significand(uint64_t i)
 {
-    //TODO
-    return a;
+    const uint64_t min = 0x0010000000000000;
+
+    return (i & (min - 1)) | min;
 }
 
-static double _normal(uint64_t a, uint64_t b)
+static uint64_t _min(uint64_t a, uint64_t b)
 {
-    //TODO
-    return a;
+    return a < b ? a : b;
 }
 
-static double _finite(uint64_t a, uint64_t b)
+static uint64_t _remshift(uint64_t a, uint64_t b, uint64_t exp)
+{
+    uint64_t shift = _min(__builtin_ctzll(b), exp);
+    uint64_t denominator = b >> shift;
+    uint64_t remainder = a % denominator;
+    uint64_t space = __builtin_clzll(denominator);
+
+    for (exp -= shift; exp >= space; exp -= space)
+        remainder = (remainder << space) % denominator;
+
+    return ((remainder << exp) % denominator) << shift;
+}
+
+static int64_t _load(int64_t remainder, int64_t template)
+{
+    const int64_t min = 0x0010000000000000;
+
+    if (remainder == 0)
+        return remainder;
+
+    int64_t shift = __builtin_clzll(remainder) - 11;
+    int64_t exp = (template >> 52) - shift;
+    int64_t significand = remainder << shift;
+    int64_t normalized = exp << 52 | (significand & (min - 1));
+
+    return normalized < min ? significand >> (1 - exp) : normalized;
+}
+
+static uint64_t _finite(uint64_t a, uint64_t b)
 {
     const uint64_t threshold = 0x0020000000000000;
 
     if (b <= threshold)
-        return a <= threshold ? reinterpret(double, a % b) : _subnormal(a, b);
+        return a <= threshold ? a % b : _remshift(_significand(a), b, (a >> 52) - 1);
 
-    return _normal(a, b);
+    return _load(_remshift(_significand(a), _significand(b), (a >> 52) - (b >> 52)), b);
+
 }
 
-double fmod(double numerator, double denominator)
+static double _fmod(double numerator, double denominator)
 {
     const uint64_t inf = 0x7FF0000000000000;
 
@@ -45,5 +74,12 @@ double fmod(double numerator, double denominator)
     if (a < b)
         return numerator;
 
-    return copysign(_finite(a, b), numerator);
+    return copysign(reinterpret(double, _finite(a, b)), numerator);
 }
+
+#ifdef _METALLIC
+double fmod(double numerator, double denominator)
+{
+    return _fmod(numerator, denominator);
+}
+#endif
