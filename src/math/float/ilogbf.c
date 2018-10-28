@@ -13,7 +13,7 @@
 
 int ilogbf(float x)
 {
-    int32_t magnitude = reinterpret(int32_t, x) & 0x7FFFFFFF;
+    int32_t magnitude = reinterpret(int32_t, fabsf(x));
 
     if (magnitude == 0)
         return FP_ILOGB0;

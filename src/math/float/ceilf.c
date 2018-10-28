@@ -27,9 +27,9 @@ static float _ceilf(float x)
 }
 
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define CEILF __builtin_ceilf
+#define CEILF(x) __builtin_ceilf(x)
 #else
-#define CEILF _ceilf
+#define CEILF(x) _ceilf(x)
 #endif
 
 float ceilf(float x)

@@ -27,9 +27,9 @@ static float _floorf(float x)
 }
 
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define FLOORF __builtin_floorf
+#define FLOORF(x) __builtin_floorf(x)
 #else
-#define FLOORF _floorf
+#define FLOORF(x) _floorf(x)
 #endif
 
 float floorf(float x)

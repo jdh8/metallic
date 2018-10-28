@@ -25,9 +25,9 @@ static float _truncf(float x)
 }
 
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define TRUNCF __builtin_truncf
+#define TRUNCF(x) __builtin_truncf(x)
 #else
-#define TRUNCF _truncf
+#define TRUNCF(x) _truncf(x)
 #endif
 
 float truncf(float x)
