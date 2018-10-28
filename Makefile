@@ -5,7 +5,7 @@ WACC = clang --target=wasm32-unknown-unknown-wasm
 LDFLAGS = -lm
 
 metallic.bc: CC = $(WACC)
-metallic.bc: CPPFLAGS += -Iinclude -D_METALLIC
+metallic.bc: CPPFLAGS += -Iinclude
 metallic.bc: CFLAGS += -fno-builtin-memcpy
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^

@@ -6,13 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <math.h>
+#include "roundf.h"
 
-static float _roundf(float x)
-{
-    return trunc(x + copysign(0.5, x));
-}
-
-#ifdef _METALLIC
 float roundf(float x) { return _roundf(x); }
-#endif

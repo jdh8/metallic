@@ -6,9 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "fmod.h"
+#include <math.h>
 
-double fmod(double numerator, double denominator)
+static float _roundf(float x)
 {
-    return _fmod(numerator, denominator);
+    return trunc(x + copysign(0.5, x));
 }

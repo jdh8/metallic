@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/double/remquo.c"
+#include "../../../src/math/double/remquo.h"
 #include "unary.h"
 #include <assert.h>
 
