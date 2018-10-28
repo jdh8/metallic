@@ -10,6 +10,11 @@
 #include <math.h>
 #include <stdint.h>
 
+static uint32_t _significand(uint32_t i)
+{
+    return (i & 0x007FFFFF) | 0x00800000;
+}
+
 static uint32_t _remshift(uint32_t a, uint32_t b, uint32_t exp)
 {
     uint_fast64_t remainder = ((uint_fast64_t)a << (exp & 31)) % b;
@@ -35,13 +40,10 @@ static int32_t _load(int32_t remainder, int32_t template)
 
 static uint32_t _finite(uint32_t a, uint32_t b)
 {
-    uint32_t aa = (a & 0x007FFFFF) | 0x00800000;
-    uint32_t bb = (b & 0x007FFFFF) | 0x00800000;
-
     if (b <= 0x01000000)
-        return a <= 0x01000000 ? a % b : _remshift(aa, b, (a >> 23) - 1);
+        return a <= 0x01000000 ? a % b : _remshift(_significand(a), b, (a >> 23) - 1);
 
-    return _load(_remshift(aa, bb, (a >> 23) - (b >> 23)), b);
+    return _load(_remshift(_significand(a), _significand(b), (a >> 23) - (b >> 23)), b);
 }
 
 static float _fmodf(float numerator, float denominator)
