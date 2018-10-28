@@ -51,8 +51,8 @@ int __rem_pio2f(float x, double y[static 1])
     const double pi_2_65 = 8.51530395021638647334e-20;
 
     struct Segment segment = _segment((magnitude >> 23) - 152);
-    uint64_t mantissa = (i & 0x007FFFFF) | 0x00800000;
-    uint64_t product = mantissa * segment.high + ((mantissa * segment.low) >> 32);
+    uint64_t significand = (i & 0x007FFFFF) | 0x00800000;
+    uint64_t product = significand * segment.high + ((significand * segment.low) >> 32);
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 

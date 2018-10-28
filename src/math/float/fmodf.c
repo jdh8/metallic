@@ -27,10 +27,10 @@ static int32_t _load(int32_t remainder, int32_t template)
 
     int32_t shift = __builtin_clz(remainder) - 8;
     int32_t exp = (template >> 23) - shift;
-    int32_t mantissa = remainder << shift;
-    int32_t normalized = exp << 23 | (mantissa & 0x007FFFFF);
+    int32_t significand = remainder << shift;
+    int32_t normalized = exp << 23 | (significand & 0x007FFFFF);
 
-    return normalized < 0x00800000 ? mantissa >> (1 - exp) : normalized;
+    return normalized < 0x00800000 ? significand >> (1 - exp) : normalized;
 }
 
 static uint32_t _finite(uint32_t a, uint32_t b)
