@@ -29,21 +29,24 @@ int main(void)
 {
     const uint64_t inf = 0x7FF0000000000000;
     const uint64_t neg = 0x8000000000000000;
-    const uint64_t min = 0x0040000000000000;
-    const uint64_t di = 0x003C79EAA0B3D407;
-    const uint64_t dj = 0x003E113A788D2DBF;
+    const uint64_t min = 0x0010000000000000;
+    const uint64_t delta = 0x000C79EAA0B3D407;
+    const uint64_t model = 0x5B7341E3595E968B;
 
-    for (uint64_t j = 1; j < inf; j += dj)
-        for (uint64_t i = 0; i < inf; i += di)
-            convergent(reinterpret(double, i), reinterpret(double, j));
+    for (uint64_t i = 0; i < inf; i += delta) {
+        for (int shift = 0; shift < 63; ++shift)
+            convergent(reinterpret(double, i), reinterpret(double, model >> shift));
+        for (uint64_t mask = 2; mask < 0x8000000000000000; mask <<= 1)
+            convergent(reinterpret(double, i), reinterpret(double, (model & -mask) | mask));
+    }
 
-    for (uint64_t i = 0; i < inf; i += di)
+    for (uint64_t i = 0; i < inf; i += delta)
         convergent(reinterpret(double, i), INFINITY);
 
-    for (uint64_t i = 0; i < inf; i += di)
+    for (uint64_t i = 0; i < inf; i += delta)
         quadrants(divergent, reinterpret(double, i), 0);
 
-    for (uint64_t j = 0; j < neg; j += min)
-        for (uint64_t i = inf; i < neg; i += di)
+    for (uint64_t i = inf; i < neg; i += delta)
+        for (uint64_t j = 0; j < neg; j += min)
             quadrants(divergent, reinterpret(double, i), reinterpret(double, j));
 }
