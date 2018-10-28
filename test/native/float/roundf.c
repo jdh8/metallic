@@ -14,8 +14,9 @@ int main(void)
 {
     for (int32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
-        verify(identical(roundf(x), _roundf(x)), x);
-        verify(identical(roundf(-x), _roundf(-x)), x);
+        float y = roundf(x);
+        verify(identical(y, _roundf(x)), x);
+        verify(identical(-y, _roundf(-x)), x);
     }
     
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
