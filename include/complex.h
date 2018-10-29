@@ -16,7 +16,6 @@
 #elif __cplusplus
 extern "C" {
 #endif
-
 float crealf(float _Complex);
 double creal(double _Complex);
 long double creall(long double _Complex);
@@ -104,7 +103,6 @@ long double _Complex cacoshl(long double _Complex);
 float _Complex catanhf(float _Complex);
 double _Complex catanh(double _Complex);
 long double _Complex catanhl(long double _Complex);
-
 #ifdef __cplusplus
 } // extern "C"
 #endif
