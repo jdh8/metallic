@@ -16,16 +16,17 @@ typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
 #define offsetof(type, member) __builtin_offsetof(type, member)
 
-#if __STDC_VERSION__ >= 201112L
-typedef struct
+#if __STDC_VERSION__ >= 201112L || __cplusplus >= 201103L
+struct __max_align_t
 {
-# ifdef __i386__
+#ifdef __i386__
     __float128 __g;
-# endif
+#endif
     long double __e;
     long long __x;
-}
-max_align_t;
-#endif /* C11 */
+};
+
+typedef struct __max_align_t max_align_t;
+#endif
 
 #endif /* stddef.h */
