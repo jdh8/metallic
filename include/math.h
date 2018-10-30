@@ -52,15 +52,16 @@ typedef long double double_t;
 #endif /* C99 or C++11 */
 
 #if __STDC_VERSION__ >= 201112L
-#define _TGMATH_REAL(x, function) _Generic(x, \
-    float: function##f,                       \
-    default: function,                        \
-    long double: function##l                  \
+#define _TGMATH_REAL(x, function) _Generic((x) * 1ULL, \
+    unsigned long long: function,                      \
+    float: function##f,                                \
+    double: function,                                  \
+    long double: function##l                           \
 )
 #else
-#define _TGMATH_REAL(x, function) __builtin_choose_expr(                                    \
-    __builtin_types_compatible_p(__typeof__(x), float), function##f, __builtin_choose_expr( \
-    __builtin_types_compatible_p(__typeof__(x), long double), function##l, function         \
+#define _TGMATH_REAL(x, function) __builtin_choose_expr(                                             \
+    __builtin_types_compatible_p(__typeof__((x) * 1ULL), float), function##f, __builtin_choose_expr( \
+    __builtin_types_compatible_p(__typeof__((x) * 1ULL), long double), function##l, function         \
 ))
 #endif
 
