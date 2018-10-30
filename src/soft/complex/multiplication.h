@@ -51,5 +51,9 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
         }
     }
     
-    return CMPLX(x, y);
+    return _Generic(x,
+        float: CMPLXF(x, y),
+        double: CMPLX(x, y),
+        long double: CMPLXL(x, y)
+    );
 }
