@@ -8,10 +8,6 @@
 
 #include <tgmath.h>
 
-#ifndef FUNCTION
-#error FUNCTION name must be provided to include this file.
-#endif
-
 Complex FUNCTION(Real a, Real b, Real c, Real d)
 {
     Real ac = a * c;
@@ -23,7 +19,7 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
     Real y = ad + bc;
 
     if (x != x && y != y) {
-        int recalc = 0;
+        _Bool recalc = 0;
 
         if (isinf(a) || isinf(b)) {
             a = copysign(!!isinf(a), a);
