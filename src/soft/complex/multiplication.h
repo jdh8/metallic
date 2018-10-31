@@ -6,6 +6,7 @@
 // Public License v. 2.0. If a copy of the MPL was not distributed
 // with this file, You can obtain one at http://mozilla.org/MPL/2.0/
 
+#include "complex.h"
 #include <tgmath.h>
 
 Complex FUNCTION(Real a, Real b, Real c, Real d)
@@ -45,15 +46,9 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
             recalc = 1;
         }
 
-        if (recalc) {
-            x = INFINITY * (a * c - b * d);
-            y = INFINITY * (a * d + b * c);
-        }
+        if (recalc)
+            return INFINITY * _complex(a * c - b * d, a * d + b * c);
     }
     
-    return _Generic(x,
-        float: CMPLXF(x, y),
-        double: CMPLX(x, y),
-        long double: CMPLXL(x, y)
-    );
+    return _complex(x, y);
 }
