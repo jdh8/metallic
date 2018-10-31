@@ -14,7 +14,7 @@
 
 #if __STDC_VERSION__ >= 201112L
 #define _TGMATH(x, function) _Generic((x) * 1ULL, \
-    unsigned long long: function                  \
+    unsigned long long: function,                 \
     float: function##f,                           \
     double: function,                             \
     long double: function##l,                     \
@@ -23,7 +23,7 @@
     long double _Complex: c##function##l          \
 )
 #define fabs(x) _Generic((x) * 1ULL, \
-    unsigned long long: fabs         \
+    unsigned long long: fabs,        \
     float: fabsf,                    \
     double: fabs,                    \
     long double: fabsl,              \
