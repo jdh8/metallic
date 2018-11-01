@@ -10,5 +10,5 @@
 
 int __unordtf2(long double x, long double y)
 {
-   return unordtf2(x, y);
+   return _unordtf2(x, y);
 }

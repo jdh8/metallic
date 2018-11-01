@@ -16,7 +16,7 @@ int __letf2(long double x, long double y)
 #ifdef __FAST_MATH__
     return (a & b) < 0 ? a >= b : a <= b;
 #else
-    return (!unordtf2(x, y) && ((a & b) < 0 ? a >= b : a <= b)) || (a|b) << 1 == 0;
+    return (!_unordtf2(x, y) && ((a & b) < 0 ? a >= b : a <= b)) || (a|b) << 1 == 0;
 #endif
 }
 

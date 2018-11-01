@@ -8,7 +8,7 @@
  */
 #include "isnanl.h"
 
-static int unordtf2(long double x, long double y)
+static int _unordtf2(long double x, long double y)
 {
-    return __isnanl(x) || __isnanl(y);
+    return _isnanl(x) || _isnanl(y);
 }

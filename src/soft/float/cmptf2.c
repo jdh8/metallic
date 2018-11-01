@@ -16,7 +16,7 @@ int __cmptf2(long double x, long double y)
     if ((a|b) << 1 == 0)
         return 0;
 
-    if (unordtf2(x, y))
+    if (_unordtf2(x, y))
         return 1;
 
     int sign = (a & b) >> 127;

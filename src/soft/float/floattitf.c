@@ -10,7 +10,7 @@
 
 long double __floattitf(__int128 a)
 {
-    long double abs = floatuntitf(a < 0 ? -a : a ? a : 0);
+    long double abs = _floatuntitf(a < 0 ? -a : a ? a : 0);
     unsigned __int128 representation = *(unsigned __int128*)&abs | (unsigned __int128)(a < 0) << 127;
 
     return *(long double*)&representation;

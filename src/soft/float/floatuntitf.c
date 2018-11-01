@@ -10,5 +10,5 @@
 
 long double __floatuntitf(unsigned __int128 a)
 {
-    return floatuntitf(a);
+    return _floatuntitf(a);
 }

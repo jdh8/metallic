@@ -11,7 +11,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static long double floatuntitf(unsigned __int128 a)
+static long double _floatuntitf(unsigned __int128 a)
 {
     const unsigned __int128 mask = (unsigned __int128)-1 >> 16;
 

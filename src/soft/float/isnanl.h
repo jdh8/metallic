@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static int __isnanl(long double x)
+static int _isnanl(long double x)
 {
     return reinterpret(unsigned __int128, fabsl(x)) > (unsigned __int128)0x7FFF << 112;
 }

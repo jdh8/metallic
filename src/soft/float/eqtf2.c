@@ -16,7 +16,7 @@ int __eqtf2(long double x, long double y)
 #ifdef __FAST_MATH__
     return a == b;
 #else
-    return (a == b && !__isnanl(x)) || (a|b) << 1 == 0;
+    return (a == b && !_isnanl(x)) || (a|b) << 1 == 0;
 #endif
 }
 
