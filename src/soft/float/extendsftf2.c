@@ -10,7 +10,7 @@
 #include <math.h>
 #include <stdint.h>
 
-uint64_t _magnitude(uint64_t i)
+static uint64_t _magnitude(uint64_t i)
 {
     if (i >= 0x7FF0000000000000)
         return 0x7800000000000000 | i >> 4;
