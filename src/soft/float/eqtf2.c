@@ -7,17 +7,14 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "isnanl.h"
+#include "../../math/reinterpret.h"
 
 int __eqtf2(long double x, long double y)
 {
-    unsigned __int128 a = *(unsigned __int128*)&x;
-    unsigned __int128 b = *(unsigned __int128*)&y;
+    unsigned __int128 a = reinterpret(unsigned __int128, x);
+    unsigned __int128 b = reinterpret(unsigned __int128, y);
 
-#ifdef __FAST_MATH__
-    return a == b;
-#else
-    return (a == b && !_isnanl(x)) || (a|b) << 1 == 0;
-#endif
+    return (a == b && !_isnanl(x)) || (a | b) << 1 == 0;
 }
 
 int __netf2(long double x, long double y)

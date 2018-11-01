@@ -1,24 +1,27 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <float.h>
+#include "../../math/reinterpret.h"
+#include <math.h>
 #include <stdint.h>
+
+uint64_t _magnitude(uint64_t i)
+{
+    if (i >= 0x7FF0000000000000)
+        return 0x7800000000000000 | i >> 4;
+
+    return i ? 0x3C00000000000000 + (i >> 4) : 0;
+}
 
 long double __extendsftf2(float x)
 {
-    double y = x;
-    uint64_t source = *(uint64_t*)&y;
+    uint64_t i = reinterpret(uint64_t, (double)x);
+    uint64_t high = _magnitude(i & INT64_MAX) | (i & 0x8000000000000000);
 
-    const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
-    uint64_t bias = (uint64_t)(x - x ? 0x78 : !!x * 0x3C) << 56;
-    uint64_t high = ((source & INT64_MAX) >> shift | (source & 1ULL << 63)) + bias;
-
-    unsigned __int128 representation = (unsigned __int128) high << 64;
-
-    return *(long double*)&representation;
+    return reinterpret(long double, (unsigned __int128)high << 64);
 }

@@ -13,11 +13,7 @@ int __letf2(long double x, long double y)
     __int128 a = *(__int128*)&x;
     __int128 b = *(__int128*)&y;
 
-#ifdef __FAST_MATH__
-    return (a & b) < 0 ? a >= b : a <= b;
-#else
-    return (!_unordtf2(x, y) && ((a & b) < 0 ? a >= b : a <= b)) || (a|b) << 1 == 0;
-#endif
+    return (!_unordtf2(x, y) && ((a & b) < 0 ? a >= b : a <= b)) || (a | b) << 1 == 0;
 }
 
 int __getf2(long double x, long double y)

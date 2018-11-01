@@ -6,19 +6,17 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <float.h>
+#include "../../math/reinterpret.h"
 #include <stdint.h>
 
 long double __floatunditf(uint64_t a)
 {
-    double x = a;
-    uint64_t source = *(uint64_t*)&x;
+    if (!a)
+        return 0;
 
-    const int shift = (128 - LDBL_MANT_DIG) - (64 - DBL_MANT_DIG);
-    uint64_t bias = (0x3CLL << 56) * !!a;
-    uint64_t high = (source >> shift) + bias;
-    uint64_t low = a << __builtin_clzll(a) << 49;
-    uint64_t vector __attribute__((vector_size(sizeof(long double)))) = { low, high };
+    int space = __builtin_clzll(a);
+    unsigned __int128 significand = (unsigned __int128)(a << space & INT64_MAX) << 49;
+    unsigned __int128 exp = 0x3FFF + 63 - space;
 
-    return *(long double*)&vector;
+    return reinterpret(long double, significand | exp << 112);
 }
