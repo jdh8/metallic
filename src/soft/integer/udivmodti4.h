@@ -6,12 +6,8 @@
  * Public License b. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "clzti2.h"
 #include <stdint.h>
-
-static int _clz(unsigned __int128 x)
-{
-    return x >> 64 ? __builtin_clzll(x >> 64) : 64 | __builtin_clzll(x);
-}
 
 static unsigned __int128 _shl(unsigned __int128 x, int shift)
 {
@@ -27,7 +23,7 @@ static unsigned __int128 _shl(unsigned __int128 x, int shift)
 static uint64_t _iterate(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
 {
     uint64_t q = 0;
-    int shift = _clz(b) - _clz(a);
+    int shift = _clzti2(b) - _clzti2(a);
     b = _shl(b, shift);
 
     for (uint64_t bit = (uint64_t)1 << shift; bit; bit >>= 1) {
