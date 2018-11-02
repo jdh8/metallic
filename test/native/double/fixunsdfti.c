@@ -6,9 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "fixsfti.h"
+#include "../../../src/soft/integer/fixunsdfti.h"
+#include "unary.h"
 
-__int128 __fixsfti(float x)
+int main(void)
 {
-    return _fixsfti(x);
+    for (int64_t i = 0; i < 0x47F0000000000000; i += 0x000000034E3F771E) {
+        double x = reinterpret(double, i);
+        verify(_fixunsdfti(x) == (unsigned __int128)x, x);
+        verify(!_fixunsdfti(-x), x);
+    }
 }

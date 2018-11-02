@@ -6,14 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include <math.h>
+#include "fixdfti.h"
 #include <stdint.h>
 
 __int128 __fixdfti(double x)
 {
-    double i = trunc(x);
-    double high = floorf(0x1p-64 * i);
-    uint64_t low = i - 0x1p64 * high;
-
-    return (__int128)(int64_t)high << 64 | low;
+    return _fixdfti(x);
 }

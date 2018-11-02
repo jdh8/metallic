@@ -6,9 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "fixsfti.h"
+#include <math.h>
+#include <stdint.h>
 
-__int128 __fixsfti(float x)
+static __int128 _fixdfti(double x)
 {
-    return _fixsfti(x);
+    double r = fabs(x);
+    uint64_t high = 0x1p-64 * r;
+    uint64_t low = r - 0x1p64 * high;
+    __int128 abs = (__int128)high << 64 | low;
+
+    return signbit(x) ? -abs : abs;
 }
