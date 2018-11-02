@@ -11,8 +11,9 @@
 
 __int128 __fixdfti(double x)
 {
-    double high = floorf(0x1p-64 * x);
-    uint64_t low = x - 0x1p64 * high;
+    double i = trunc(x);
+    double high = floorf(0x1p-64 * i);
+    uint64_t low = i - 0x1p64 * high;
 
     return (__int128)(int64_t)high << 64 | low;
 }

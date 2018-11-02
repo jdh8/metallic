@@ -11,8 +11,9 @@
 
 __int128 __fixsfti(float x)
 {
-    float high = floorf(0x1p-64f * x);
-    uint64_t low = x - 0x1p64f * high;
+    float i = truncf(x);
+    float high = floorf(0x1p-64f * i);
+    uint64_t low = i - 0x1p64f * high;
 
     return (__int128)(int64_t)high << 64 | low;
 }
