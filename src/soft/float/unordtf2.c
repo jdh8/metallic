@@ -10,5 +10,8 @@
 
 int __unordtf2(long double x, long double y)
 {
-   return _unordtf2(x, y);
+    unsigned __int128 a = reinterpret(unsigned __int128, x);
+    unsigned __int128 b = reinterpret(unsigned __int128, y);
+
+    return _unordtf2(a, b);
 }

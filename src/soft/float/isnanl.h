@@ -8,7 +8,7 @@
  */
 #include "../../math/reinterpret.h"
 
-static int _isnanl(long double x)
+static int _isnanl(unsigned __int128 a)
 {
-    return reinterpret(unsigned __int128, x) << 1 > (unsigned __int128)0x7FFF << 113;
+    return a << 1 > (unsigned __int128)0x7FFF << 113;
 }

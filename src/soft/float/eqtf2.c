@@ -14,7 +14,7 @@ int __eqtf2(long double x, long double y)
     unsigned __int128 a = reinterpret(unsigned __int128, x);
     unsigned __int128 b = reinterpret(unsigned __int128, y);
 
-    return (a == b && !_isnanl(x)) || (a | b) << 1 == 0;
+    return (a == b && !_isnanl(a)) || (a | b) << 1 == 0;
 }
 
 int __netf2(long double x, long double y)
