@@ -7,10 +7,8 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../../math/reinterpret.h"
-#include <math.h>
-#include <stdint.h>
 
 static int _isnanl(long double x)
 {
-    return reinterpret(unsigned __int128, fabsl(x)) > (unsigned __int128)0x7FFF << 112;
+    return reinterpret(unsigned __int128, x) << 1 > (unsigned __int128)0x7FFF << 113;
 }
