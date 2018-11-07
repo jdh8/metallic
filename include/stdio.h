@@ -83,9 +83,17 @@ int rename(const char[_STATIC 1], const char[_STATIC 1]);
 FILE* tmpfile(void);
 char* tmpnam(char*);
 
+extern FILE* stdin;
+extern FILE* stdout;
+extern FILE* stderr;
+
 #ifdef __cplusplus
 }
 #endif
+
+#define stdin stdin
+#define stdout stdout
+#define stderr stderr
 
 #define EOF -1
 #define FOPEN_MAX 16
