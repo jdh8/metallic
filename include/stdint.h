@@ -19,7 +19,7 @@ typedef int int32_t;
 #ifdef __LP64__
 typedef long int64_t;
 #else
-__extension__ typedef long long int64_t;
+typedef long long int64_t;
 #endif
 
 typedef unsigned char uint8_t;
@@ -29,7 +29,7 @@ typedef unsigned int uint32_t;
 #ifdef __LP64__
 typedef unsigned long uint64_t;
 #else
-__extension__ typedef unsigned long long uint64_t;
+typedef unsigned long long uint64_t;
 #endif
 
 typedef int8_t  int_least8_t;
