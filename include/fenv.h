@@ -36,12 +36,8 @@ int feupdateenv(const fenv_t*);
 }
 #endif
 
-enum { FE_ALL_EXCEPT = 0 };
 #define FE_ALL_EXCEPT 0
-
-enum { FE_TONEAREST = 0 };
 #define FE_TONEAREST 0
-
 #define FE_DFL_ENV ((const fenv_t*)0)
 
 #endif /* fenv.h */
