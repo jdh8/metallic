@@ -9,7 +9,7 @@
 #ifndef _WCHAR_H
 #define _WCHAR_H
 
-#include "bits/mbstate.h"
+#include "bits/types/mbstate.h"
 #include "bits/null.h"
 #include "bits/specifiers.h"
 

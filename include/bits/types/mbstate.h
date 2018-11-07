@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef _BITS_MBSTATE_H
-#define _BITS_MBSTATE_H
+#ifndef _BITS_TYPES_MBSTATE_H
+#define _BITS_TYPES_MBSTATE_H
 
 struct __mbstate_t
 {
@@ -16,4 +16,4 @@ struct __mbstate_t
 
 typedef struct __mbstate_t mbstate_t;
 
-#endif /* bits/mbstate.h */
+#endif /* bits/types/mbstate.h */
