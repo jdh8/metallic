@@ -6,13 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../stdio/scan/integer.h"
-#include "../stdio/istringstream.h"
+#include "ungetc.h"
 
-Integer STRTOL(const char s[restrict static 1], char** restrict end, int base)
-{
-    FILE stream = _istringstream(s);
-    Integer result = _scaninteger(&stream, base);
-    *end = (char*)stream._getptr;
-    return result;
-}
+int ungetc(int, FILE[static 1]);
