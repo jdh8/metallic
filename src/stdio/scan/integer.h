@@ -7,6 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../getc.h"
+#include "../ungetc.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -71,11 +72,13 @@ static Integer _scaninteger(FILE stream[static 1], int base)
     Unsigned magnitude = 0;
     _Bool overflow = 0;
 
-    for (int digit = _digit(cache); digit < base; digit = _digit(getc(stream))) {
+    for (int digit = _digit(cache); digit < base; digit = _digit(cache = getc(stream))) {
         Unsigned next = magnitude * base + digit;
         overflow |= threshold < magnitude || next < digit;
         magnitude = next;
     }
+
+    ungetc(cache, stream);
 
     if (overflow || max < magnitude) {
         errno = ERANGE;

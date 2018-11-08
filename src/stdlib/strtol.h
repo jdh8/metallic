@@ -13,10 +13,20 @@ static int _getc(FILE stream[static 1])
     return *stream->_getptr++;
 }
 
+static int _ungetc(int c, FILE stream[static 1])
+{
+    return *--stream->_getptr = c;
+}
+
 Integer STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
-    FILE stream = { ._getptr = (unsigned char*)s, ._get = _getc };
+    FILE stream = {
+        ._getptr = (unsigned char*)s,
+        ._get = _getc,
+        ._unget = _ungetc,
+    };
+
     Integer result = _scaninteger(&stream, base);
-    *end = (char*)(stream._getptr - 1);
+    *end = (char*)stream._getptr;
     return result;
 }
