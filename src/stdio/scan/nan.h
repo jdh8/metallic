@@ -22,6 +22,11 @@ static _Bool _isdigit(int c)
     return c - '0' < 10u || (c | 32) - 'a' < 26u;
 }
 
+static int _noop(int c, FILE* stream)
+{
+    return c;
+}
+
 static Scalar _nan(FILE stream[static 1], int tail)
 {
     unsigned char buffer[256];
@@ -34,7 +39,7 @@ static Scalar _nan(FILE stream[static 1], int tail)
 
     if (buffer[index] == tail) {
         FILE s = _istringstream((const char*)buffer);
-        Bitset parsed = _scaninteger(&s, 0) & (Bitset)-1 >> 1;
+        Bitset parsed = _scaninteger(&s, 0, _noop) & (Bitset)-1 >> 1;
         Bitset canonical = reinterpret(Bitset, (Scalar)NAN);
         return reinterpret(Scalar, parsed | canonical);
     }

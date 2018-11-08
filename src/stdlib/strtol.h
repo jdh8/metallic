@@ -12,7 +12,7 @@
 Integer STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
     FILE stream = _istringstream(s);
-    Integer result = _scaninteger(&stream, base);
+    Integer result = _scaninteger(&stream, base, stream._unget);
     *end = (char*)stream._getptr;
     return result;
 }

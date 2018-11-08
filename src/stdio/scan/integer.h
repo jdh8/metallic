@@ -25,16 +25,8 @@ static int _digit(int c)
     return INT_MAX;
 }
 
-static Integer _scaninteger(FILE stream[static 1], int base)
+static Integer _scaninteger(FILE stream[static 1], int base, int ungetx(int, FILE*))
 {
-    const Unsigned min = _Generic((Integer)0,
-        signed char: SCHAR_MIN,
-        short: SHRT_MIN,
-        int: INT_MIN,
-        long: LONG_MIN,
-        long long: LLONG_MIN,
-        default: 0);
-
     Unsigned max = _Generic((Integer)0,
         signed char: SCHAR_MAX,
         short: SHRT_MAX,
@@ -50,7 +42,7 @@ static Integer _scaninteger(FILE stream[static 1], int base)
 
     switch (cache) {
         case '-':
-            max = min ? -min : -1;
+            max += (Integer)-1 < 0;
             sign = -1;
             /* fallthrough */
         case '+':
@@ -61,6 +53,9 @@ static Integer _scaninteger(FILE stream[static 1], int base)
         if ((!base || base == 16) && ((cache = getc(stream)) | 32) == 'x') {
             base = 16;
             cache = getc(stream);
+
+            if (_digit(cache) >= 16)
+                ungetx(cache, stream);
         }
         else if (!base)
             base = 8;
