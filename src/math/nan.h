@@ -6,14 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef METALLIC_UNGETC_H
-#define METALLIC_UNGETC_H
+#include "../stdio/scan/nan.h"
 
-#include "FILE.h"
-
-inline int ungetc(int c, FILE stream[static 1])
+Scalar QNAN(const char s[static 1])
 {
-    return stream->_unget(c, stream);
+    FILE stream = _istringstream(s);
+    return _nan(&stream, '\0');
 }
-
-#endif

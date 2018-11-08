@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../stdlib/strtod/nanf.h"
+#include <stdint.h>
 
-float nanf(const char s[static 1])
-{
-    const char* dummy;
-    return _strtod_nanf(s, &dummy, '\0');
-}
+typedef float Scalar;
+typedef uint32_t Bitset;
+
+#define QNAN nanf
+#include "../nan.h"

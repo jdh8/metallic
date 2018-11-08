@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../stdlib/strtod/nan.h"
+#include <stdint.h>
 
-double nan(const char s[static 1])
-{
-    const char* dummy;
-    return _strtod_nan(s, &dummy, '\0');
-}
+typedef double Scalar;
+typedef uint64_t Bitset;
+
+#define QNAN nan
+#include "../nan.h"

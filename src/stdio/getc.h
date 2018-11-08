@@ -6,9 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#ifndef METALLIC_GETC_H
+#define METALLIC_GETC_H
+
 #include "FILE.h"
 
 inline int getc(FILE stream[static 1])
 {
     return stream->_get(stream);
 }
+
+#endif
