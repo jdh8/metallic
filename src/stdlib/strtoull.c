@@ -9,5 +9,13 @@
 typedef unsigned long long Integer;
 typedef unsigned long long Unsigned;
 
-#define STRTOL strtoull
-#include "strtol.h"
+#include "../stdio/scan/integer.h"
+#include "../stdio/istringstream.h"
+
+unsigned long long strtoull(const char s[restrict static 1], char** restrict end, int base)
+{
+    FILE stream = _istringstream(s);
+    unsigned long long result = _scaninteger(&stream, base, -1, stream._unget);
+    *end = (char*)stream._getptr;
+    return result;
+}

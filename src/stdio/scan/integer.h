@@ -25,16 +25,8 @@ static int _digit(int c)
     return INT_MAX;
 }
 
-static Integer _scaninteger(FILE stream[static 1], int base, int ungetx(int, FILE*))
+static Integer _scaninteger(FILE stream[static 1], int base, Unsigned max, int ungetx(int, FILE*))
 {
-    Unsigned max = _Generic((Integer)0,
-        signed char: SCHAR_MAX,
-        short: SHRT_MAX,
-        int: INT_MAX,
-        long: LONG_MAX,
-        long long: LLONG_MAX,
-        default: -1);
-
     Integer sign = 1;
     int cache;
 
@@ -42,7 +34,7 @@ static Integer _scaninteger(FILE stream[static 1], int base, int ungetx(int, FIL
 
     switch (cache) {
         case '-':
-            max += (Integer)-1 < 0;
+            max += (Integer)-1 < 0 && ((Integer)-1 & 3) == 3;
             sign = -1;
             /* fallthrough */
         case '+':

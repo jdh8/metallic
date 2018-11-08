@@ -39,7 +39,7 @@ static Scalar _nan(FILE stream[static 1], int tail)
 
     if (buffer[index] == tail) {
         FILE s = _istringstream((const char*)buffer);
-        Bitset parsed = _scaninteger(&s, 0, _noop) & (Bitset)-1 >> 1;
+        Bitset parsed = _scaninteger(&s, 0, -1, _noop) & (Bitset)-1 >> 1;
         Bitset canonical = reinterpret(Bitset, (Scalar)NAN);
         return reinterpret(Scalar, parsed | canonical);
     }
