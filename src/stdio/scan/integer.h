@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../FILE.h"
+#include "../getc.h"
 #include <ctype.h>
 #include <errno.h>
 #include <limits.h>
@@ -45,7 +45,7 @@ static Integer _scaninteger(FILE stream[static 1], int base)
     Integer sign = 1;
     int cache;
 
-    while (isspace(cache = stream->_getc(stream)));
+    while (isspace(cache = getc(stream)));
 
     switch (cache) {
         case '-':
@@ -53,13 +53,13 @@ static Integer _scaninteger(FILE stream[static 1], int base)
             sign = -1;
             /* fallthrough */
         case '+':
-            cache = stream->_getc(stream);
+            cache = getc(stream);
     }
 
     if (cache == '0') {
-        if ((!base || base == 16) && ((cache = stream->_getc(stream)) | 32) == 'x') {
+        if ((!base || base == 16) && ((cache = getc(stream)) | 32) == 'x') {
             base = 16;
-            cache = stream->_getc(stream);
+            cache = getc(stream);
         }
         else if (!base)
             base = 8;
@@ -71,7 +71,7 @@ static Integer _scaninteger(FILE stream[static 1], int base)
     Unsigned magnitude = 0;
     _Bool overflow = 0;
 
-    for (int digit = _digit(cache); digit < base; digit = _digit(stream->_getc(stream))) {
+    for (int digit = _digit(cache); digit < base; digit = _digit(getc(stream))) {
         Unsigned next = magnitude * base + digit;
         overflow |= threshold < magnitude || next < digit;
         magnitude = next;
