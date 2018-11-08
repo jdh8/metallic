@@ -10,5 +10,5 @@
 
 inline int getc(FILE stream[static 1])
 {
-    return stream->_getc(stream);
+    return stream->_get(stream);
 }

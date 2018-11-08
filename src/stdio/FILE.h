@@ -18,8 +18,8 @@ struct __FILE
     unsigned char* _putbase;
     unsigned char* _putptr;
     unsigned char* _putend;
-    int (*_getc)(FILE*);
-    int (*_putc)(int, FILE*);
+    int (*_get)(FILE*);
+    int (*_put)(int, FILE*);
     size_t (*_read)(void*, size_t, FILE*);
     size_t (*_write)(const void*, size_t, FILE*);
 };

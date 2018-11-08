@@ -15,7 +15,7 @@ static int _getc(FILE stream[static 1])
 
 Integer STRTOL(const char s[restrict static 1], char** restrict end, int base)
 {
-    FILE stream = { ._getptr = (unsigned char*)s, ._getc = _getc };
+    FILE stream = { ._getptr = (unsigned char*)s, ._get = _getc };
     Integer result = _scaninteger(&stream, base);
     *end = (char*)(stream._getptr - 1);
     return result;
