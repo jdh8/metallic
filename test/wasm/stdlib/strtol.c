@@ -38,6 +38,7 @@ int main(void)
 
     CANONICAL(2147483647, "junk");
     CANONICAL(-2147483648, "junk");
+    CANONICAL(0, "x");
 
     metallic_assert(RUN("", "jdh8", 0) == 0);
     metallic_assert(RUN("", "jdh8", 19) == 0);

@@ -33,6 +33,7 @@ int main(void)
     CANONICAL( +24680, "$foo");
     CANONICAL(  0xdeadbeef, "gf");
     CANONICAL(   -0232776532, "9");
+    CANONICAL(0, "x");
 
     metallic_assert(RUN("", "jdh8", 0) == 0);
     metallic_assert(RUN("", "jdh8", 19) == 0);
