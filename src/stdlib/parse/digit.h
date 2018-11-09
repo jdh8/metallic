@@ -6,10 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../stdio/scan/nan.h"
-
-Scalar QNAN(const char s[static 1])
+static unsigned _digit(unsigned c)
 {
-    FILE stream = _istringstream(s);
-    return _nan(&stream, '\0');
+    if (c - '0' < 10)
+        return c - '0';
+
+    c |= 32;
+
+    if (c - 'a' < 26)
+        return c - 'a' + 10;
+
+    return -1;
 }

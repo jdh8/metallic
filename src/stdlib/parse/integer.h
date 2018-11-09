@@ -6,21 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "digit.h"
 #include <ctype.h>
 #include <errno.h>
-
-static unsigned _digit(unsigned c)
-{
-    if (c - '0' < 10)
-        return c - '0';
-
-    c |= 32;
-
-    if (c - 'a' < 26)
-        return c - 'a' + 10;
-
-    return -1;
-}
 
 static Integer _parseint(const char s[restrict static 1], char** restrict pointer, unsigned base, Unsigned max)
 {
@@ -55,7 +43,7 @@ static Integer _parseint(const char s[restrict static 1], char** restrict pointe
     Unsigned magnitude = 0;
     _Bool overflow = 0;
 
-    for (int digit = _digit(*s); digit < base; digit = _digit(*s)) {
+    for (unsigned digit = _digit(*s); digit < base; digit = _digit(*s)) {
         Unsigned next = magnitude * base + digit;
         overflow |= threshold < magnitude || next < digit;
         magnitude = next;
@@ -63,7 +51,7 @@ static Integer _parseint(const char s[restrict static 1], char** restrict pointe
     }
 
     if (pointer)
-        *pointer = end;
+        *pointer = (char*)end;
 
     if (overflow || max < magnitude) {
         errno = ERANGE;
