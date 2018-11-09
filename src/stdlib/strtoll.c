@@ -9,14 +9,10 @@
 typedef long long Integer;
 typedef unsigned long long Unsigned;
 
-#include "../stdio/scan/integer.h"
-#include "../stdio/istringstream.h"
+#include "parse/integer.h"
 #include <limits.h>
 
 long long strtoll(const char s[restrict static 1], char** restrict end, int base)
 {
-    FILE stream = _istringstream(s);
-    long long result = _scaninteger(&stream, base, LLONG_MAX, stream._unget);
-    *end = (char*)stream._getptr;
-    return result;
+    return _parseint(s, end, base, LLONG_MAX);
 }

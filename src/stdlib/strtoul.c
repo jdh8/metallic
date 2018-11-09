@@ -9,13 +9,9 @@
 typedef unsigned long Integer;
 typedef unsigned long Unsigned;
 
-#include "../stdio/scan/integer.h"
-#include "../stdio/istringstream.h"
+#include "parse/integer.h"
 
 unsigned long strtoul(const char s[restrict static 1], char** restrict end, int base)
 {
-    FILE stream = _istringstream(s);
-    unsigned long result = _scaninteger(&stream, base, -1, stream._unget);
-    *end = (char*)stream._getptr;
-    return result;
+    return _parseint(s, end, base, -1);
 }
