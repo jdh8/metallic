@@ -7,7 +7,6 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "../assert.h"
-#include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -22,7 +21,7 @@
     metallic_assert(errno == ERANGE); \
 } while (0)
 
-static long long check(const char s[static 1], int base, ptrdiff_t length)
+static long long check(const char s[static 1], int base, long length)
 {
     char* end;
     long long x = strtoll(s, &end, base);
