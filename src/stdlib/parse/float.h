@@ -147,8 +147,12 @@ static Scalar _magnitude(const char s[restrict static 1], char* end[restrict sta
         return INFINITY;
     }
 
-    if (_match(s, "nan") == 3)
-        return _nan(s + 4, end, ')');
+    if (_match(s, "nan") == 3) {
+        if (s[3] == '(')
+            return _nan(s + 4, end, ')');
+        *end = (char*)(s + 3);
+        return NAN;
+    }
 
     Scalar finite = (*s == '0' && (s[1] | 32) == 'x' ? _hexfloat : _scientific)(s, end);
 

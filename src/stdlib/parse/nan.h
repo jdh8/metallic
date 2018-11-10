@@ -14,6 +14,7 @@ static Scalar _nan(const char s[restrict static 1], char* end[restrict static 1]
 {
     Bitset mantissa = 0;
     unsigned base = 10;
+    *end = (char*)(s - 1);
     
     if (*s == '0') {
         if ((*++s | 32) == 'x') {
