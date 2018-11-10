@@ -6,8 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-typedef long Signed;
-typedef unsigned long Unsigned;
-
+typedef long Integer;
 #define ATOI atol
 #include "atoi.h"

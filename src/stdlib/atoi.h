@@ -8,10 +8,10 @@
  */
 #include <ctype.h>
 
-Signed ATOI(const char s[static 1])
+Integer ATOI(const char s[static 1])
 {
-    Unsigned magnitude = 0;
-    Signed sign = 1;
+    Integer magnitude = 0;
+    Integer sign = 1;
     
     while (isspace(*s))
         ++s;
@@ -24,8 +24,10 @@ Signed ATOI(const char s[static 1])
             ++s;
     }
 
-    for (Unsigned digit = *s - '0'; digit < 10; digit = *++s - '0') 
+    for (unsigned digit = *s - '0'; digit < 10; digit = *s - '0') {
         magnitude = 10 * magnitude + digit;
+        ++s;
+    }
 
-    return sign * (Signed)magnitude;
+    return sign * magnitude;
 }
