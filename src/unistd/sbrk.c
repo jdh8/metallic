@@ -18,7 +18,7 @@ void* sbrk(intptr_t increment)
 
     if (top + increment > capacity) {
         uintptr_t excess = top + increment - capacity;
-        uintptr_t pages = excess / pagesize + !!(excess % pagesize);
+        uintptr_t pages = (pagesize - 1 + excess) / pagesize;
 
         if (__builtin_wasm_memory_grow(0, pages) == -1)
             return (void*)-1;
