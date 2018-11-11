@@ -85,7 +85,7 @@ static Scalar _hexfloat(const char s[restrict static 1], char* end[restrict stat
     if (!pointed)
         position = consumed;
 
-    return ldexp(x, 4 * (position - _min(capacity, consumed)) + _parseexp('p', s, end));
+    return ldexp((Scalar)x, 4 * (position - _min(capacity, consumed)) + _parseexp('p', s, end));
 }
 
 static Scalar _scientific(const char s[restrict static 1], char* end[restrict static 1])
@@ -109,8 +109,7 @@ static Scalar _scientific(const char s[restrict static 1], char* end[restrict st
 
     for (unsigned digit = *s - '0'; digit < 10 || (*s == '.' && !pointed); digit = *s - '0') {
         if (digit < 10) {
-            if (consumed < capacity)
-                x = 10 * x + digit;
+            x = consumed < capacity ? 10 * x + digit : x | !!digit;
             ++consumed;
         }
         else {
@@ -125,7 +124,7 @@ static Scalar _scientific(const char s[restrict static 1], char* end[restrict st
 
     int exp = position - _min(capacity, consumed) + _parseexp('e', s, end);
 
-    return ldexp(x * _powi(1.25, exp), 3 * exp);
+    return ldexp((Scalar)x * _powi(1.25, exp), 3 * exp);
 }
 
 static unsigned _match(const char s[static 1], const char t[static 1])
