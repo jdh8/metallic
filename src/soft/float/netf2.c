@@ -6,12 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "lttf2.h"
+#include "eqtf2.h"
 
-int __lttf2(long double x, long double y)
+int __netf2(long double x, long double y)
 {
     unsigned __int128 a = reinterpret(unsigned __int128, x);
     unsigned __int128 b = reinterpret(unsigned __int128, y);
 
-    return _lttf2(a, b);
+    return !_eqtf2(a, b);
 }

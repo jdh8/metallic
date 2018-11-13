@@ -6,17 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "unordtf2.h"
+#include "letf2.h"
 
 int __letf2(long double x, long double y)
 {
-    __int128 a = *(__int128*)&x;
-    __int128 b = *(__int128*)&y;
+    unsigned __int128 a = reinterpret(unsigned __int128, x);
+    unsigned __int128 b = reinterpret(unsigned __int128, y);
 
-    return (!_unordtf2(a, b) && ((a & b) < 0 ? a >= b : a <= b)) || (a | b) << 1 == 0;
-}
-
-int __getf2(long double x, long double y)
-{
-    return __letf2(y, x);
+    return _letf2(a, b);
 }

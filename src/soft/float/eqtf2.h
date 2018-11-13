@@ -6,12 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "lttf2.h"
+#include "isnanl.h"
 
-int __lttf2(long double x, long double y)
+static int _eqtf2(unsigned __int128 a, unsigned __int128 b)
 {
-    unsigned __int128 a = reinterpret(unsigned __int128, x);
-    unsigned __int128 b = reinterpret(unsigned __int128, y);
-
-    return _lttf2(a, b);
+    return (a == b && !_isnanl(a)) || (a | b) << 1 == 0;
 }

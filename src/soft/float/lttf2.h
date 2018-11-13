@@ -1,17 +1,16 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "lttf2.h"
+#include "unordtf2.h"
 
-int __lttf2(long double x, long double y)
+static int _lttf2(unsigned __int128 a, unsigned __int128 b)
 {
-    unsigned __int128 a = reinterpret(unsigned __int128, x);
-    unsigned __int128 b = reinterpret(unsigned __int128, y);
+    unsigned __int128 c = a | b;
 
-    return _lttf2(a, b);
+    return !_unordtf2(a, b) && (c >> 127 ? a > b : a < b) && c << 1;
 }
