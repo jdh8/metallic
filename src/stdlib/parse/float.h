@@ -7,10 +7,11 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "nan.h"
-#include "../../soft/powi/powi.h"
 #include <ctype.h>
 #include <errno.h>
 #include <tgmath.h>
+
+static Scalar _scientific(Bitset, int);
 
 static int _parseexp(int c, const char s[restrict static 1], char* end[restrict static 1])
 {
@@ -86,56 +87,6 @@ static Scalar _parsehex(const char s[restrict static 1], char* end[restrict stat
         position = consumed;
 
     return ldexp((Scalar)x, 4 * (position - _min(capacity, consumed)) + _parseexp('p', s, end));
-}
-
-static uint32_t _powi32(uint32_t x, int i)
-{
-    uint32_t y = 1;
-
-    for (; i; i >>= 1) {
-        if (i & 1)
-            y *= x;
-        x *= x;
-    }
-    return y;
-}
-
-static uint64_t _fixmul(uint64_t a, uint32_t b, int shift[static 1])
-{
-    uint64_t low = (a & 0xFFFFFFFF) * b;
-    uint64_t high = (a >> 32) * b + (low >> 32);
-    int space = __builtin_clz(high >> 32);
-    *shift += 32 - space;
-    return high << space | (low & 0xFFFFFFFF) >> (32 - space);
-}
-
-static double _scaleup(uint64_t significand, int exp)
-{
-    const uint32_t coeff = _powi32(5, 13);
-    int shift = __builtin_ctzll(significand);
-
-    significand >>= shift;
-    shift += exp;
-
-    for (; exp >= 13; exp -= 13)
-        significand = _fixmul(significand, coeff, &shift);
-
-    significand = _fixmul(significand, _powi32(5, exp), &shift);
-    return ldexp(significand, shift);
-}
-
-static double _scientific(uint64_t significand, int exp)
-{
-    if (!significand || exp < -342)
-        return 0;
-
-    if (exp > 308)
-        return HUGE_VAL;
-
-    if (exp < 0)
-        return significand * __builtin_powl(10, exp);
-
-    return _scaleup(significand, exp);
 }
 
 static Scalar _parsedec(const char s[restrict static 1], char* end[restrict static 1])

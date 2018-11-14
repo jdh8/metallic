@@ -6,15 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "parse/scientificf.h"
 #include <stdint.h>
 
-typedef float Scalar;
-typedef uint32_t Bitset;
-
-#include "parse/float.h"
-
-float strtof(const char s[restrict static 1], char** restrict end)
+static float _scientific(uint32_t significand, int exp)
 {
-    return _parsefloat(s, end);
+    return significand * __builtin_powi(10, exp);
 }
