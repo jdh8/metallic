@@ -26,7 +26,7 @@ int main(void)
         verify(identical(y, _round(x)), x);
         verify(identical(-y, _round(-x)), x);
     }
-    
+
     for (uint64_t i = nan; i < neg; i += step) {
         double x = reinterpret(double, i);
         assert(isnan(_round(x)));

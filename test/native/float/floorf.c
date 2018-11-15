@@ -17,7 +17,7 @@ int main(void)
         verify(identical(floorf(x), _floorf(x)), x);
         verify(identical(floorf(-x), _floorf(-x)), x);
     }
-    
+
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(_floorf(x)));

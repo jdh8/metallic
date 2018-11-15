@@ -20,4 +20,4 @@ int rand(void)
     return state = state * 48271 % 2147483647;
 }
 
-int random(void) __attribute__((alias("rand"))); 
+int random(void) __attribute__((alias("rand")));

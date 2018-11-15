@@ -30,7 +30,7 @@ static void test(float f(float), double g(double), float min, float max)
         float x = reinterpret(float, i);
         verify(approx(f(x), g(x), 1), x);
     }
-    
+
     for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {
         float x = reinterpret(float, i);
         verify(isnan(f(x)), x);

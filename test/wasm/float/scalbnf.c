@@ -46,7 +46,7 @@ int main(void)
 
     for (int32_t i = 0; i < 0x7F000000; i += 71463)
         run(reinterpret(float, i));
-   
+
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 98765) {
         float x = reinterpret(float, i);
         metallic_assert(isnan(scalbnf(x, -7)));

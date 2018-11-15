@@ -24,7 +24,7 @@ int main(void)
         sprintf(s, "%.9g", x);
         verify(x == _parsefloat(s, (void*)0), x);
     }
-    
+
     assert(_parsefloat("inf", (void*)0) == INFINITY);
     assert(_parsefloat("infinity", (void*)0) == INFINITY);
     assert(_parsefloat("infiltration", (void*)0) == INFINITY);

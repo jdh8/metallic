@@ -49,7 +49,7 @@ int main(void)
         normal(reinterpret(double, i));
         subnormal(i);
     }
-   
+
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += 0x00000006E954B07A) {
         double x = reinterpret(double, i);
         metallic_assert(isnan(frexp(x, &exp)));

@@ -40,7 +40,7 @@ int main(void)
         normal(reinterpret(float, i));
         subnormal(i);
     }
-   
+
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         metallic_assert(isnan(logbf(x)));

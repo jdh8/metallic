@@ -12,7 +12,7 @@ Integer ATOI(const char s[static 1])
 {
     Integer magnitude = 0;
     Integer sign = 1;
-    
+
     while (isspace(*s))
         ++s;
 

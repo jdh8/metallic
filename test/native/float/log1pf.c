@@ -26,7 +26,7 @@ int main(void)
         float x = reinterpret(float, i);
         verify(isnan(log1pf(x)), x);
     }
-    
+
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(log1pf(x)));

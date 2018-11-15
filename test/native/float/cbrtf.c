@@ -18,7 +18,7 @@ int main(void)
         verify(faithful(y, cbrt(x)), x);
         verify(identical(-y, cbrtf(-x)), x);
     }
-    
+
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
         assert(isnan(cbrtf(x)));

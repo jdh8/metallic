@@ -20,7 +20,7 @@
  * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$ the result is inaccurate.
  *
  * \param x - The argument in \f$ \left[ \frac{1 - \sqrt2}{1 + \sqrt2},
- * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$ 
+ * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$
  * \return  Approximate \f$ \operatorname{atanh}(x) \f$ as precise as \c float.
  */
 static double _kernel_atanhf(double x)

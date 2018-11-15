@@ -31,7 +31,7 @@ static void down(double x)
         coeff *= 0.5;
     }
 
-    coeff = 0x1p-75; 
+    coeff = 0x1p-75;
 
     for (int i = -1075; i > -2075; --i) {
         metallic_assert(identical(scalbn(x, i), x * 0x1p-1000 * coeff));
@@ -60,7 +60,7 @@ int main(void)
 
     for (int64_t i = 0; i < 0x7FF0000000000000; i += 0x0000C649282A90E9)
         run(reinterpret(double, i));
-   
+
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += 0x0000F4D6E9D6F44C) {
         double x = reinterpret(double, i);
         metallic_assert(isnan(scalbn(x, -37)));

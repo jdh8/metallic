@@ -49,6 +49,6 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
         if (recalc)
             return INFINITY * _complex(a * c - b * d, a * d + b * c);
     }
-    
+
     return _complex(x, y);
 }

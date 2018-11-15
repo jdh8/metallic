@@ -15,7 +15,7 @@ static Scalar _nan(const char s[restrict static 1], char* end[restrict static 1]
     Bitset mantissa = 0;
     unsigned base = 10;
     *end = (char*)(s - 1);
-    
+
     if (*s == '0') {
         if ((*++s | 32) == 'x') {
             base = 16;
@@ -23,7 +23,7 @@ static Scalar _nan(const char s[restrict static 1], char* end[restrict static 1]
         }
         else base = 8;
     }
-    
+
     for (unsigned digit = _digit(*s); digit < base; digit = _digit(*++s))
         mantissa = mantissa * base + digit;
 

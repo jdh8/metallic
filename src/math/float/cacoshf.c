@@ -11,7 +11,7 @@
 float _Complex cacoshf(float _Complex z)
 {
     const double pi = 3.14159265358979323846;
-    
+
     float x = z;
     float y = cimagf(z);
 

@@ -119,7 +119,7 @@ static Scalar _parsedec(const char s[restrict static 1], char* end[restrict stat
         }
         *end = (char*)++s;
     }
-    
+
     if (!pointed)
         position = consumed;
 
@@ -167,7 +167,7 @@ static Scalar _parsefloat(const char s[restrict static 1], char** restrict point
     char** end = pointer ? pointer : &dummy;
 
     *end = (char*)s;
-    
+
     while (isspace(*s))
         ++s;
 

@@ -62,7 +62,7 @@ static void _swap(void* restrict a, void* restrict b, size_t size, size_t alignm
 }
 
 static size_t _leaf(void* data, size_t i, size_t count, size_t size, int compare(const void*, const void*))
-{ 
+{
     while (2 * i < count) {
         char* base = data;
         i = 2 * i | (compare(base + (2 * i - 1) * size, base + 2 * i * size) < 0);

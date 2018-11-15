@@ -40,6 +40,6 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
             return 0 * _complex(a * c + b * d, b * c - a * d);
         }
     }
-    
+
     return _complex(x, y);
 }
