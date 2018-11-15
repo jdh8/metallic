@@ -6,17 +6,16 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/reinterpret.h"
-#include "../assert.h"
+#include "src/math/reinterpret.h"
+#include "../../assert.h"
 #include <math.h>
-#include <limits.h>
 #include <stdint.h>
 
 static void normal(float x)
 {
     for (int exp = -126; exp < 128; ++exp) {
-        metallic_assert(ilogbf(x) == exp);
-        metallic_assert(ilogbf(-x) == exp);
+        _assert(logbf(x) == exp);
+        _assert(logbf(-x) == exp);
         x *= 2;
     }
 }
@@ -25,17 +24,17 @@ static void subnormal(int32_t i)
 {
     for (int exp = -127; exp > -150; --exp) {
         float x = reinterpret(float, i >>= 1);
-        metallic_assert(ilogbf(x) == exp);
-        metallic_assert(ilogbf(-x) == exp);
+        _assert(logbf(x) == exp);
+        _assert(logbf(-x) == exp);
     }
 }
 
 int main(void)
 {
-    metallic_assert(ilogbf(INFINITY) == INT_MAX);
-    metallic_assert(ilogbf(-INFINITY) == INT_MAX);
-    metallic_assert(ilogbf(0) == FP_ILOGB0);
-    metallic_assert(ilogbf(-0.0f) == FP_ILOGB0);
+    _assert(logbf(INFINITY) == INFINITY);
+    _assert(logbf(-INFINITY) == INFINITY);
+    _assert(logbf(0) == -INFINITY);
+    _assert(logbf(-0.0f) == -INFINITY);
 
     for (int32_t i = 0x00800000; i < 0x01000000; i += 11) {
         normal(reinterpret(float, i));
@@ -44,8 +43,8 @@ int main(void)
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
-        metallic_assert(ilogbf(x) == FP_ILOGBNAN);
-        metallic_assert(ilogbf(-x) == FP_ILOGBNAN);
+        _assert(isnan(logbf(x)));
+        _assert(isnan(logbf(-x)));
     }
 
 }

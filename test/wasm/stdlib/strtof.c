@@ -15,51 +15,51 @@
 
 #define OVERFLOW(condition) do {      \
     errno = 0;                        \
-    metallic_assert(condition);       \
-    metallic_assert(errno == ERANGE); \
+    _assert(condition);       \
+    _assert(errno == ERANGE); \
 } while (0)
 
 static float check(const char s[static 1], long length)
 {
     char* end;
     float x = strtof(s, &end);
-    metallic_assert(end == s + length);
+    _assert(end == s + length);
     return x;
 }
 
 int main(void)
 {
-    metallic_assert(RUN("inf", "") == INFINITY);
-    metallic_assert(RUN("+inf", "ini") == INFINITY);
-    metallic_assert(RUN("infinity", "") == INFINITY);
+    _assert(RUN("inf", "") == INFINITY);
+    _assert(RUN("+inf", "ini") == INFINITY);
+    _assert(RUN("infinity", "") == INFINITY);
 
-    metallic_assert(isnan(RUN("nan", "")));
-    metallic_assert(isnan(RUN("nan()", "")));
-    metallic_assert(isnan(RUN("nan(314159)", "")));
-    metallic_assert(isnan(RUN("nan(0xabcd)", "")));
-    metallic_assert(isnan(RUN("nan", "(abcd)")));
+    _assert(isnan(RUN("nan", "")));
+    _assert(isnan(RUN("nan()", "")));
+    _assert(isnan(RUN("nan(314159)", "")));
+    _assert(isnan(RUN("nan(0xabcd)", "")));
+    _assert(isnan(RUN("nan", "(abcd)")));
 
-    metallic_assert(signbit(RUN("-0", "x")));
+    _assert(signbit(RUN("-0", "x")));
 
-    metallic_assert(RUN("", "-") == 0);
-    metallic_assert(RUN("0", "x") == 0);
-    metallic_assert(RUN("3", "") == 3);
-    metallic_assert(RUN("-.003", "f") == -0.003f);
-    metallic_assert(RUN("0x3", "") == 3);
-    metallic_assert(RUN("0x1.8p1", "") == 3);
+    _assert(RUN("", "-") == 0);
+    _assert(RUN("0", "x") == 0);
+    _assert(RUN("3", "") == 3);
+    _assert(RUN("-.003", "f") == -0.003f);
+    _assert(RUN("0x3", "") == 3);
+    _assert(RUN("0x1.8p1", "") == 3);
 
-    metallic_assert(RUN("-0x2.345", "p+") == -0x2.345p0f);
+    _assert(RUN("-0x2.345", "p+") == -0x2.345p0f);
 
-    metallic_assert(RUN("0x945380.8", "") == 0x945380);
-    metallic_assert(RUN("0x945380.800000000000", "") == 0x945380);
-    metallic_assert(RUN("0x945380.800000000001", "") == 0x945381);
-    metallic_assert(RUN("0x945381.8", "") == 0x945382);
+    _assert(RUN("0x945380.8", "") == 0x945380);
+    _assert(RUN("0x945380.800000000000", "") == 0x945380);
+    _assert(RUN("0x945380.800000000001", "") == 0x945381);
+    _assert(RUN("0x945381.8", "") == 0x945382);
 
-    metallic_assert(RUN("0x945380.800000000000p-107", "") == 0x945380p-107f);
-    metallic_assert(RUN("0x945380.800000000001p-107", "") == 0x945381p-107f);
+    _assert(RUN("0x945380.800000000000p-107", "") == 0x945380p-107f);
+    _assert(RUN("0x945380.800000000001p-107", "") == 0x945381p-107f);
 
-    metallic_assert(RUN("-0x945380.800000000000p+3", ".14") == -0x945380p+3);
-    metallic_assert(RUN("-0x945380.800000000001p+3", ".14") == -0x945381p+3);
+    _assert(RUN("-0x945380.800000000000p+3", ".14") == -0x945380p+3);
+    _assert(RUN("-0x945380.800000000001p+3", ".14") == -0x945381p+3);
 
-    metallic_assert(!errno);
+    _assert(!errno);
 }

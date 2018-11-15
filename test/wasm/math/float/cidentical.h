@@ -6,10 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/reinterpret.h"
+#include "src/math/reinterpret.h"
 #include <stdint.h>
 
-static _Bool identical(float x, float y)
+static _Bool cidentical(float _Complex x, float _Complex y)
 {
-    return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
+    return reinterpret(uint64_t, x) == reinterpret(uint64_t, y);
 }

@@ -9,7 +9,7 @@
 #ifndef METALLIC_ASSERT
 #define METALLIC_ASSERT
 
-static void metallic_assert(_Bool condition)
+static void _assert(_Bool condition)
 {
     if (!condition)
         __builtin_trap();

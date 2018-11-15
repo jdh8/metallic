@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../assert.h"
+#include "../../assert.h"
 #include <stdint.h>
 
 unsigned __int128 __multi3(unsigned __int128 a, unsigned __int128 b);
@@ -15,17 +15,17 @@ static void run2(unsigned __int128 a, unsigned __int128 b)
 {
     unsigned __int128 c = __multi3(a, b);
 
-    metallic_assert((uint64_t)a * (uint64_t)b == (uint64_t)c);
-    metallic_assert(b * a == c);
-    metallic_assert(-a * b == -c);
-    metallic_assert(a * -b == -c);
-    metallic_assert(-a * -b == c);
+    _assert((uint64_t)a * (uint64_t)b == (uint64_t)c);
+    _assert(b * a == c);
+    _assert(-a * b == -c);
+    _assert(a * -b == -c);
+    _assert(-a * -b == c);
 }
 
 static void run3(unsigned __int128 a, unsigned __int128 b, unsigned __int128 c)
 {
-    metallic_assert(__multi3(a, b + c) == a * b + a * c);
-    metallic_assert(a * __multi3(b, c) == a * b * c);
+    _assert(__multi3(a, b + c) == a * b + a * c);
+    _assert(a * __multi3(b, c) == a * b * c);
 }
 
 int main(void)

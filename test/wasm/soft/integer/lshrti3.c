@@ -6,19 +6,24 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../assert.h"
-#include "cidentical.h"
-#include <complex.h>
-#include <math.h>
+#include "../../assert.h"
 
-static void run(float x, float y)
+static void run(unsigned __int128 x)
 {
-    metallic_assert(cidentical(cabsf(CMPLXF(x, y)), hypotf(x, y)));
+    unsigned __int128 y = x;
+
+    for (int shift = 0; shift < 128; ++shift) {
+        _assert(x >> shift == y);
+        y >>= 1;
+    }
 }
 
 int main(void)
 {
-    for (uint32_t j = 0; j < 1 << 12; ++j)
-        for (uint32_t i = 0; i < 1 << 12; ++i)
-            run(reinterpret(float, i << 20), reinterpret(float, j << 20));
+    for (unsigned __int128 x = 1; x; x *= 2)
+        run(x);
+
+    for (unsigned __int128 x = 1; x >> 104 != 0x313370; x *= 3)
+        run(x);
 }
+

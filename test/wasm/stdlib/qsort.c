@@ -35,10 +35,10 @@ int main(void)
     qsort(random, count, sizeof(unsigned), compare);
 
     for (int i = 0; i < count - 1; ++i)
-        metallic_assert(random[i] <= random[i + 1]);
+        _assert(random[i] <= random[i + 1]);
 
     for (int i = 0; i < count; ++i)
         checksum -= random[i];
 
-    metallic_assert(!checksum);
+    _assert(!checksum);
 }

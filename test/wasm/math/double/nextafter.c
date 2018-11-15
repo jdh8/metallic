@@ -7,7 +7,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../assert.h"
+#include "../../assert.h"
 #include "identical.h"
 #include <math.h>
 
@@ -33,11 +33,11 @@ int main(void)
 {
     for (uint64_t j = 0; j < 0x8000000000000000; j += 0x0003F46E86FBE2AA)
         for (uint64_t i = 0; i < 0x8000000000000000; i += 0x00033158A6F1D0C4)
-            metallic_assert(run(reinterpret(double, i), reinterpret(double, j)));
+            _assert(run(reinterpret(double, i), reinterpret(double, j)));
 
     for (uint64_t i = 0; i < 0x8000000000000000; i += 0x00033158A6F1D0C4)
-        metallic_assert(run(reinterpret(double, i), INFINITY));
+        _assert(run(reinterpret(double, i), INFINITY));
 
     for (uint64_t j = 0; j < 0x8000000000000000; j += 0x0003F46E86FBE2AA)
-        metallic_assert(run(INFINITY, reinterpret(double, j)));
+        _assert(run(INFINITY, reinterpret(double, j)));
 }

@@ -6,15 +6,15 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/soft/integer/udivmodti4.h"
-#include "../assert.h"
+#include "src/soft/integer/udivmodti4.h"
+#include "../../assert.h"
 
 static void run(unsigned __int128 a, unsigned __int128 b)
 {
     unsigned __int128 r;
     unsigned __int128 q = _udivmodti4(a, b, &r);
 
-    metallic_assert(a == b * q + r);
+    _assert(a == b * q + r);
 }
 
 int main(void)

@@ -6,24 +6,23 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../assert.h"
+#include "../../assert.h"
 #include "cidentical.h"
 #include <complex.h>
 
-static float _Complex rotate(float _Complex z)
+static float _Complex swap(float _Complex z)
 {
-    return CMPLXF(-cimagf(z), z);
+    return CMPLXF(cimagf(z), z);
 }
 
-static void run(float _Complex z)
+static void run(float x, float y)
 {
-    metallic_assert(cidentical(cacoshf(z), rotate(cacosf(z))));
-    metallic_assert(cidentical(conjf(cacosf(z)), cacosf(conjf(z))));
+    _assert(cidentical(csinhf(CMPLXF(x, y)), swap(csinf(CMPLXF(y, x)))));
 }
 
 int main(void)
 {
-    for (uint32_t j = 0; j < 0x80000000; j += 0x00100000)
+    for (uint32_t j = 0; j < 1 << 12; ++j)
         for (uint32_t i = 0; i < 1 << 12; ++i)
-            run(CMPLXF(reinterpret(float, i << 20), reinterpret(float, j)));
+            run(reinterpret(float, i << 20), reinterpret(float, j << 20));
 }

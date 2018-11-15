@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/reinterpret.h"
-#include "../assert.h"
+#include "src/math/reinterpret.h"
+#include "../../assert.h"
 #include "identical.h"
 #include <math.h>
 #include <stdint.h>
@@ -17,7 +17,7 @@ static void up(float x)
     float y = x;
 
     for (int i = 0; i < 300; ++i) {
-        metallic_assert(scalbnf(x, i) == y);
+        _assert(scalbnf(x, i) == y);
         y *= 2;
     }
 }
@@ -27,7 +27,7 @@ static void down(float x)
     double coeff = 0.5;
 
     for (int i = -1; i > -300; --i) {
-        metallic_assert(identical(scalbnf(x, i), x * coeff));
+        _assert(identical(scalbnf(x, i), x * coeff));
         coeff *= 0.5;
     }
 }
@@ -49,7 +49,7 @@ int main(void)
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 98765) {
         float x = reinterpret(float, i);
-        metallic_assert(isnan(scalbnf(x, -7)));
-        metallic_assert(isnan(scalbnf(-x, -7)));
+        _assert(isnan(scalbnf(x, -7)));
+        _assert(isnan(scalbnf(-x, -7)));
     }
 }

@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../../src/math/reinterpret.h"
-#include "../assert.h"
+#include "src/math/reinterpret.h"
+#include "../../assert.h"
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>
@@ -24,7 +24,7 @@ int main(void)
         if (y > LONG_MAX)
             break;
 
-        metallic_assert(y == lround(x));
-        metallic_assert(-y == lround(-x));
+        _assert(y == lround(x));
+        _assert(-y == lround(-x));
     }
 }
