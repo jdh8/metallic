@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "../../math/reinterpret.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -43,7 +44,14 @@ static double _scaleup(uint64_t significand, int exp)
         significand = _fixmul(significand, coeff, &shift);
 
     significand = _fixmul(significand, _powi32(5, exp), &shift);
+
     return ldexp(significand, shift);
+}
+
+static double _fastldexp(double x, int64_t exp)
+{
+    uint64_t i = reinterpret(uint64_t, x) + (exp << 52);
+    return reinterpret(double, i);
 }
 
 static double _scaledown(uint64_t significand, int exp)
@@ -54,7 +62,7 @@ static double _scaledown(uint64_t significand, int exp)
     significand <<= shift;
     shift = exp - shift;
 
-    for (; exp < 0; exp += 14) {
+    for (; exp <= -14; exp += 14) {
         uint64_t q = significand / denom;
         uint64_t r = significand % denom;
         int s = __builtin_clzll(q);
@@ -62,7 +70,13 @@ static double _scaledown(uint64_t significand, int exp)
         shift -= s;
     }
 
-    significand = _fixmul(significand, _powi32(5, exp), &shift);
+    uint64_t b = _powi32(5, -exp);
+    uint64_t q = significand / b;
+    uint64_t r = significand % b;
+    int s = __builtin_clzll(q);
+    significand = (q << s) + (uint64_t)(_fastldexp(r, s) / b);
+    shift -= s;
+
     return ldexp(significand, shift);
 }
 
