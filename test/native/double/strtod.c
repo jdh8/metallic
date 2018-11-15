@@ -19,7 +19,7 @@ typedef uint64_t Bitset;
 int main(void)
 {
     for (uint64_t i = 0; i < 0x7FF0000000000000; i += 0x000007DEB645A66A) {
-        char s[256];
+        char s[32];
         double x = reinterpret(double, i);
 
         sprintf(s, "%.17g", x);

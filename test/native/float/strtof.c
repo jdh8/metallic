@@ -19,9 +19,13 @@ typedef uint32_t Bitset;
 int main(void)
 {
     for (uint32_t i = 0; i < 0x7F800000; i += 1337) {
-        char s[256];
+        char s[32];
         float x = reinterpret(float, i);
+
         sprintf(s, "%.9g", x);
+        verify(x == _parsefloat(s, (void*)0), x);
+
+        sprintf(s, "%a", x);
         verify(x == _parsefloat(s, (void*)0), x);
     }
 
