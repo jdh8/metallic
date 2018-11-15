@@ -16,22 +16,33 @@ typedef uint32_t Bitset;
 #include "unary.h"
 #include <assert.h>
 
+static void f(const char format[static 1], float x)
+{
+    char s[32];
+    sprintf(s, format, x);
+    verify(x == _parsefloat(s, (void*)0), x);
+
+    *s = '+';
+    verify(x == _parsefloat(s, (void*)0), x);
+
+    *s = '-';
+    verify(-x == _parsefloat(s, (void*)0), x);
+}
+
+static void run(float x)
+{
+    f(" %.9g", x);
+    f(" %a", x);
+}
+
 int main(void)
 {
-    for (uint32_t i = 0; i < 0x7F800000; i += 1337) {
-        char s[32];
-        float x = reinterpret(float, i);
-
-        sprintf(s, "%.9g", x);
-        verify(x == _parsefloat(s, (void*)0), x);
-
-        sprintf(s, "%a", x);
-        verify(x == _parsefloat(s, (void*)0), x);
-    }
+    for (uint32_t i = 0; i < 0x7F800000; i += 1337)
+        run(reinterpret(float, i));
 
     assert(_parsefloat("inf", (void*)0) == INFINITY);
-    assert(_parsefloat("infinity", (void*)0) == INFINITY);
-    assert(_parsefloat("infiltration", (void*)0) == INFINITY);
+    assert(_parsefloat("+infinity", (void*)0) == INFINITY);
+    assert(_parsefloat("-infiltration", (void*)0) == -INFINITY);
 
     assert(isnan(_parsefloat("nan", (void*)0)));
     assert(isnan(_parsefloat("nanana", (void*)0)));
