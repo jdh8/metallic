@@ -7,18 +7,13 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "src/math/reinterpret.h"
+#include "assertf.h"
 #include <stdint.h>
 #include <float.h>
 #include <inttypes.h>
 #include <stdio.h>
 
-_Noreturn void abort(void);
-
-#define verify(cond, x) if (!(cond)) {                               \
-    fprintf(stderr, "%s:%d: %s: Assertion `"#cond"' failed at %a\n", \
-        __FILE__, __LINE__, __func__, (double)(x));                  \
-    abort();                                                         \
-}
+#define verify(cond, x) ASSERTF(cond, "at %a\n", (double)(x))
 
 static inline _Bool identical(double x, double y)
 {

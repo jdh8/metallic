@@ -8,11 +8,7 @@
  */
 #include "unary.h"
 
-#define verify2(cond, x, y) if (!(cond)) {                                 \
-    fprintf(stderr, "%s:%d: %s: Assertion `"#cond"' failed at (%a, %a)\n", \
-        __FILE__, __LINE__, __func__, (double)(x), (double)(y));           \
-    abort();                                                               \
-}
+#define verify2(cond, x, y) ASSERTF(cond, "at (%a, %a)\n", (double)(x), (double)(y))
 
 static inline void mirror(void f(double, double), double x, double y)
 {
