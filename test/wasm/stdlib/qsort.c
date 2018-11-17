@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../assert.h"
+#include <assert.h>
 #include <stdlib.h>
 
 int compare(const void* a, const void* b)
@@ -35,10 +35,10 @@ int main(void)
     qsort(random, count, sizeof(unsigned), compare);
 
     for (int i = 0; i < count - 1; ++i)
-        _assert(random[i] <= random[i + 1]);
+        assert(random[i] <= random[i + 1]);
 
     for (int i = 0; i < count; ++i)
         checksum -= random[i];
 
-    _assert(!checksum);
+    assert(!checksum);
 }

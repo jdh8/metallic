@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../assert.h"
+#include <assert.h>
 #include "cidentical.h"
 #include <complex.h>
 
@@ -17,7 +17,7 @@ static float _Complex swap(float _Complex z)
 
 static void run(float x, float y)
 {
-    _assert(cidentical(csinhf(CMPLXF(x, y)), swap(csinf(CMPLXF(y, x)))));
+    assert(cidentical(csinhf(CMPLXF(x, y)), swap(csinf(CMPLXF(y, x)))));
 }
 
 int main(void)

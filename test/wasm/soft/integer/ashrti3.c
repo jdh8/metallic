@@ -6,14 +6,14 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../assert.h"
+#include <assert.h>
 
 static void run(__int128 x)
 {
     __int128 y = x;
 
     for (int shift = 0; shift < 128; ++shift) {
-        _assert(x >> shift == y);
+        assert(x >> shift == y);
         y >>= 1;
     }
 }

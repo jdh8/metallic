@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "src/math/reinterpret.h"
-#include "../../assert.h"
+#include <assert.h>
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>
@@ -15,8 +15,8 @@
 static void normal(double x)
 {
     for (int exp = -1022; exp < 1024; ++exp) {
-        _assert(ilogb(x) == exp);
-        _assert(ilogb(-x) == exp);
+        assert(ilogb(x) == exp);
+        assert(ilogb(-x) == exp);
         x *= 2;
     }
 }
@@ -25,17 +25,17 @@ static void subnormal(int64_t i)
 {
     for (int exp = -1023; exp > -1075; --exp) {
         double x = reinterpret(double, i >>= 1);
-        _assert(ilogb(x) == exp);
-        _assert(ilogb(-x) == exp);
+        assert(ilogb(x) == exp);
+        assert(ilogb(-x) == exp);
     }
 }
 
 int main(void)
 {
-    _assert(ilogb(INFINITY) == INT_MAX);
-    _assert(ilogb(-INFINITY) == INT_MAX);
-    _assert(ilogb(0) == FP_ILOGB0);
-    _assert(ilogb(-0.0) == FP_ILOGB0);
+    assert(ilogb(INFINITY) == INT_MAX);
+    assert(ilogb(-INFINITY) == INT_MAX);
+    assert(ilogb(0) == FP_ILOGB0);
+    assert(ilogb(-0.0) == FP_ILOGB0);
 
     for (int64_t i = 0x0010000000000000; i < 0x0020000000000000; i += 0x0000000538EF832D) {
         normal(reinterpret(double, i));
@@ -44,8 +44,8 @@ int main(void)
 
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += 0x000000063416B882) {
         double x = reinterpret(double, i);
-        _assert(ilogb(x) == FP_ILOGBNAN);
-        _assert(ilogb(-x) == FP_ILOGBNAN);
+        assert(ilogb(x) == FP_ILOGBNAN);
+        assert(ilogb(-x) == FP_ILOGBNAN);
     }
 
 }

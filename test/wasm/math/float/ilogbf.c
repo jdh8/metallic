@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "src/math/reinterpret.h"
-#include "../../assert.h"
+#include <assert.h>
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>
@@ -15,8 +15,8 @@
 static void normal(float x)
 {
     for (int exp = -126; exp < 128; ++exp) {
-        _assert(ilogbf(x) == exp);
-        _assert(ilogbf(-x) == exp);
+        assert(ilogbf(x) == exp);
+        assert(ilogbf(-x) == exp);
         x *= 2;
     }
 }
@@ -25,17 +25,17 @@ static void subnormal(int32_t i)
 {
     for (int exp = -127; exp > -150; --exp) {
         float x = reinterpret(float, i >>= 1);
-        _assert(ilogbf(x) == exp);
-        _assert(ilogbf(-x) == exp);
+        assert(ilogbf(x) == exp);
+        assert(ilogbf(-x) == exp);
     }
 }
 
 int main(void)
 {
-    _assert(ilogbf(INFINITY) == INT_MAX);
-    _assert(ilogbf(-INFINITY) == INT_MAX);
-    _assert(ilogbf(0) == FP_ILOGB0);
-    _assert(ilogbf(-0.0f) == FP_ILOGB0);
+    assert(ilogbf(INFINITY) == INT_MAX);
+    assert(ilogbf(-INFINITY) == INT_MAX);
+    assert(ilogbf(0) == FP_ILOGB0);
+    assert(ilogbf(-0.0f) == FP_ILOGB0);
 
     for (int32_t i = 0x00800000; i < 0x01000000; i += 11) {
         normal(reinterpret(float, i));
@@ -44,8 +44,8 @@ int main(void)
 
     for (uint32_t i = 0x7FC00000; i < 0x80000000; i += 81) {
         float x = reinterpret(float, i);
-        _assert(ilogbf(x) == FP_ILOGBNAN);
-        _assert(ilogbf(-x) == FP_ILOGBNAN);
+        assert(ilogbf(x) == FP_ILOGBNAN);
+        assert(ilogbf(-x) == FP_ILOGBNAN);
     }
 
 }

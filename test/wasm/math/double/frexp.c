@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "src/math/reinterpret.h"
-#include "../../assert.h"
+#include <assert.h>
 #include "identical.h"
 #include <math.h>
 #include <stdint.h>
@@ -18,8 +18,8 @@ static void normal(double x)
 
     for (int exp = -1021; exp < 1025; ++exp) {
         int e;
-        _assert(frexp(x, &e) == mantissa && e == exp);
-        _assert(frexp(-x, &e) == -mantissa && e == exp);
+        assert(frexp(x, &e) == mantissa && e == exp);
+        assert(frexp(-x, &e) == -mantissa && e == exp);
         x *= 2;
     }
 }
@@ -30,8 +30,8 @@ static void subnormal(int64_t i)
         double x = reinterpret(double, i >>= 1);
         double mantissa = (i << (-1022 - exp)) * 0x1p-52;
         int e;
-        _assert(frexp(x, &e) == mantissa && e == exp);
-        _assert(frexp(-x, &e) == -mantissa && e == exp);
+        assert(frexp(x, &e) == mantissa && e == exp);
+        assert(frexp(-x, &e) == -mantissa && e == exp);
     }
 }
 
@@ -39,11 +39,11 @@ int main(void)
 {
     int exp;
 
-    _assert(frexp(INFINITY, &exp) == INFINITY);
-    _assert(frexp(-INFINITY, &exp) == -INFINITY);
+    assert(frexp(INFINITY, &exp) == INFINITY);
+    assert(frexp(-INFINITY, &exp) == -INFINITY);
 
-    _assert(identical(frexp(0, &exp), 0) && exp == 0);
-    _assert(identical(frexp(-0.0, &exp), -0.0) && exp == 0);
+    assert(identical(frexp(0, &exp), 0) && exp == 0);
+    assert(identical(frexp(-0.0, &exp), -0.0) && exp == 0);
 
     for (int64_t i = 0x0010000000000000; i < 0x0020000000000000; i += 0x000000066E8F0C50) {
         normal(reinterpret(double, i));
@@ -52,8 +52,8 @@ int main(void)
 
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += 0x00000006E954B07A) {
         double x = reinterpret(double, i);
-        _assert(isnan(frexp(x, &exp)));
-        _assert(isnan(frexp(-x, &exp)));
+        assert(isnan(frexp(x, &exp)));
+        assert(isnan(frexp(-x, &exp)));
     }
 
 }

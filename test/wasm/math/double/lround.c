@@ -7,7 +7,7 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "src/math/reinterpret.h"
-#include "../../assert.h"
+#include <assert.h>
 #include <math.h>
 #include <limits.h>
 #include <stdint.h>
@@ -24,7 +24,7 @@ int main(void)
         if (y > LONG_MAX)
             break;
 
-        _assert(y == lround(x));
-        _assert(-y == lround(-x));
+        assert(y == lround(x));
+        assert(-y == lround(-x));
     }
 }

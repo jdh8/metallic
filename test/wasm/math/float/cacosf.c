@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "../../assert.h"
+#include <assert.h>
 #include "cidentical.h"
 #include <complex.h>
 
@@ -17,8 +17,8 @@ static float _Complex rotate(float _Complex z)
 
 static void run(float _Complex z)
 {
-    _assert(cidentical(cacoshf(z), rotate(cacosf(z))));
-    _assert(cidentical(conjf(cacosf(z)), cacosf(conjf(z))));
+    assert(cidentical(cacoshf(z), rotate(cacosf(z))));
+    assert(cidentical(conjf(cacosf(z)), cacosf(conjf(z))));
 }
 
 int main(void)
