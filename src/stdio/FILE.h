@@ -15,12 +15,6 @@ typedef struct __FILE FILE;
 
 struct __FILE
 {
-    unsigned char* _getbase;
-    unsigned char* _getptr;
-    unsigned char* _getend;
-    unsigned char* _putbase;
-    unsigned char* _putptr;
-    unsigned char* _putend;
     int (*_get)(FILE*);
     int (*_put)(int, FILE*);
     int (*_unget)(int, FILE*);
