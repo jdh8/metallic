@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 #ifdef __clang__
-#define __CMPLX(T, x, y) (T _Complex){ x, y }
+#define __CMPLX(T, x, y) __extension__(T _Complex){ x, y }
 #elif __GNUC__
 #define __CMPLX(T, x, y) __builtin_complex((T)(x), (T)(y))
 #else
@@ -44,14 +44,7 @@ extern "C" {
 #endif
 
 #if __STDC_VERSION__ >= 199901L
-#if __GNUC__
-static const float _Complex _Complex_I = __extension__ 1.0if;
-#define _Complex_I (__extension__ 1.0if)
-#elif
-static const float _Complex _Complex_I = __CMPLX(float, 0, 1);
 #define _Complex_I __CMPLX(float, 0, 1)
-#endif
-
 #define I _Complex_I
 #define complex _Complex
 #endif

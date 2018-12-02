@@ -9,7 +9,7 @@
 #ifndef _FENV_H
 #define _FENV_H
 
-typedef struct {} fenv_t;
+typedef struct { char _; } fenv_t;
 typedef unsigned fexcept_t;
 
 #ifdef __cplusplus
