@@ -1,6 +1,6 @@
 /* This file is part of Metallic, a runtime library for WebAssembly.
  *
- * Copyright (C) 2017 Chen-Pang He <chen.pang.he@jdh8.org>
+ * Copyright (C) 2018 Chen-Pang He <chen.pang.he@jdh8.org>
  *
  * This Source Code Form is subject to the terms of the Mozilla
  * Public License v. 2.0. If a copy of the MPL was not distributed
@@ -9,24 +9,29 @@
 #include "exp2f.h"
 #include "finite/log2f.h"
 #include "finite/sinpif.h"
-#include "../gamma.h"
 #include <math.h>
 #include <float.h>
 
-static double _product(float z)
+static double _sum(double z)
 {
-    const double log2e = 1.442695040888963407;
-    const double sqrt2pi = 2.50662827463100050;
-    const int g = 7;
+    const double p[] = {
+        2.50662828350136765681,
+        92.2070484521121938211,
+        -83.1776370828788963029,
+        14.8028319307817071942,
+        -0.220849707953311479372
+    };
 
-    double base = g + 0.5 + z;
-
-    return sqrt2pi * _exp2f((0.5 + z) * _log2f(base) - log2e * base);
+    return p[4] / (z + 4) + p[3] / (z + 3) + (p[2] / (z + 2) + p[1] / (z + 1)) + p[0];
 }
 
-static double _gamma1p(float z)
+static double _gamma1p(double z)
 {
-    return _product(z) * _gamma_lanczos_sum(z);
+    const double log2e = 1.442695040888963407;
+
+    double base = 4.85 + z;
+
+    return _exp2f((0.5 + z) * _log2f(base) - log2e * base) * _sum(z);
 }
 
 float tgammaf(float z)
