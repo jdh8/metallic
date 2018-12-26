@@ -30,25 +30,23 @@ static double _lnproduct(float z)
     const double lnsqrt2pi = 0.918938533204672742;
     const int g = 7;
 
-    double shifted = z - 0.5;
-    double base = shifted + g;
+    double base = g + 0.5 + z;
 
-    return lnsqrt2pi + shifted * _logf(base) - base;
+    return lnsqrt2pi + (0.5 + z) * _logf(base) - base;
 }
 
 float lgammaf(float z)
 {
     const double pi = 3.14159265358979324;
 
-    if (z == INFINITY)
-        return z;
+    if (z == 0 || z == INFINITY)
+        return INFINITY;
 
     if (z < 0.5f) {
         if (rintf(z) == z)
             return INFINITY;
-
-        return _logf(pi / fabs(_sinpif(z) * _gamma_lanczos_sum(1 - z))) - _lnproduct(1 - z);
+        return _logf(pi / fabs(_sinpif(z) * _gamma_lanczos_sum(-z))) - _lnproduct(-z);
     }
 
-    return _lnproduct(z) + _logf(_gamma_lanczos_sum(z));
+    return _lnproduct(z - 1) + _logf(_gamma_lanczos_sum(z - 1));
 }

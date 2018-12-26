@@ -23,7 +23,7 @@ static double _gamma_lanczos_sum(double z)
     double sum = -0.0;
 
     for (int i = 8; i; --i)
-        sum += p[i] / (i - 1 + z);
+        sum += p[i] / (z + i);
 
     return sum + p[0];
 }

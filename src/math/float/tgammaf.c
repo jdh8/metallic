@@ -19,19 +19,13 @@ static double _product(float z)
     const double sqrt2pi = 2.50662827463100050;
     const int g = 7;
 
-    double shifted = z - 0.5;
-    double base = shifted + g;
+    double base = g + 0.5 + z;
 
-    return sqrt2pi * _exp2f(shifted * _log2f(base) - log2e * base);
+    return sqrt2pi * _exp2f((0.5 + z) * _log2f(base) - log2e * base);
 }
 
-static double _right(float z)
+static double _gamma1p(float z)
 {
-    const float max = 35.0400984199;
-
-    if (z > max)
-        return max * FLT_MAX;
-
     return _product(z) * _gamma_lanczos_sum(z);
 }
 
@@ -40,14 +34,16 @@ float tgammaf(float z)
     const double pi = 3.14159265358979324;
 
     if (z == 0)
-        return 1 / z;
+        return copysignf(INFINITY, z);
+
+    if (z == INFINITY)
+        return INFINITY;
 
     if (z < 0.5f) {
         if (rintf(z) == z)
-            return (z - z) / (z - z);
-
-        return pi / (_sinpif(z) * _right(1 - z));
+            return NAN;
+        return pi / (_sinpif(z) * _gamma1p(-z));
     }
 
-    return _right(z);
+    return _gamma1p(z - 1);
 }
