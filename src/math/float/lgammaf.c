@@ -8,10 +8,25 @@
  */
 #include "kernel/atanhf.h"
 #include "finite/sinpif.h"
-#include "../gamma.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
+
+static double _series(double z)
+{
+    const double p[] = {
+        2.50662827563479526904,
+        225.525584619175212544,
+        -268.295973841304927459,
+        80.9030806934622512966,
+        -5.00757863970517583837,
+        0.0114684895434781459556
+    };
+
+    return p[5] / (z + 5) + p[4] / (z + 4)
+        + (p[3] / (z + 3) + p[2] / (z + 2))
+        + (p[1] / (z + 1) + p[0]);
+}
 
 static double _logf(double x)
 {
@@ -25,14 +40,11 @@ static double _logf(double x)
     return 2 * _kernel_atanhf((x - 1) / (x + 1)) + exponent * ln2;
 }
 
-static double _lnproduct(float z)
+static double _lnproduct(double z)
 {
-    const double lnsqrt2pi = 0.918938533204672742;
-    const int g = 7;
+    double base = 5.65 + z;
 
-    double base = g + 0.5 + z;
-
-    return lnsqrt2pi + (0.5 + z) * _logf(base) - base;
+    return (0.5 + z) * _logf(base) - base;
 }
 
 float lgammaf(float z)
@@ -45,8 +57,8 @@ float lgammaf(float z)
     if (z < 0.5f) {
         if (rintf(z) == z)
             return INFINITY;
-        return _logf(pi / fabs(_sinpif(z) * _gamma_lanczos_sum(-z))) - _lnproduct(-z);
+        return _logf(pi / (fabs(_sinpif(z)) * _series(-z))) - _lnproduct(-z);
     }
 
-    return _lnproduct(z - 1) + _logf(_gamma_lanczos_sum(z - 1));
+    return _lnproduct(z - 1.0) + _logf(_series(z - 1.0));
 }

@@ -50,5 +50,5 @@ float tgammaf(float z)
         return pi / (_sinpif(z) * _gamma1p(-z));
     }
 
-    return _gamma1p(z - 1);
+    return _gamma1p(z - 1.0);
 }
