@@ -8,6 +8,7 @@
  */
 #include "../kernel/atanhf.h"
 #include "../../reinterpret.h"
+#include <stdint.h>
 
 static double _log2f(double x)
 {
