@@ -15,7 +15,7 @@ static float _ceilf(float x)
     int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
 
-    if (magnitude == 0 || magnitude >= 0x4B000000) /* 2**23 */
+    if (magnitude == 0 || magnitude >= 0x4B000000) /* 0x1p23 */
         return x;
 
     if (magnitude < 0x3F800000) /* 1 */
