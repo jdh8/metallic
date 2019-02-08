@@ -26,5 +26,5 @@ static double _kernel_expb(double greater, double lesser)
     double x = greater + lesser;
     double y = x - _kernel_expa(x * x);
 
-    return x * y / (2 - y) + lesser + greater + 1;
+    return x * y / (2 - y) + lesser + greater;
 }

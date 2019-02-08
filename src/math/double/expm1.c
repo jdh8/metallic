@@ -7,20 +7,20 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/exp.h"
-#include "kernel/ldexp.h"
+#include "shift.h"
 #include <math.h>
 #include <float.h>
 
-double exp(double x)
+double expm1(double x)
 {
-    const double minimum = -745.1332191019412;
+    const double minimum = -37.42994775023705;
     const double maximum = 709.782712893385;
 
     const double log2e = 1.44269504088896340736;
     const double ln2[] = { 0x1.62E42FEFA4p-1, -0x1.8432A1B0E2634p-43 };
 
     if (x < minimum)
-        return 0;
+        return -1;
 
     if (x > maximum)
         return maximum * DBL_MAX;
@@ -29,5 +29,12 @@ double exp(double x)
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
 
-    return _kernel_ldexp(_kernel_expb(a, b) + 1, n);
+    switch ((int64_t)n) {
+        case 0:
+            return 2 * x / (_kernel_expa(x * x) - x + 2);
+        case 1:
+            return 2 * _kernel_expb(a, b) + 1;
+        default:
+            return _shift(_kernel_expb(a, b) + 1, n) - 1;
+    }
 }
