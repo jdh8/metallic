@@ -26,15 +26,13 @@ double expm1(double x)
         return maximum * DBL_MAX;
 
     double n = rint(x * log2e);
+
+    if (n == 0)
+        return 2 * x / (_kernel_expa(x * x) - x + 2);
+
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
+    double y = _kernel_expb(a, b);
 
-    switch ((int64_t)n) {
-        case 0:
-            return 2 * x / (_kernel_expa(x * x) - x + 2);
-        case 1:
-            return 2 * _kernel_expb(a, b) + 1;
-        default:
-            return _shift(_kernel_expb(a, b) + 1, n) - 1;
-    }
+    return n == 1 ? 2 * y + 1 : _shift(y + 1, n) - 1;
 }
