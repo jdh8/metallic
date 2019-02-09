@@ -10,9 +10,8 @@
 #define METALLIC_PREC_EXPF_H
 
 #include "kernel/expm1f.h"
-#include "../reinterpret.h"
+#include "../double/shift.h"
 #include <math.h>
-#include <stdint.h>
 
 static double _expf(double x)
 {
@@ -30,9 +29,8 @@ static double _expf(double x)
 
     double n = rint(x * log2e);
     double y = 1 + _kernel_expm1f(x - n * ln2);
-    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    return reinterpret(double, shifted);
+    return _shift(y, n);
 }
 
 #endif

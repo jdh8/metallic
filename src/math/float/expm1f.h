@@ -10,9 +10,8 @@
 #define METALLIC_EXPM1F_H
 
 #include "kernel/expm1f.h"
-#include "../reinterpret.h"
+#include "../double/shift.h"
 #include <math.h>
-#include <stdint.h>
 
 static double _expm1f(float x)
 {
@@ -34,8 +33,6 @@ static double _expm1f(float x)
     if (n == 0)
         return y;
 
-    int64_t shifted = reinterpret(int64_t, y + 1) + ((int64_t)n << 52);
-
-    return reinterpret(double, shifted) - 1;
+    return _shift(y + 1, n) - 1;
 }
 #endif

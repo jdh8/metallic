@@ -7,10 +7,9 @@
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
 #include "kernel/expm1f.h"
-#include "../reinterpret.h"
+#include "../double/shift.h"
 #include <math.h>
 #include <float.h>
-#include <stdint.h>
 
 float expf(float x)
 {
@@ -28,7 +27,6 @@ float expf(float x)
 
     float n = rintf(x * log2e);
     double y = 1 + _kernel_expm1f(x - n * ln2);
-    int64_t shifted = reinterpret(int64_t, y) + ((int64_t)n << 52);
 
-    return reinterpret(double, shifted);
+    return _shift(y, n);
 }
