@@ -16,6 +16,16 @@ struct Segment
     uint32_t low;
 };
 
+/*!
+ * \brief Get a 96-bit segment of 2/π
+ *
+ * It is inevitable to look up a table for huge arguments.  To save precious
+ * linear memory, it is crucial to minimize table size.  One of the ways is to
+ * multiply an argument with 2/π, which is how this funtion is implemented.
+ *
+ * \param offset - Most significant bits to skip
+ * \return  Digits of 2/π, \c offset bits skipped
+ */
 static struct Segment _segment(int offset)
 {
     const uint64_t bits[] = { 0xA2F9836E4E441529, 0xFC2757D1F534DDC0, 0xDB6295993C439041, 0xFE5163ABDEBBC561 };
@@ -29,6 +39,17 @@ static struct Segment _segment(int offset)
     };
 }
 
+/*!
+ * \brief Argument reduction for trigonometric functions
+ *
+ * The prototype of this function resembles \c __rem_pio2 in GCC, but this
+ * function is only for \c float
+ *
+ * \param[in]  x - The angle to be reduced
+ * \param[out] y - IEEE remainder of (x ÷ (π/2))
+ *
+ * \return  Nearest integer of (2x / π), last 2 bits accurate
+ */
 int __rem_pio2f(float x, double y[static 1])
 {
     const double pi_2[] = { 1.57079631090164184570, 1.58932547735281966916e-8 };
@@ -52,7 +73,10 @@ int __rem_pio2f(float x, double y[static 1])
 
     struct Segment segment = _segment((magnitude >> 23) - 152);
     uint64_t significand = (i & 0x007FFFFF) | 0x00800000;
+
+    // First 64 bits of fractional part of x / (2π)
     uint64_t product = significand * segment.high + ((significand * segment.low) >> 32);
+
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 
