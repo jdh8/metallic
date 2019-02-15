@@ -9,7 +9,7 @@
 #ifndef METALLIC_EXPM1F_H
 #define METALLIC_EXPM1F_H
 
-#include "kernel/expm1f.h"
+#include "kernel/expf.h"
 #include "../double/shift.h"
 #include <math.h>
 
@@ -28,7 +28,7 @@ static double _expm1f(float x)
         return x * HUGE_VAL;
 
     float n = rintf(x * log2e) + 0;
-    double y = _kernel_expm1f(x - n * ln2);
+    double y = _kernel_expf(x - n * ln2);
 
     if (n == 0)
         return y;

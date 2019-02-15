@@ -9,7 +9,7 @@
 #ifndef METALLIC_PREC_EXP2F_H
 #define METALLIC_PREC_EXP2F_H
 
-#include "kernel/exp2m1f.h"
+#include "kernel/exp2f.h"
 #include "../double/shift.h"
 #include <math.h>
 #include <stdint.h>
@@ -23,7 +23,7 @@ static double _exp2f(double x)
         return x * HUGE_VAL;
 
     double n = rint(x);
-    double y = 1 + _kernel_exp2m1f(x - n);
+    double y = 1 + _kernel_exp2f(x - n);
 
     return _shift(y, n);
 }

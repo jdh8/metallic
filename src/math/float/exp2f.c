@@ -6,7 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#include "kernel/exp2m1f.h"
+#include "kernel/exp2f.h"
 #include "../double/shift.h"
 #include <math.h>
 #include <float.h>
@@ -20,7 +20,7 @@ float exp2f(float x)
         return 128 * FLT_MAX;
 
     float n = rintf(x);
-    double y = 1 + _kernel_exp2m1f(x - n);
+    double y = 1 + _kernel_exp2f(x - n);
 
     return _shift(y, n);
 }

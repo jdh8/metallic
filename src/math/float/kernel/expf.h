@@ -6,8 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-#ifndef METALLIC_KERNEL_EXPM1F_H
-#define METALLIC_KERNEL_EXPM1F_H
+#ifndef METALLIC_KERNEL_EXPF_H
+#define METALLIC_KERNEL_EXPF_H
 /*!\file
  * \brief Kernel of the exponential function
  *
@@ -29,7 +29,7 @@
  * \param x - The argument in \f$ \left[ -\frac{\ln2}{2}, \frac{\ln2}{2} \right] \f$
  * \return  Approximate e<sup><var>x</var></sup> &minus; 1 as precise as \c float.
  */
-static double _kernel_expm1f(double x)
+static double _kernel_expf(double x)
 {
     const double c[] = {
         1.000000010775500705,
