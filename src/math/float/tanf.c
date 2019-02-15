@@ -6,10 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Tangent function
+ */
 int __rem_pio2f(float x, double y[static 1]);
 
 /*!
- * \brief Kernel of tanf
+ * \brief Kernel of tangent
  *
  * This computes the limit of \f$ \sqrt x \cot \sqrt x \f$
  * for \a x in \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$.

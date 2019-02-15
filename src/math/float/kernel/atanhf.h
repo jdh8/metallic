@@ -8,8 +8,14 @@
  */
 #ifndef METALLIC_KERNEL_ATANHF_H
 #define METALLIC_KERNEL_ATANHF_H
+/*!\file
+ * \brief Kernel of inverse hyperbolic tangent
+ *
+ * This file provides a kernel function, which gives precise results on reduced
+ * arguments.
+ */
 /*!
- * \brief Kernel of atanhf
+ * \brief Kernel of inverse hyperbolic tangent
  *
  * This computes inverse hyperbolic tangent in a domain of \f$ \left[
  * \frac{1 - \sqrt2}{1 + \sqrt2}, \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$.
@@ -21,7 +27,7 @@
  *
  * \param x - The argument in \f$ \left[ \frac{1 - \sqrt2}{1 + \sqrt2},
  * \frac{\sqrt2 - 1}{\sqrt2 + 1} \right] \f$
- * \return  Approximate \f$ \operatorname{atanh}(x) \f$ as precise as \c float.
+ * \return  Approximate atanh(<var>x</var>) as precise as \c float.
  */
 static double _kernel_atanhf(double x)
 {

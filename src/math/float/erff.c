@@ -6,10 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Error function
+ */
 #include "expf.h"
 #include <math.h>
 /*!
- * \brief Kernel of erff
+ * \brief Kernel of the error function
  *
  * This function computes error function in \f$ [-0.5, 0.5] \f$
  * The result is guaranteed to be faithfully rounded in \c float,

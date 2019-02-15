@@ -8,7 +8,10 @@
  */
 #ifndef METALLIC_NORMALIZE_H
 #define METALLIC_NORMALIZE_H
-
+/*!\file
+ * \brief Normalization of nonzero floating-point magnitudes
+ * \sa _normalize
+ */
 #include <stdint.h>
 /*!
  * \brief Normalize nonzero magnitude

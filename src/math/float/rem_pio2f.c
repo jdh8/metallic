@@ -6,6 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Argument reduction for trigonometric functions
+ *
+ * Finding the smallest coterminal angle for small arguments can be trivial,
+ * but it takes a sophiscated algorithm for huge arguments.
+ */
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -24,7 +30,7 @@ struct Segment
  * multiply an argument with 2/π, which is how this funtion is implemented.
  *
  * \param offset - Most significant bits to skip
- * \return  Digits of 2/π, \c offset bits skipped
+ * \return  Digits of 2/π, `offset` bits skipped
  */
 static struct Segment _segment(int offset)
 {
@@ -42,13 +48,13 @@ static struct Segment _segment(int offset)
 /*!
  * \brief Argument reduction for trigonometric functions
  *
- * The prototype of this function resembles \c __rem_pio2 in GCC, but this
- * function is only for \c float
+ * The prototype of this function resembles `__rem_pio2` in GCC, but this
+ * function is only for `float`.
  *
  * \param[in]  x - The angle to be reduced
- * \param[out] y - IEEE remainder of (x ÷ (π/2))
+ * \param[out] y - IEEE remainder of \f$ x \div \dfrac\pi2 \f$
  *
- * \return  Nearest integer of (2x / π), last 2 bits accurate
+ * \return  Nearest integer of \f$ \dfrac{2x}{\pi} \f$, last 2 bits accurate
  */
 int __rem_pio2f(float x, double y[static 1])
 {
@@ -74,7 +80,12 @@ int __rem_pio2f(float x, double y[static 1])
     struct Segment segment = _segment((magnitude >> 23) - 152);
     uint64_t significand = (i & 0x007FFFFF) | 0x00800000;
 
-    // First 64 bits of fractional part of x / (2π)
+    /* First 64 bits of fractional part of x/(2π)
+     *
+     * It is utilized that `uint64_t` is a modulo type with period
+     * 2<sup>64</sup>.  Its period is matched with the period of trigonometric
+     * functions, i.e. 2π.
+     */
     uint64_t product = significand * segment.high + ((significand * segment.low) >> 32);
 
     int64_t r = product << 2;

@@ -8,8 +8,14 @@
  */
 #ifndef METALLIC_KERNEL_EXPM1F_H
 #define METALLIC_KERNEL_EXPM1F_H
+/*!\file
+ * \brief Kernel of the exponential function
+ *
+ * This file provides a kernel function, which gives precise results on reduced
+ * arguments.
+ */
 /*!
- * \brief Kernel of expm1f
+ * \brief Kernel of the exponential function
  *
  * This computes exponential functon in a domain of
  * \f$ \left[ -\frac{\ln2}{2}, \frac{\ln2}{2} \right] \f$.
@@ -21,7 +27,7 @@
  * the result is inaccurate.
  *
  * \param x - The argument in \f$ \left[ -\frac{\ln2}{2}, \frac{\ln2}{2} \right] \f$
- * \return  Approximate \f$ \exp x - 1 \f$ as precise as \c float.
+ * \return  Approximate e<sup><var>x</var></sup> &minus; 1 as precise as \c float.
  */
 static double _kernel_expm1f(double x)
 {

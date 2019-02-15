@@ -6,10 +6,13 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Complementary error function
+ */
 #include "expf.h"
 #include <math.h>
 /*!
- * \brief Kernel of erfcf
+ * \brief Kernel of complementary error function
  *
  * This function computes complementary error function of a positive argument.
  * The result is guaranteed to be faithfully rounded in \c float,

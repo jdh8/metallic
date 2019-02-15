@@ -8,18 +8,23 @@
  */
 #ifndef METALLIC_KERNEL_EXP2F_H
 #define METALLIC_KERNEL_EXP2F_H
+/*!\file
+ * \brief Kernel of exponential function
+ *
+ * This file provides a kernel function, which gives precise results on reduced
+ * arguments.
+ */
 /*!
- * \brief Kernel of exp2f
+ * \brief Kernel of exponential function
  *
- * This computes exponential functon in a domain of \f$ [-0.5,
- * 0.5] \f$.  The result is guaranteed to be faithfully rounded in
- * \c float, whose relative error is controlled within 7.476016e-9.
+ * This computes exponential functon in a domain of [-0.5, 0.5].  The result is
+ * guaranteed to be faithfully rounded in \c float, whose relative error is
+ * controlled within 7.476016e-9.
  *
- * If \a x is outside of \f$ [-0.5, 0.5] \f$,
- * the result is inaccurate.
+ * If <var>x</var> is outside of [-0.5, 0.5], the result is inaccurate.
  *
- * \param x - The argument in \f$ [-0.5, 0.5] \f$
- * \return  Approximate \f$ 2^x - 1 \f$ as precise as \c float.
+ * \param x - The argument in [-0.5, 0.5]
+ * \return  Approximate 2<sup><var>x</var></sup> &minus; 1 as precise as \c float.
  */
 static double _kernel_exp2m1f(double x)
 {

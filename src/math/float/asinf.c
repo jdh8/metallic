@@ -6,9 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Arcsine
+ */
 #include <math.h>
 /*!
- * \brief Kernel of acosf
+ * \brief Arccosine of big arguments
  *
  * This function computes arccosine in a domain of \f$ [0.5, 1] \f$.
  * The result is guaranteed to be faithfully rounded in \c float,
@@ -37,7 +40,7 @@ static double _acos(double x)
 }
 
 /*!
- * \brief Kernel of asinf
+ * \brief Arcsine of small arguments
  *
  * This function computes arcsine in a domain of \f$ [-0.5, 0.5] \f$.
  * The result is guaranteed to be faithfully rounded in \c float,

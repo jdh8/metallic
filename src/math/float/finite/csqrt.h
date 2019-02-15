@@ -6,6 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!
+ * \file
+ * \brief Complex square root for finite nonzero arguments
+ */
 #include <complex.h>
 #include <math.h>
 /*!
@@ -16,7 +20,7 @@
  *
  * \param x - Real part of the mathematical parameter
  * \param y - Imaginary part of the mathematical parameter
- * \return  Approximate \f$ \sqrt \left( x + iy \right) \f$.
+ * \return  Approximate \f$ \sqrt{\left( x + iy \right)} \f$.
  */
 static double _Complex _csqrt(double x, double y)
 {

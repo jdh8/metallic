@@ -6,6 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/*!\file
+ * \brief Complex inverse hyperbolic functions in the first quadrant
+ */
 #include "csqrt.h"
 #include "log1pf.h"
 #include "../kernel/atanf.h"
@@ -32,7 +35,7 @@ static double _carg(double x, double y)
 }
 
 /*!
- * \brief Kernel of complex inverse hyperbolic functions
+ * \brief Complex inverse hyperbolic functions in the first quadrant
  *
  * This function computes inverse hyperbolic sine or cosine in the first
  * quadrant of the complex plane.  It depends on the applied argument function
