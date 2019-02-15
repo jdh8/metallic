@@ -8,13 +8,10 @@
  */
 #ifndef METALLIC_NORMALIZE_H
 #define METALLIC_NORMALIZE_H
-/*!\file
- * \brief Normalization of nonzero floating-point magnitudes
- * \sa _normalize
- */
+
 #include <stdint.h>
-/*!
- * \brief Normalize nonzero magnitude
+
+/* Normalize nonzero magnitude
  *
  * Notation of subnormal numbers is a space-saving technique in IEEE 754.
  * However, processing subnormal numbers requires an extra step to get correct
@@ -28,9 +25,6 @@
  * Zero is excluded from the domain of this function because one half of the
  * smallest normal number is already mapped to 0 and there is no other suitable
  * result for 0.
- *
- * \param i - Representation of a nonzero magnitude
- * \return  Normalized magnitude
  */
 static int64_t _normalize(int64_t i)
 {

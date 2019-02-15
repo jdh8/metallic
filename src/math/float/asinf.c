@@ -6,22 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Arcsine
- */
 #include <math.h>
-/*!
- * \brief Arccosine of big arguments
+
+/* Arccosine restricted to [0.5, 1]
  *
- * This function computes arccosine in a domain of \f$ [0.5, 1] \f$.
- * The result is guaranteed to be faithfully rounded in \c float,
- * whose relative error is controlled within 6.394937e-9.
- *
- * If \f$ x > 1 \f$, this function returns NaN to indicate complex result.
- * If \f$ x < 0.5 \f$, the result is inaccurate.
- *
- * \param x - The argument in \f$ [0.5, \infty] \f$
- * \return  Approximate \f$ \arccos x \f$ as precise as \c float.
+ * If x > 1, this function returns NaN to indicate complex result.
+ * If x < 0.5, the result is inaccurate.
  */
 static double _acos(double x)
 {
@@ -39,18 +29,7 @@ static double _acos(double x)
     return sqrt(1 - x) * (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx));
 }
 
-/*!
- * \brief Arcsine of small arguments
- *
- * This function computes arcsine in a domain of \f$ [-0.5, 0.5] \f$.
- * The result is guaranteed to be faithfully rounded in \c float,
- * whose relative error is controlled within 4.521903e-9.
- *
- * If \a x is outside of \f$ [-0.5, 0.5] \f$, the result is inaccurate.
- *
- * \param x - The argument in \f$ [-0.5, 0.5] \f$
- * \return  Approximate \f$ \arcsin x \f$.
- */
+/* Arcsine restricted to [-0.5, 0.5] */
 static float _asin(double x)
 {
     double c[] = {

@@ -6,9 +6,6 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Complex inverse hyperbolic functions in the first quadrant
- */
 #include "csqrt.h"
 #include "log1pf.h"
 #include "../kernel/atanf.h"
@@ -34,18 +31,10 @@ static double _carg(double x, double y)
     return x < y ? pi / 2 - _kernel_atanf(x / y) : _kernel_atanf(y / x);
 }
 
-/*!
- * \brief Complex inverse hyperbolic functions in the first quadrant
+/* Complex inverse hyperbolic functions in the first quadrant
  *
- * This function computes inverse hyperbolic sine or cosine in the first
- * quadrant of the complex plane.  It depends on the applied argument function
- * whether to compute asinh or acosh.
- *
- * \param x - Real part for asinh, imaginary part for acosh
- * \param y - Imaginary part for asinh, real part for acosh
- * \param arg - carg for asinh, atan2 for acosh
- * \return  Approximate \f$ \operatorname{asinh} \left( x + iy \right) \f$
- *          or \f$ \operatorname{acosh} \left( y + ix \right) \f$.
+ * _cashf(x, y, carg) = asinh(x + iy)
+ * _cashf(x, y, atan2) = acosh(y + ix)
  */
 static double _Complex _cashf(double x, double y, double arg(double, double))
 {

@@ -6,21 +6,10 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Error function
- */
 #include "expf.h"
 #include <math.h>
-/*!
- * \brief Kernel of the error function
- *
- * This function computes error function in \f$ [-0.5, 0.5] \f$
- * The result is guaranteed to be faithfully rounded in \c float,
- * whose relative error is controlled within 1.467829e-9.
- *
- * \param x - The argument in \f$ [-0.5, 0.5] \f$
- * \return  Approximate \f$ \operatorname{erf} x \f$ as precise as \c float.
- */
+
+/* Error function restricted to [-0.5, 0.5] */
 static double _kernel(double x)
 {
     const double c[] = {

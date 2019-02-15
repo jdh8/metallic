@@ -6,22 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Kernel of inverse tangent 
- *
- * This file provides a kernel function, which gives precise results on reduced
- * arguments.
- */
-/*!
- * \brief Kernel of inverse tangent 
- *
- * This function computes arctangent in a domain of [-1, 1].
- * The result is guaranteed to be faithfully rounded in `float`,
- * whose relative error is controlled within 1.796367e-08.
- *
- * \param x - The argument in [-1, 1]
- * \return  Approximate \f$ \arctan x \f$ as precise as `float`.
- */
+/* Arctangent restricted to [-1, 1] */
 static double _kernel_atanf(double x)
 {
     const double n[] = {

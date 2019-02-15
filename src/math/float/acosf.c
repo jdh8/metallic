@@ -6,22 +6,12 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Arccosine
- */
 #include <math.h>
-/*!
- * \brief Arccosine of positive arguments
+
+/* Arccosine restricted to [0, 1]
  *
- * This function computes arccosine in a domain of \f$ [0, 1] \f$.
- * The result is guaranteed to be faithfully rounded in \c float,
- * whose relative error is controlled within 2.179963e-8.
- *
- * If \f$ x > 1 \f$, this function returns NaN to indicate complex result.
- * If \f$ x < 0 \f$, the result is inaccurate.
- *
- * \param x - The argument in \f$ [0, \infty] \f$
- * \return  Approximate \f$ \arccos x \f$ as precise as \c float.
+ * If x > 1, this function returns NaN to indicate complex result.
+ * If x < 0, the result is inaccurate.
  */
 static double _kernel(double x)
 {

@@ -8,18 +8,12 @@
  */
 #ifndef METALLIC_NORMALIZEF_H
 #define METALLIC_NORMALIZEF_H
-/*!\file
- * \brief Normalization of nonzero floating-point magnitudes
- * \sa _normalize
- */
+
 #include <stdint.h>
-/*!
- * \brief Normalize nonzero magnitude
+
+/* Normalize nonzero magnitude
  *
- * \param i - Representation of a nonzero magnitude
- * \return  Normalized magnitude
- *
- * \sa _normalize() for details
+ * See _normalize(int64_t) for details
  */
 static int32_t _normalizef(int32_t i)
 {
@@ -29,5 +23,4 @@ static int32_t _normalizef(int32_t i)
     }
     return i;
 }
-
 #endif

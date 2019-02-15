@@ -6,25 +6,9 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
-/*!\file
- * \brief Tangent function
- */
 int __rem_pio2f(float x, double y[static 1]);
 
-/*!
- * \brief Kernel of tangent
- *
- * This computes the limit of \f$ \sqrt x \cot \sqrt x \f$
- * for \a x in \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$.
- * The result is guaranteed to be faithfully rounded in \c float,
- * whose absolute error is controlled within 4.520299e-9.
- *
- * If \a x is outside of \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$,
- * the result is inaccurate.
- *
- * \param x - The argument in \f$ \left[ 0, \left( \frac\pi4 \right)^2 \right] \f$.
- * \return  Approximate \f$ \sqrt x \cot \sqrt x \f$ as precise as \c float.
- */
+/* Restriction of (x -> √x cot(√x)) to [0, (π/4)^2] */
 static double _kernel(double x)
 {
     const double c[] = {
