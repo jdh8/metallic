@@ -9,7 +9,6 @@
 #include "expf.h"
 #include <math.h>
 
-/* Complementary error function restricted to [0, Inf] */
 static double _right(double x)
 {
     const double c[] = {
