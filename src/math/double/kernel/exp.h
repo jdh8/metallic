@@ -6,6 +6,7 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+/* Restriction of (x -> (√x * coth(√x / 2) - 2) / x) to [0, (0.5 ln 2)^2] */
 static double _kernel_expa(double x)
 {
     const double c[] = {
@@ -21,6 +22,10 @@ static double _kernel_expa(double x)
     return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x) * (xx * xx);
 }
 
+/* Restriction of expm1(greater + lesser) to [0, 0.5 ln 2]
+ *
+ * Preferably, |lesser| < 0x1p-26 * |greater|
+ */
 static double _kernel_expb(double greater, double lesser)
 {
     double x = greater + lesser;
