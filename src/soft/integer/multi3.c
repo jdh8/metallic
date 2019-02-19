@@ -6,23 +6,8 @@
  * Public License v. 2.0. If a copy of the MPL was not distributed
  * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
  */
+#include "kernel/umulditi.h"
 #include <stdint.h>
-
-static unsigned __int128 fullmul(uint64_t a, uint64_t b)
-{
-#ifdef __x86_64__
-    return (unsigned __int128) a * b;
-#else
-    uint32_t a1 = a >> 32;
-    uint32_t b1 = b >> 32;
-    uint32_t a0 = a;
-    uint32_t b0 = b;
-
-    return ((unsigned __int128) a1 * b1 << 64 | (uint64_t) a0 * b0)
-        + ((unsigned __int128) a1 * b0 << 32)
-        + ((unsigned __int128) a0 * b1 << 32);
-#endif
-}
 
 unsigned __int128 __multi3(unsigned __int128 a, unsigned __int128 b)
 {
@@ -31,5 +16,5 @@ unsigned __int128 __multi3(unsigned __int128 a, unsigned __int128 b)
     uint64_t a0 = a;
     uint64_t b0 = b;
 
-    return ((unsigned __int128)(a1 * b0 + a0 * b1) << 64) + fullmul(a0, b0);
+    return ((unsigned __int128)(a1 * b0 + a0 * b1) << 64) + _umulditi(a0, b0);
 }
