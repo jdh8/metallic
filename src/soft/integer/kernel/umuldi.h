@@ -8,7 +8,7 @@
  */
 #include <stdint.h>
 
-static unsigned __int128 _umulditi(uint64_t a, uint64_t b)
+static unsigned __int128 _umuldi(uint64_t a, uint64_t b)
 {
 #ifdef __LP64__
     return (unsigned __int128)a * b;
