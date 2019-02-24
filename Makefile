@@ -15,7 +15,7 @@ check: $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)) \
 
 %.out: CC = $(WACC)
 %.out: CPPFLAGS += -I include -iquote .
-%.out: %.c metallic.bc test/wasm/index.mjs
+%.out: %.c test/wasm/index.mjs
 	$(CC) $(CPPFLAGS) $(CFLAGS) -nostdlib -o $@ $< metallic.bc
 	node --experimental-modules test/wasm/index.mjs $@
 
