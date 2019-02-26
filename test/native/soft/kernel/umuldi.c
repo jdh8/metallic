@@ -23,7 +23,4 @@ int main(void)
 #else
 #warning _umuldi is untested becase host does not support 64 × 64 → 128 multiplication
 #endif
-
-    (void)_umuldi;
 }
-

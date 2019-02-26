@@ -20,7 +20,7 @@ static unsigned __int128 _kernel_umuldi(uint64_t a, uint64_t b)
         + ((unsigned __int128)a0 * b1 << 32);
 }
 
-static unsigned __int128 _umuldi(uint64_t a, uint64_t b)
+static inline unsigned __int128 _umuldi(uint64_t a, uint64_t b)
 {
     #if defined(__x86_64__) || defined(__aarch64__)
         return (unsigned __int128)a * b;
