@@ -10,12 +10,17 @@ metallic.bc: CFLAGS += -fno-builtin-memcpy
 metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
-check: $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)) \
-       $(patsubst %.c, %.exe, $(wildcard test/native/*/*.c test/native/*/*/*.c))
+check: test
+
+test: test/wasm test/native
+
+test/wasm: $(patsubst %.c, %.out, $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c))
+
+test/native: $(patsubst %.c, %.exe, $(wildcard test/native/*/*.c test/native/*/*/*.c))
 
 %.out: CC = $(WACC)
 %.out: CPPFLAGS += -I include -iquote .
-%.out: %.c test/wasm/index.mjs
+%.out: %.c metallic.bc test/wasm/index.mjs
 	$(CC) $(CPPFLAGS) $(CFLAGS) -nostdlib -o $@ $< metallic.bc
 	node --experimental-modules test/wasm/index.mjs $@
 
