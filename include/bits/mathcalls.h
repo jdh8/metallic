@@ -1,11 +1,3 @@
-/* This file is part of Metallic, a runtime library for WebAssembly.
- *
- * Copyright (C) 2017, 2018 Chen-Pang He <chen.pang.he@jdh8.org>
- *
- * This Source Code Form is subject to the terms of the Mozilla
- * Public License v. 2.0. If a copy of the MPL was not distributed
- * with this file, You can obtain one at http://mozilla.org/MPL/2.0/
- */
 #define _CAT2(a, b)  a##b
 #define _CAT(a, b)   _CAT2(a, b)
 #define _MATHCALL(f) _CAT(f, _SUFFIX)
