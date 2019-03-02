@@ -1,4 +1,3 @@
- */
 #include <assert.h>
 #include "identical.h"
 #include <math.h>

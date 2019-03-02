@@ -1,4 +1,3 @@
- */
 #include <string.h>
 
 char* strtok_r(char* restrict string, const char* restrict separators, char* state[static restrict 1])
