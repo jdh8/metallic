@@ -17,10 +17,11 @@ int main(void)
     unsigned __int128 b = 0;
 
     for (long i = 0; i < 1L << 26; ++i) {
-        struct u256 c = _umulti(a, b);
+        unsigned __int128 c[2];
+        _umulti(c, a, b);
 
-        assert(c.low == a * b);
-        assert((sum(c.high) + sum(c.low)) % 0xFFFFFFFF == (sum(a) % 0xFFFFFFFF) * (sum(b) % 0xFFFFFFFF) % 0xFFFFFFFF);
+        assert(c[0] == a * b);
+        assert((sum(c[0]) + sum(c[1])) % 0xFFFFFFFF == (sum(a) % 0xFFFFFFFF) * (sum(b) % 0xFFFFFFFF) % 0xFFFFFFFF);
 
         a = a + 1993 + (a >> 3);
         b = b + 2019 + (b >> 4);
