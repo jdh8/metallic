@@ -1,18 +1,12 @@
 #include <string.h>
 #include <stddef.h>
 
-struct MaxSuffix
-{
-    size_t index;
-    size_t period;
-};
-
-static struct MaxSuffix _split(int comp(unsigned char, unsigned char), const unsigned char* x, size_t n)
+static size_t _split(int comp(int, int), const unsigned char* x, size_t n, size_t period[static 1])
 {
     size_t i = -1;
     size_t j = 0;
     size_t k = 1;
-    size_t period = 1;
+    size_t p = 1;
 
     while (j + k < n) {
         unsigned char a = x[j + k];
@@ -21,11 +15,11 @@ static struct MaxSuffix _split(int comp(unsigned char, unsigned char), const uns
         if (comp(a, b)) {
             j += k;
             k = 1;
-            period = j - i;
+            p = j - i;
         }
         else if (a == b) {
-            if (k == period) {
-                j += period;
+            if (k == p) {
+                j += p;
                 k = 1;
             }
             else {
@@ -34,39 +28,51 @@ static struct MaxSuffix _split(int comp(unsigned char, unsigned char), const uns
         }
         else {
             i = j++;
-            period = k = 1;
+            p = k = 1;
         }
     }
 
-    return (struct MaxSuffix){ i, period };
+    *period = p;
+    return i;
 }
 
-static int _lt(unsigned char a, unsigned char b) { return a < b; }
-static int _gt(unsigned char a, unsigned char b) { return a > b; }
-
-static struct MaxSuffix _factorize(const unsigned char* x, size_t n)
+static int _lt(int a, int b)
 {
-    struct MaxSuffix lt = _split(_lt, x, n);
-    struct MaxSuffix gt = _split(_gt, x, n);
-
-    return lt.index < gt.index ? gt : lt;
+    return a < b;
 }
 
-static const unsigned char* _nonperiodic(
-    const unsigned char* source, size_t excess,
-    const unsigned char* x, size_t n, struct MaxSuffix suffix)
+static int _gt(int a, int b)
+{
+    return a > b;
+}
+
+static size_t _factorize(const unsigned char* x, size_t n, size_t period[static 1])
+{
+    size_t p;
+    size_t lt = _split(_lt, x, n, period);
+    size_t gt = _split(_gt, x, n, &p);
+
+    if (lt >= gt)
+        return lt;
+
+    *period = p;
+    return gt;
+}
+
+static const unsigned char* _nonperiodic(const unsigned char* source, size_t excess,
+    const unsigned char* x, size_t n, size_t index, size_t period)
 {
     for (size_t j = 0; j <= excess;) {
-        size_t i = suffix.index + 1;
+        size_t i = index + 1;
 
         while (i < n && x[i] == source[i + j])
             ++i;
 
         if (i < n) {
-            j += i - suffix.index;
+            j += i - index;
         }
         else {
-            i = suffix.index;
+            i = index;
 
             while (i != -1 && x[i] == source[i + j])
                --i;
@@ -74,34 +80,36 @@ static const unsigned char* _nonperiodic(
             if (i == -1)
                return source + j;
 
-            j += suffix.period;
+            j += period;
         }
     }
 
     return 0;
 }
 
-static size_t _max(size_t a, size_t b) { return a < b ? b : a; }
+static size_t _max(size_t a, size_t b)
+{
+    return a < b ? b : a;
+}
 
-static const unsigned char* _periodic(
-    const unsigned char* source, size_t excess,
-    const unsigned char* x, size_t n, struct MaxSuffix suffix)
+static const unsigned char* _periodic(const unsigned char* source, size_t excess,
+    const unsigned char* x, size_t n, size_t index, size_t period)
 {
     /* Big enough because the needle is periodic */
     ptrdiff_t memory = 0;
 
     for (size_t j = 0; j <= excess;) {
-        ptrdiff_t i = _max(suffix.index + 1, memory);
+        ptrdiff_t i = _max(index + 1, memory);
 
         while (i < n && x[i] == source[i + j])
             ++i;
 
         if (i < n) {
-            j += i - suffix.index;
+            j += i - index;
             memory = 0;
         }
         else {
-            i = suffix.index;
+            i = index;
 
             while (i >= memory && x[i] == source[i + j])
                --i;
@@ -110,22 +118,21 @@ static const unsigned char* _periodic(
             if (i < memory)
                return source + j;
 
-            j += suffix.period;
-            memory = n - suffix.period;
+            j += period;
+            memory = n - period;
         }
     }
 
     return 0;
 }
 
-static const unsigned char* _search(
-    const unsigned char* source, size_t excess,
-    const unsigned char* x, size_t n, struct MaxSuffix suffix)
+static const unsigned char* _search(const unsigned char* source, size_t excess,
+    const unsigned char* x, size_t n, size_t index, size_t period)
 {
-    if (memcmp(x, x + suffix.period, suffix.index + 1))
-        return _nonperiodic(source, excess, x, n, suffix);
+    if (memcmp(x, x + period, index + 1))
+        return _nonperiodic(source, excess, x, n, index, period);
     else
-        return _periodic(source, excess, x, n, suffix);
+        return _periodic(source, excess, x, n, index, period);
 }
 
 void* memmem(const void* source, size_t length, const void* x, size_t n)
@@ -133,7 +140,10 @@ void* memmem(const void* source, size_t length, const void* x, size_t n)
     if (length < n)
         return 0;
 
-    return (unsigned char*)_search(source, length - n, x, n, _factorize(x, n));
+    size_t period;
+    size_t index = _factorize(x, n, &period);
+
+    return (unsigned char*)_search(source, length - n, x, n, index, period);
 }
 
 char* strstr(const char source[static 1], const char x[static 1])

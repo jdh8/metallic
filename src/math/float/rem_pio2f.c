@@ -2,24 +2,16 @@
 #include <math.h>
 #include <stdint.h>
 
-struct Segment
-{
-    uint64_t high;
-    uint32_t low;
-};
-
 /* Get 96 bits of 2/π with `offset` bits skipped */
-static struct Segment _segment(int offset)
+static uint64_t _segment(int offset, uint32_t low[static 1])
 {
     const uint64_t bits[] = { 0xA2F9836E4E441529, 0xFC2757D1F534DDC0, 0xDB6295993C439041, 0xFE5163ABDEBBC561 };
 
     int index = offset >> 6;
     int shift = offset & 63;
 
-    return (struct Segment) {
-        shift ? bits[index + 1] >> (64 - shift) | bits[index] << shift : bits[index],
-        shift > 32 ? bits[index + 2] >> (96 - shift) | bits[index + 1] << (shift - 32) : bits[index + 1] >> (32 - shift)
-    };
+    *low = shift > 32 ? bits[index + 2] >> (96 - shift) | bits[index + 1] << (shift - 32) : bits[index + 1] >> (32 - shift);
+    return shift ? bits[index + 1] >> (64 - shift) | bits[index] << shift : bits[index];
 }
 
 /* Argument reduction for trigonometric functions
@@ -53,11 +45,12 @@ int __rem_pio2f(float x, double y[static 1])
 
     const double pi_2_65 = 8.51530395021638647334e-20;
 
-    struct Segment segment = _segment((magnitude >> 23) - 152);
+    uint32_t low;
+    uint64_t high = _segment((magnitude >> 23) - 152, &low);
     uint64_t significand = (i & 0x007FFFFF) | 0x00800000;
 
     /* First 64 bits of fractional part of x/(2π) */
-    uint64_t product = significand * segment.high + ((significand * segment.low) >> 32);
+    uint64_t product = significand * high + ((significand * low) >> 32);
 
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
