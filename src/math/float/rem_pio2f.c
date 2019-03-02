@@ -26,7 +26,7 @@ static uint64_t _segment(int offset, uint32_t low[static 1])
  */
 int __rem_pio2f(float x, double y[static 1])
 {
-    const double pi_2[] = { 1.57079631090164184570, 1.58932547735281966916e-8 };
+    const double pi_2[] = { 0x1.921FB5p0, 0x1.110B4611A6263p-26 };
     const double _2_pi = 0.63661977236758134308;
 
     int32_t i = reinterpret(int32_t, x);
@@ -43,7 +43,8 @@ int __rem_pio2f(float x, double y[static 1])
         return 0;
     }
 
-    const double pi_2_65 = 8.51530395021638647334e-20;
+    /* π * 0x1p-65 */
+    const double coeff = 8.51530395021638647334e-20;
 
     uint32_t low;
     uint64_t high = _segment((magnitude >> 23) - 152, &low);
@@ -55,7 +56,7 @@ int __rem_pio2f(float x, double y[static 1])
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 
-    *y = copysign(pi_2_65, x) * r;
+    *y = copysign(coeff, x) * r;
 
     return i < 0 ? -q : q;
 }
