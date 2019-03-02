@@ -32,7 +32,7 @@ int __rem_pio2f(float x, double y[static 1])
     int32_t i = reinterpret(int32_t, x);
     int32_t magnitude = i & 0x7FFFFFFF;
 
-    if (magnitude < 0x4DC90FDB) {
+    if (magnitude < 0x4DC90FDB) { /* π * 0x1p27 */
         double q = rint(_2_pi * x) + 0;
         *y = x - q * pi_2[0] - q * pi_2[1];
         return q;
@@ -42,9 +42,6 @@ int __rem_pio2f(float x, double y[static 1])
         *y = x - x;
         return 0;
     }
-
-    /* π * 0x1p-65 */
-    const double coeff = 8.51530395021638647334e-20;
 
     uint32_t low;
     uint64_t high = _segment((magnitude >> 23) - 152, &low);
@@ -56,7 +53,7 @@ int __rem_pio2f(float x, double y[static 1])
     int64_t r = product << 2;
     int q = (product >> 62) + (r < 0);
 
-    *y = copysign(coeff, x) * r;
+    *y = copysign(8.51530395021638647334e-20 /* π * 0x1p-65 */, x) * r;
 
     return i < 0 ? -q : q;
 }
