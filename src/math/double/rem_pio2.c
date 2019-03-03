@@ -57,17 +57,15 @@ int64_t _right(unsigned __int128 frac, double y[static 2])
     uint64_t q0 = frac;
     int64_t shift = __builtin_clzll(q1);
 
-    if (shift) {
-        q1 = q1 << shift | q0 >> (64 - shift);
-        q0 <<= shift;
-    }
+    q1 = q1 << shift | q0 >> (64 - shift);
+    q0 <<= shift;
 
-    unsigned __int128 r = _umuldi(p[1], q1) + (_umuldi(p[1], q0) >> 64) + (_umuldi(p[0], q1) >> 64);
+    unsigned __int128 r = (_umuldi(p[1], q1) + (_umuldi(p[1], q0) >> 64) + (_umuldi(p[0], q1) >> 64)) >> 11;
     uint64_t r1 = r >> 64;
     uint64_t r0 = r;
 
     y[0] = r1;
-    y[1] = (int64_t)(r1 - ((uint64_t)y[0])) + 0x1p-64 * r0;
+    y[1] = 0x1p-64 * r0;
 
     return shift;
 }
@@ -108,7 +106,7 @@ int __rem_pio2(double x, double y[static 2])
     __int128 s = r >> 127;
     int q = (product >> 126) - s;
 
-    uint64_t shifter = 0x43E0000000000000 - (_right((r + s) ^ s, y) << 52);
+    uint64_t shifter = 0x3CB0000000000000 - (_right(r ^ s, y) << 52);
     uint64_t signbit = (i ^ (int64_t)(r >> 64)) & 0x8000000000000000;
     double coeff = reinterpret(double, shifter | signbit);
 
