@@ -48,7 +48,7 @@ static void _segment(uint64_t segment[static 3], int offset)
     }
 }
 
-int64_t _right(double y[static 2], unsigned __int128 frac)
+int64_t _right(unsigned __int128 frac, double y[static 2])
 {
     /* Bits of π */
     const uint64_t p[] = { 0xC4C6628B80DC1CD1, 0xC90FDAA22168C234 };
@@ -108,7 +108,7 @@ int __rem_pio2(double x, double y[static 2])
     __int128 s = r >> 127;
     int q = (product >> 126) - s;
 
-    uint64_t shifter = 0x43E0000000000000 - (_right(y, (r + s) ^ s) << 52);
+    uint64_t shifter = 0x43E0000000000000 - (_right((r + s) ^ s, y) << 52);
     uint64_t signbit = (i ^ (int64_t)(r >> 64)) & 0x8000000000000000;
     double coeff = reinterpret(double, shifter | signbit);
 
