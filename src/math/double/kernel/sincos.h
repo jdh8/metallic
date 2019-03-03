@@ -33,5 +33,5 @@ static double _kernel_cos(double greater, double lesser)
     double x = y * y;
     double xx = x * x;
 
-    return 1 - 0.5 * x + (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx);
+    return (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx) - 0.5 * x + 1;
 }
