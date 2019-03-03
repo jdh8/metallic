@@ -97,7 +97,7 @@ int __rem_pio2(double x, double y[static 2])
 
     uint64_t significand = (i & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
     uint64_t segment[3];
-    _segment(segment, (magnitude >> 52) - 1078);
+    _segment(segment, (magnitude >> 52) - 1077);
 
     unsigned __int128 product
         = ((unsigned __int128)(segment[0] * significand) << 64)
