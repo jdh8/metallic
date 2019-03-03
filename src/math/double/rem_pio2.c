@@ -1,4 +1,4 @@
-#include "../../soft/integer/kernel/umulti.h"
+#include "../../soft/integer/kernel/umuldi.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -48,6 +48,30 @@ static void _segment(uint64_t segment[static 3], int offset)
     }
 }
 
+int64_t _right(double y[static 2], unsigned __int128 frac)
+{
+    /* Bits of π */
+    const uint64_t p[] = { 0xC4C6628B80DC1CD1, 0xC90FDAA22168C234 };
+
+    uint64_t q1 = frac >> 64;
+    uint64_t q0 = frac;
+    int64_t shift = __builtin_clzll(q1);
+
+    if (shift) {
+        q1 = q1 << shift | q0 >> (64 - shift);
+        q0 <<= shift;
+    }
+
+    unsigned __int128 r = _umuldi(p[1], q1) + (_umuldi(p[1], q0) >> 64) + (_umuldi(p[0], q1) >> 64);
+    uint64_t r1 = r >> 64;
+    uint64_t r0 = r;
+
+    y[0] = r1;
+    y[1] = (int64_t)(r1 - ((uint64_t)y[0])) + 0x1p-64 * r0;
+
+    return shift;
+}
+
 /* Argument reduction for trigonometric functions
  *
  * The prototype of this function resembles `__rem_pio2` in GCC, but this
@@ -84,13 +108,12 @@ int __rem_pio2(double x, double y[static 2])
     __int128 s = r >> 127;
     int q = (product >> 126) - s;
 
-    const unsigned __int128 pi = (unsigned __int128)(0xC90FDAA22168C234) << 64 | 0xC4C6628B80DC1CD1;
-    unsigned __int128 buffer[2];
-    _umulti(buffer, r, pi);
+    uint64_t shifter = 0x43E0000000000000 - (_right(y, (r + s) ^ s) << 52);
+    uint64_t signbit = (i ^ (int64_t)(r >> 64)) & 0x8000000000000000;
+    double coeff = reinterpret(double, shifter | signbit);
 
-    __int128 big = buffer[1] + s * pi;
-    double high = big;
-    double low = big - (__int128)high;
+    y[0] *= coeff;
+    y[1] *= coeff;
 
     return i < 0 ? -q : q;
 }
