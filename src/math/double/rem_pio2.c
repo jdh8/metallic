@@ -1,4 +1,4 @@
-#include "src/soft/integer/kernel/umuldi.h"
+#include "../../soft/integer/kernel/umulti.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -75,8 +75,22 @@ int __rem_pio2(double x, double y[static 2])
     uint64_t segment[3];
     _segment(segment, (magnitude >> 52) - 1078);
 
-    unsigned __int128 product = ((unsigned __int128)(segment[0] * significand) << 64)
-        + _umuldi(segment[1], significand) + (_umuldi(segment[2], significand) >> 64);
+    unsigned __int128 product
+        = ((unsigned __int128)(segment[0] * significand) << 64)
+        + _umuldi(segment[1], significand)
+        + (_umuldi(segment[2], significand) >> 64);
 
-    int q = (product >> 126) + (product >> 125 & 1);
+    __int128 r = product << 2;
+    __int128 s = r >> 127;
+    int q = (product >> 126) - s;
+
+    const unsigned __int128 pi = (unsigned __int128)(0xC90FDAA22168C234) << 64 | 0xC4C6628B80DC1CD1;
+    unsigned __int128 buffer[2];
+    _umulti(buffer, r, pi);
+
+    __int128 big = buffer[1] + s * pi;
+    double high = big;
+    double low = big - (__int128)high;
+
+    return i < 0 ? -q : q;
 }
