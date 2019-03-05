@@ -21,9 +21,7 @@ static int _small(double x, double y[static 2])
     return q;
 }
 
-#include <stdio.h>
-
-/* Get 192 bits of 2/π with `offset` bits skipped */
+/* Get 192 bits of 0x1p-31 / π with `offset` bits skipped */
 static void _segment(uint64_t segment[static 3], int offset)
 {
     const uint64_t bits[] = {
@@ -50,6 +48,11 @@ static void _segment(uint64_t segment[static 3], int offset)
     }
 }
 
+static uint64_t _fast_umulh(uint64_t a, uint64_t b)
+{
+    return (a >> 32) * (b >> 32);
+}
+
 int64_t _right(unsigned __int128 frac, double y[static 2])
 {
     /* Bits of π */
@@ -62,7 +65,7 @@ int64_t _right(unsigned __int128 frac, double y[static 2])
     q1 = q1 << shift | q0 >> (64 - shift);
     q0 <<= shift;
 
-    unsigned __int128 r = (_umuldi(p[1], q1) + (_umuldi(p[1], q0) >> 64) + (_umuldi(p[0], q1) >> 64)) >> 11;
+    unsigned __int128 r = (_fast_umulh(p[1], q0) >> 11) + (_fast_umulh(p[0], q1) >> 11) + (_umuldi(p[1], q1) >> 11);
     uint64_t r1 = r >> 64;
     uint64_t r0 = r;
 
@@ -102,7 +105,7 @@ int __rem_pio2(double x, double y[static 2])
     unsigned __int128 product
         = ((unsigned __int128)(segment[0] * significand) << 64)
         + _umuldi(segment[1], significand)
-        + (_umuldi(segment[2], significand) >> 64);
+        + _fast_umulh(segment[2], significand);
 
     __int128 r = product << 2;
     __int128 s = r >> 127;
