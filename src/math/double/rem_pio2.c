@@ -48,14 +48,16 @@ static void _segment(uint64_t segment[static 3], int offset)
     }
 }
 
-static uint64_t _fast_umulh(uint64_t a, uint64_t b)
-{
-    return (a >> 32) * (b >> 32);
-}
-
+/* Helper function to eventually get bits of π/2 * |x|
+ *
+ * y = π/4 * (frac << clz(frac) >> 11)
+ * return clz(frac)
+ *
+ * Right shift 11 bits to make upper half fit in `double`
+ */
 int64_t _right(unsigned __int128 frac, double y[static 2])
 {
-    /* Bits of π */
+    /* Bits of π/4 */
     const uint64_t p[] = { 0xC4C6628B80DC1CD1, 0xC90FDAA22168C234 };
 
     uint64_t q1 = frac >> 64;
@@ -65,12 +67,10 @@ int64_t _right(unsigned __int128 frac, double y[static 2])
     q1 = q1 << shift | q0 >> (64 - shift);
     q0 <<= shift;
 
-    unsigned __int128 r = (_fast_umulh(p[1], q0) >> 11) + (_fast_umulh(p[0], q1) >> 11) + (_umuldi(p[1], q1) >> 11);
-    uint64_t r1 = r >> 64;
-    uint64_t r0 = r;
+    unsigned __int128 r = (_umuldi(p[1], q1) >> 11) + (uint64_t)(0x1p-75 * p[0] * q1 + 0x1p-75 * p[1] * q0);
 
-    y[0] = r1;
-    y[1] = 0x1p-64 * r0;
+    y[0] = r >> 64;
+    y[1] = 0x1p-64 * (uint64_t)r;
 
     return shift;
 }
@@ -81,7 +81,7 @@ int64_t _right(unsigned __int128 frac, double y[static 2])
  * function is only for `double`.  Pseudocode is as follows.
  *
  * quotient = nearest integer of x / (π/2)
- * *y = IEEE remainder of x / (π/2) = x - quotient * (π/2)
+ * y = IEEE remainder of x / (π/2) = x - quotient * (π/2)
  *
  * return quotient with accurate sign and last 2 bits
  */
@@ -102,10 +102,11 @@ int __rem_pio2(double x, double y[static 2])
     uint64_t segment[3];
     _segment(segment, (magnitude >> 52) - 1045);
 
+    /* First 128 bits of fractional part of x/(2π) */
     unsigned __int128 product
         = ((unsigned __int128)(segment[0] * significand) << 64)
         + _umuldi(segment[1], significand)
-        + _fast_umulh(segment[2], significand);
+        + (segment[2] >> 32) * (significand >> 32);
 
     __int128 r = product << 2;
     __int128 s = r >> 127;
