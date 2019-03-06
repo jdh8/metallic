@@ -4,8 +4,21 @@
 
 int main(void)
 {
-    for (int64_t i = 0; i < 0x7FF0000000000000; i += 0x000000B207AFC183) {
+    const uint64_t n0 = 0x8000000000000000;
+    const uint64_t inf = 0x7FF0000000000000;
+    const uint64_t nan = 0x7FF8000000000000;
+    const uint64_t step = 0x000000B207AFC183;
+
+    for (uint64_t i = 0; i < inf; i += step) {
         double x = reinterpret(double, i);
-        verify(approx(sin(x), sinl(x), 1), x);
+        double y = sin(x);
+        verify(approx(y, sinl(x), 1), x);
+        verify(identical(-y, sin(-x)), x);
+    }
+
+    for (uint64_t i = nan; i < n0; i += step) {
+        double x = reinterpret(double, i);
+        verify(isnan(sin(x)), x);
+        verify(isnan(sin(-x)), x);
     }
 }
