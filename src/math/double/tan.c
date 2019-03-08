@@ -1,6 +1,28 @@
 int __rem_pio2(double x, double y[static 2]);
 
-static double _kernel(double a, double b)
+static double _ncot(double a, double b)
+{
+    const double c[] = {
+        3.3333333333333492367e-1,
+        2.2222222222137698456e-2,
+        2.1164021181435519926e-3,
+        2.1164019344081091584e-4,
+        2.1377908192264018931e-5,
+        2.1640078658154096338e-6,
+        2.2014631795034396635e-7,
+        2.1029663345234246239e-8,
+        3.1015070999396236603e-9
+    };
+
+    double x = a * a;
+    double x2 = x * x;
+    double x4 = x2 * x2;
+    double r = c[0] + c[1] * x + (c[2] + c[3] * x) * x2 + (c[4] + c[5] * x + (c[6] + c[7] * x) * x2) * x4 + c[8] * (x4 * x4);
+
+    return r * a + b + b / x - 1 / a;
+}
+
+static double _tan(double a, double b)
 {
     const double c[] = {
         3.0000000000000000533,
@@ -24,7 +46,6 @@ double tan(double x)
 {
     double y[2];
     unsigned q = __rem_pio2(x, y);
-    double t = _kernel(y[0], y[1]);
 
-    return q & 1 ? -1 / t : t;
+    return (q & 1 ? _ncot : _tan)(y[0], y[1]);
 }

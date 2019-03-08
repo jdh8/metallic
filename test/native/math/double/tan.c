@@ -12,7 +12,7 @@ int main(void)
     for (uint64_t i = 0; i < inf; i += step) {
         double x = reinterpret(double, i);
         double y = tan(x);
-        verify(approx(y, tanl(x), 1), x);
+        verify(approx(y, tanl(x), 2), x);
         verify(identical(-y, tan(-x)), x);
     }
 
