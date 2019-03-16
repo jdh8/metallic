@@ -14,14 +14,14 @@ static double _kernel_expa(double x)
     return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x) * (xx * xx);
 }
 
-/* Restriction of expm1(greater + lesser) to [0, 0.5 ln 2]
+/* Restriction of expm1(a + b) to [0, 0.5 ln 2]
  *
- * Preferably, |lesser| < 0x1p-26 * |greater|
+ * Preferably, |b| < 0x1p-26 * |a|
  */
-static double _kernel_expb(double greater, double lesser)
+static double _kernel_expb(double a, double b)
 {
-    double x = greater + lesser;
+    double x = a + b;
     double y = x - _kernel_expa(x * x);
 
-    return x * y / (2 - y) + lesser + greater;
+    return x * y / (2 - y) + b + a;
 }
