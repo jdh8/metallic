@@ -15,13 +15,16 @@ double exp(double x)
     if (x > maximum)
         return maximum * DBL_MAX;
 
+    if (x < minimum)
+        return 0;
+
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
     double y = _kernel_expb(a, b) + 1;
 
     if (x < subnorm)
-        return x < minimum ? 0 : 0x1p-1020 * _shift(y, n + 1020);
+        return 0x1p-1020 * _shift(y, n + 1020);
 
     return _shift(y, n);
 }
