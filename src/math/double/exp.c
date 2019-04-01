@@ -10,7 +10,7 @@ double exp(double x)
     const double maximum = 709.782712893385;
 
     const double log2e = 1.44269504088896340736;
-    const double ln2[] = { 0x1.62E42FEFA4p-1, -0x1.8432A1B0E2634p-43 };
+    const double ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
 
     if (x > maximum)
         return maximum * DBL_MAX;

@@ -6,7 +6,7 @@
 /* Argument reduction for |x| < π * 0x1p27 */
 static int _small(double x, double y[static 2])
 {
-    const double pi_2[] = { 0x1.921FB5p0, 0x1.110B46p-26, 0x1.1A62633145C07p-54 };
+    const double pi_2[] = { 0x1.921fb5p0, 0x1.110b46p-26, 0x1.1a62633145c07p-54 };
     const double _2_pi = 0.63661977236758134308;
 
     double q = rint(_2_pi * x) + 0;

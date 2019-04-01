@@ -26,7 +26,7 @@ static uint64_t _segment(int offset, uint32_t low[static 1])
  */
 int __rem_pio2f(float x, double y[static 1])
 {
-    const double pi_2[] = { 0x1.921FB5p0, 0x1.110B4611A6263p-26 };
+    const double pi_2[] = { 0x1.921fb5p0, 0x1.110b4611a6263p-26 };
     const double _2_pi = 0.63661977236758134308;
 
     int32_t i = reinterpret(int32_t, x);
