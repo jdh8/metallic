@@ -1,7 +1,8 @@
 #include "kernel/exp.h"
-#include "shift.h"
+#include "../reinterpret.h"
 #include <math.h>
 #include <float.h>
+#include <stdint.h>
 
 double exp(double x)
 {
@@ -21,10 +22,11 @@ double exp(double x)
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y = _kernel_expb(a, b) + 1;
+
+    int64_t i = reinterpret(int64_t, _kernel_expb(a, b) + 1) + ((int64_t)n << 52);
 
     if (x < subnorm)
-        return 0x1p-1020 * _shift(y, n + 1020);
+        return 0x1p-1020 * reinterpret(double, i + 0x3FC0000000000000);
 
-    return _shift(y, n);
+    return reinterpret(double, i);
 }
