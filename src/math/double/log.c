@@ -12,7 +12,7 @@ static double _finite(int64_t i)
     double z = x / (x + 2);
     double h = 0.5 * x * x;
 
-    return z * (h + _kernel_loga(z)) + exponent * ln2[1] - h + x + exponent * ln2[0];
+    return z * (h + _kernel_log(z)) + exponent * ln2[1] - h + x + exponent * ln2[0];
 }
 
 double log(double x)
