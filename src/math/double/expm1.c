@@ -17,11 +17,10 @@ double expm1(double x)
     if (x > maximum)
         return maximum * DBL_MAX;
 
-    double n = rint(x * log2e);
-
-    if (n == 0)
+    if (fabs(x) < 0.5 * (ln2[0] + ln2[1]))
         return 2 * x / (_kernel_expa(x * x) - x + 2);
 
+    double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
     double y = _kernel_expb(a, b);
