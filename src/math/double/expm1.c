@@ -1,4 +1,4 @@
-#include "kernel/exp.h"
+#include "kernel/expm1.h"
 #include "shift.h"
 #include <math.h>
 #include <float.h>
@@ -17,13 +17,18 @@ double expm1(double x)
     if (x > maximum)
         return maximum * DBL_MAX;
 
-    if (fabs(x) < 0.5 * (ln2[0] + ln2[1]))
-        return 2 * x / (_kernel_expa(x * x) - x + 2);
-
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y = _kernel_expb(a, b);
+    double y[2];
 
-    return n == 1 ? 2 * y + 1 : _shift(y + 1, n) - 1;
+    _kernel_expm1(y, a, b);
+
+    if (n == 0)
+        return copysign(y[0] + y[1], x);
+
+    if (n == 1)
+        return 2 * (y[0] + y[1]) + 1;
+
+    return _shift(y[0] + y[1] + 1, n) - 1;
 }
