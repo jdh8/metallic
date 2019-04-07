@@ -17,7 +17,7 @@ int main(void)
     const uint64_t inf = 0x7FF0000000000000;
     const uint64_t nan = 0x7FF8000000000000;
     const uint64_t sign = 0x8000000000000000;
-    const uint64_t step = 0x0000007805E3DE2D;
+    const uint64_t step = 0x0000000636FC2447;
 
     const uint64_t min = reinterpret(uint64_t, minimum);
     const uint64_t max = reinterpret(uint64_t, maximum);
