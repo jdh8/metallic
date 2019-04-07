@@ -17,7 +17,7 @@ double expm1(double x)
     if (x > maximum)
         return maximum * DBL_MAX;
 
-    if (fabsf(x) < 0x1p-53)
+    if (fabs(x) < 0x1p-53)
         return x;
 
     double n = rint(x * log2e);
