@@ -22,14 +22,16 @@ static inline _Bool approx(double x, double y, uint64_t tolerance)
 
 static inline _Bool faithful(long double x, long double y)
 {
-#if LDBL_MANT_DIG > DBL_MANT_DIG
-    const uint64_t mask = ((uint64_t)1 << (LDBL_MANT_DIG - DBL_MANT_DIG)) - 1;
+    #if LDBL_MANT_DIG == DBL_MANT_DIG
+        return approx(x, y, 1);
+    #elif __SIZEOF_LONG_DOUBLE__ == __SIZEOF_INT128__
+        const uint64_t mask = ((uint64_t)1 << (LDBL_MANT_DIG - DBL_MANT_DIG)) - 1;
 
-    unsigned __int128 a = reinterpret(unsigned __int128, x);
-    unsigned __int128 b = reinterpret(unsigned __int128, y);
+        unsigned __int128 a = reinterpret(unsigned __int128, x);
+        unsigned __int128 b = reinterpret(unsigned __int128, y);
 
-    return a - b + mask <= 2 * mask;
-#else
-    return approx(x, y, 1);
-#endif
+        return a - b + mask <= 2 * mask;
+    #else
+        return identical(x, y) || (x && fabsl(x - y) <= fabs(nexttoward(x, y) - nexttoward(y, x)));
+    #endif
 }
