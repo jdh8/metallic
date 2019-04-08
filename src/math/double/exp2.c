@@ -16,7 +16,7 @@ static double _internal(double x)
 
     double xx = x * x;
 
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx);
+    return (c[5] * x + c[4]) * (xx * xx) + (c[3] * x + c[2]) * xx + c[1] * x + c[0];
 }
 
 /* Restriction of (x -> 2^x - 1) to [-0.5, 0.5] */
