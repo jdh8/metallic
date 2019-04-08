@@ -2,11 +2,10 @@
 #include <math.h>
 #include <stdint.h>
 
-/* Restriction of (x -> √x * (2^√x + 1) / (2^√x - 1)) to [0, 0.25] */
+/* Restriction of (x -> √x (2^√x + 1) / (2^√x - 1) - 2 log2(e)) to [0, 0.25] */
 static double _internal(double x)
 {
     const double c[] = {
-        2.88539008177792681693e-0,
         1.15524530093323580864e-1,
        -9.25068477717265940542e-4,
         1.05821884968352052525e-5,
@@ -16,13 +15,15 @@ static double _internal(double x)
 
     double xx = x * x;
 
-    return (c[5] * x + c[4]) * (xx * xx) + (c[3] * x + c[2]) * xx + c[1] * x + c[0];
+    return (c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x;
 }
 
 /* Restriction of (x -> 2^x - 1) to [-0.5, 0.5] */
 static double _kernel(double x)
 {
-    return 2 * x / (_internal(x * x) - x);
+    const double log2e2 = 2.88539008177792681693;
+
+    return 2 * x / (_internal(x * x) - x + log2e2);
 }
 
 double exp2(double x)
