@@ -11,9 +11,9 @@ int main(void)
 
     const uint64_t step = 0x0000000636FC2447;
 
-    const uint64_t min = reinterpret(uint64_t, minimum);
     const uint64_t sub = reinterpret(uint64_t, subnorm);
-    const uint64_t max = reinterpret(uint64_t, maximum);
+    const uint64_t min = reinterpret(uint64_t, minimum) + 1;
+    const uint64_t max = reinterpret(uint64_t, maximum) + 1;
 
     assert(exp(maximum) == (double)expl(maximum));
     assert(exp(INFINITY) == INFINITY);
@@ -22,7 +22,7 @@ int main(void)
     for (double x = subnorm; x < maximum; x += 0x1.6daa98d832962p-16)
         verify(faithful(exp(x), expl(x)), x);
 
-    for (uint64_t i = max + 1; i < 0x7FF0000000000000; i += step) {
+    for (uint64_t i = max; i < 0x7FF0000000000000; i += step) {
         double x = reinterpret(double, i);
         verify(exp(x) == HUGE_VAL, x);
     }
@@ -32,7 +32,7 @@ int main(void)
         verify(approx(exp(x), expl(x), 1), x);
     }
 
-    for (uint64_t i = min + 1; i < 0xFFF0000000000000; i += step) {
+    for (uint64_t i = min; i < 0xFFF0000000000000; i += step) {
         double x = reinterpret(double, i);
         verify(!reinterpret(uint64_t, exp(x)), x);
     }

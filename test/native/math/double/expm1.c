@@ -19,13 +19,14 @@ int main(void)
     const uint64_t sign = 0x8000000000000000;
     const uint64_t step = 0x0000000636FC2447;
 
-    const uint64_t min = reinterpret(uint64_t, minimum);
-    const uint64_t max = reinterpret(uint64_t, maximum);
+    const uint64_t min = reinterpret(uint64_t, minimum) + 1;
+    const uint64_t max = reinterpret(uint64_t, maximum) + 1;
+
+    assert(expm1(INFINITY) == INFINITY);
+    assert(expm1(-INFINITY) == -1);
 
     normal(minimum);
     normal(maximum);
-    normal(INFINITY);
-    normal(-INFINITY);
 
     for (uint64_t i = sub; i < max; i += step)
         normal(reinterpret(double, i));
@@ -35,16 +36,16 @@ int main(void)
 
     for (uint64_t i = 0; i < sub; i += step) {
         double x = reinterpret(double, i);
-        verify(approx(expm1(x), expm1l(x), 1), x);
-        verify(approx(expm1(-x), expm1l(-x), 1), x);
+        verify(identical(expm1(x), x), x);
+        verify(identical(expm1(-x), -x), x);
     }
 
-    for (uint64_t i = max + 1; i < inf; i += step) {
+    for (uint64_t i = max; i < inf; i += step) {
         double x = reinterpret(double, i);
         verify(expm1(x) == INFINITY, x);
     }
 
-    for (uint64_t i = min + 1; i < (sign|inf); i += step) {
+    for (uint64_t i = min; i < (sign|inf); i += step) {
         double x = reinterpret(double, i);
         verify(expm1(x) == -1, x);
     }
