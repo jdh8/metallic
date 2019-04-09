@@ -13,9 +13,9 @@ int main(void)
     const double minimum = -37.42994775023704;
     const double maximum = 709.782712893384;
 
-    const uint64_t sub = 0x0010000000000000;
     const uint64_t inf = 0x7FF0000000000000;
     const uint64_t nan = 0x7FF8000000000000;
+    const uint64_t tiny = 0x3000000000000000;
     const uint64_t sign = 0x8000000000000000;
     const uint64_t step = 0x0000000636FC2447;
 
@@ -28,13 +28,13 @@ int main(void)
     normal(minimum);
     normal(maximum);
 
-    for (uint64_t i = sub; i < max; i += step)
+    for (uint64_t i = tiny; i < max; i += step)
         normal(reinterpret(double, i));
 
-    for (uint64_t i = sign|sub; i < min; i += step)
+    for (uint64_t i = sign|tiny; i < min; i += step)
         normal(reinterpret(double, i));
 
-    for (uint64_t i = 0; i < sub; i += step) {
+    for (uint64_t i = 0; i < tiny; i += step) {
         double x = reinterpret(double, i);
         verify(identical(expm1(x), x), x);
         verify(identical(expm1(-x), -x), x);
