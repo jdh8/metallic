@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    for (int64_t i = 0; i < 0x7FF0000000000000; i += 0x0000017805E3DE2D) {
+    for (int64_t i = 0; i < 0x7FF0000000000000; i += 0x000000292482AD38) {
         double x = reinterpret(double, i);
         double y = cosh(x);
         verify(approx(y, coshl(x), 1), x);
