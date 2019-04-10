@@ -42,8 +42,10 @@ double cosh(double x)
 
     _kernel_expm1(y, a, b);
 
+    int64_t exponent = n;
+    int64_t head = 0x3FF - 2 * exponent;
     double z = y[1] + y[0] + 1;
-    double base = n < 53 ? _shift(1, 2 * (int64_t)-n) / z + y[1] + y[0] + 1 : z;
+    double c = reinterpret(double, (head * (head > 0)) << 52);
 
-    return _shift(base, n - 1);
+    return _shift(c / z + y[1] + y[0] + 1, exponent - 1);
 }
