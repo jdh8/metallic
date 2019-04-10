@@ -1,4 +1,4 @@
-#include "kernel/exp.h"
+#include "kernel/expm1.h"
 #include "shift.h"
 #include <math.h>
 #include <float.h>
@@ -38,7 +38,12 @@ double cosh(double x)
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y = _shift(_kernel_expb(a, b) + 1, n - 1);
+    double y[2];
 
-    return y + 0.25 / y;
+    _kernel_expm1(y, a, b);
+
+    double z = y[1] + y[0] + 1;
+    double base = n < 53 ? _shift(1, 2 * (int64_t)-n) / z + y[1] + y[0] + 1 : z;
+
+    return _shift(base, n - 1);
 }
