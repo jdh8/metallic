@@ -7,6 +7,9 @@ int main(void)
 {
     const uint64_t step = 0x000000088D16E29B;
 
+    assert(log1p(INFINITY) == INFINITY);
+    assert(isnan(log1p(-INFINITY)));
+
     for (uint64_t i = 0; i < 0x3000000000000000; i += step) {
         double x = reinterpret(double, i);
         verify(identical(log1p(x), x), x);
