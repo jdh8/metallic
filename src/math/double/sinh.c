@@ -20,6 +20,12 @@ static double _kernel(double x)
     return (c[5] * xx + c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x;
 }
 
+static double _base(const double y[static 2], uint64_t n)
+{
+    double yy = y[0] + y[1] + 1;
+
+    return n > 56 ? yy : y[1] - 1 / _shift(yy, 2 * n) + y[0] + 1;
+}
 
 double sinh(double x)
 {
@@ -44,14 +50,5 @@ double sinh(double x)
 
     _kernel_expm1(y, a, b);
 
-    uint64_t exponent = n;
-
-    if (exponent > 56)
-        return _shift(copysign(y[0] + y[1] + 1, x), exponent - 1);
-
-    double small = reinterpret(double, (0xBFF - exponent) << 52);
-    double base = exponent < 20 ? y[0] + y[1] + (1 + small) : y[1] + small + y[0] + 1;
-    double t = _shift(base, exponent);
-
-    return copysign(0.5, x) * (t + t / (t + 1));
+    return _shift(copysign(0.5, x) * _base(y, n), n);
 }
