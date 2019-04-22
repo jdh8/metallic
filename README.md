@@ -9,6 +9,11 @@ is near native.
 
 [bdjs]: https://www.destroyallsoftware.com/talks/the-birth-and-death-of-javascript
 
+To achieve this goal, this library is written from scratch, including math
+functions.  The math functions, especially `float` ones, take advantage of
+modern architectures to achieve both speed and accuracy.  Most of them produce
+faithfully rounded results (error < 1 ulp) in reasonable time.
+
 Dependencies
 ------------
 ### System requirements ###
