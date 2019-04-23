@@ -56,3 +56,4 @@ dkms.conf
 
 # Test results
 *.run
+*.log
