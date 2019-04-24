@@ -6,8 +6,6 @@
 #include "src/math/float/tgammaf.c"
 #undef tgammaf
 
-NOINLINE float metallic_tgammaf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_tgammaf, 29), bench(tgammaf, 29));

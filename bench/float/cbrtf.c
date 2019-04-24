@@ -6,8 +6,6 @@
 #include "src/math/float/cbrtf.c"
 #undef cbrtf
 
-NOINLINE float metallic_cbrtf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_cbrtf, 29), bench(cbrtf, 29));

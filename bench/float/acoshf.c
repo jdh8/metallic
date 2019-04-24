@@ -6,8 +6,6 @@
 #include "src/math/float/acoshf.c"
 #undef acoshf
 
-NOINLINE float metallic_acoshf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_acoshf, 29), bench(acoshf, 29));

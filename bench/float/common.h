@@ -16,11 +16,3 @@ static double bench(float f(float), uint32_t step)
     return (double)(clock() - start) / CLOCKS_PER_SEC;
     dummy;
 }
-
-#ifdef __GNUC__
-#define NOINLINE __attribute__((noinline))
-#elif defined(_MSC_VER)
-#define NOINLINE __declspec(noinline)
-#else
-#define NOINLINE
-#endif

@@ -6,8 +6,6 @@
 #include "src/math/float/sinhf.c"
 #undef sinhf
 
-NOINLINE float metallic_sinhf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_sinhf, 29), bench(sinhf, 29));

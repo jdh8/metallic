@@ -6,8 +6,6 @@
 #include "src/math/float/acosf.c"
 #undef acosf
 
-NOINLINE float metallic_acosf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_acosf, 29), bench(acosf, 29));

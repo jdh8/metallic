@@ -6,8 +6,6 @@
 #include "src/math/float/atanf.c"
 #undef atanf
 
-NOINLINE float metallic_atanf(float);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_atanf, 29), bench(atanf, 29));

@@ -7,9 +7,6 @@
 #include "src/math/float/cosf.c"
 #undef cosf
 
-NOINLINE float metallic_cosf(float);
-NOINLINE int __rem_pio2f(float, double[static 1]);
-
 int main(void)
 {
     printf("%f\n%f\n", bench(metallic_cosf, 29), bench(cosf, 29));
