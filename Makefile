@@ -12,6 +12,7 @@ metallic.bc: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 
 TESTS.wasm = $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
 TESTS.native = $(wildcard test/native/*/*.c test/native/*/*/*.c)
+BENCHMARKS = $(wildcard bench/*/*.c)
 
 check: check/wasm check/native
 
@@ -24,6 +25,8 @@ test: test/wasm test/native
 test/wasm: $(TESTS.wasm:.c=.out)
 
 test/native: $(TESTS.native:.c=.exe)
+
+bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.log)
 
 %.run: test/wasm/index.mjs %.out
 	node --experimental-modules $^ > $@
