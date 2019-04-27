@@ -2,12 +2,12 @@
 #include <time.h>
 #include <stdint.h>
 
-static double bench(float f(float), uint32_t step)
+static double bench(float f(float))
 {
     volatile float dummy;
     clock_t start = clock();
 
-    for (uint32_t i = 0x7FF00000; i <= 0xFF800000; i += step) {
+    for (uint32_t i = 0x7FF00000; i <= 0xFF800000; i += 29) {
         double x = reinterpret(float, i);
         dummy = f(x);
         dummy = f(-x);

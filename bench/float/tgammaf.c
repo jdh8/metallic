@@ -8,5 +8,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_tgammaf, 29), bench(tgammaf, 29));
+    printf("%f\n%f\n", bench(metallic_tgammaf), bench(tgammaf));
 }

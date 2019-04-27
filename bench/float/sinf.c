@@ -9,5 +9,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_sinf, 29), bench(sinf, 29));
+    printf("%f\n%f\n", bench(metallic_sinf), bench(sinf));
 }

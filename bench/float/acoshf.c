@@ -8,5 +8,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_acoshf, 29), bench(acoshf, 29));
+    printf("%f\n%f\n", bench(metallic_acoshf), bench(acoshf));
 }

@@ -9,5 +9,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_cosf, 29), bench(cosf, 29));
+    printf("%f\n%f\n", bench(metallic_cosf), bench(cosf));
 }

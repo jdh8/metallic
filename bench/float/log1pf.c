@@ -8,5 +8,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_log1pf, 29), bench(log1pf, 29));
+    printf("%f\n%f\n", bench(metallic_log1pf), bench(log1pf));
 }

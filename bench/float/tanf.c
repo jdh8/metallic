@@ -9,5 +9,5 @@
 
 int main(void)
 {
-    printf("%f\n%f\n", bench(metallic_tanf, 29), bench(tanf, 29));
+    printf("%f\n%f\n", bench(metallic_tanf), bench(tanf));
 }
