@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    const uint64_t step = 0x000000292482AD38;
+    const uint64_t step = 0x000000292482AD39;
 
     assert(sinh(INFINITY) == INFINITY);
     assert(sinh(-INFINITY) == -INFINITY);
