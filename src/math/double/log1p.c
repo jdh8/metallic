@@ -8,7 +8,7 @@ double log1p(double x)
     int64_t i = reinterpret(int64_t, x);
     
     if (i == 0xBFF0000000000000)
-        return -INFINITY;
+        return -HUGE_VAL;
 
     if (i > 0xBFF0000000000000)
         return NAN;

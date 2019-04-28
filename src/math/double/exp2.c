@@ -29,7 +29,7 @@ static double _kernel(double x)
 double exp2(double x)
 {
     if (x >= 1024)
-        return INFINITY;
+        return HUGE_VAL;
 
     if (x <= -1075)
         return 0;

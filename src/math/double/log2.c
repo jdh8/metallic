@@ -24,7 +24,7 @@ double log2(double x)
     int64_t i = reinterpret(int64_t, x);
 
     if (i <= 0)
-        return i << 1 == 0 ? -INFINITY : NAN;
+        return i << 1 == 0 ? -HUGE_VAL : NAN;
 
     if (i < 0x7FF0000000000000)
         return _finite(_normalize(i));

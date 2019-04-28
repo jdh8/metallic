@@ -8,7 +8,7 @@ double logb(double x)
     int64_t word = reinterpret(int64_t, y);
 
     if (word == 0)
-        return -HUGE_VALF;
+        return -HUGE_VAL;
 
     if (word < 0x0010000000000000)
         return -(1011 + __builtin_clzll(word));
