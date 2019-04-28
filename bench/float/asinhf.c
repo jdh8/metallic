@@ -6,7 +6,4 @@
 #include "src/math/float/asinhf.c"
 #undef asinhf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_asinhf), bench(asinhf));
-}
+BENCH(asinhf)

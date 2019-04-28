@@ -16,3 +16,5 @@ static double bench(float f(float))
     return (double)(clock() - start) / CLOCKS_PER_SEC;
     dummy;
 }
+
+#define BENCH(f) int main(void) { printf("%9f\n%9f\n", bench(metallic_##f), bench(f)); }

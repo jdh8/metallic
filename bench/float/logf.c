@@ -6,7 +6,4 @@
 #include "src/math/float/logf.c"
 #undef logf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_logf), bench(logf));
-}
+BENCH(logf)

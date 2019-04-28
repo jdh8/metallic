@@ -6,7 +6,4 @@
 #include "src/math/float/log10f.c"
 #undef log10f
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_log10f), bench(log10f));
-}
+BENCH(log10f)

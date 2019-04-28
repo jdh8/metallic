@@ -6,7 +6,4 @@
 #include "src/math/float/atanhf.c"
 #undef atanhf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_atanhf), bench(atanhf));
-}
+BENCH(atanhf)

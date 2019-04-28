@@ -6,7 +6,4 @@
 #include "src/math/float/cbrtf.c"
 #undef cbrtf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_cbrtf), bench(cbrtf));
-}
+BENCH(cbrtf)

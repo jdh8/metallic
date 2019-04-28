@@ -6,7 +6,4 @@
 #include "src/math/float/tanhf.c"
 #undef tanhf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_tanhf), bench(tanhf));
-}
+BENCH(tanhf)

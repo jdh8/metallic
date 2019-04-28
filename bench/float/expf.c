@@ -6,7 +6,4 @@
 #include "src/math/float/expf.c"
 #undef expf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_expf), bench(expf));
-}
+BENCH(expf)

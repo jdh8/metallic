@@ -7,7 +7,4 @@
 #include "src/math/float/cosf.c"
 #undef cosf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_cosf), bench(cosf));
-}
+BENCH(cosf)

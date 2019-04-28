@@ -6,7 +6,4 @@
 #include "src/math/float/coshf.c"
 #undef coshf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_coshf), bench(coshf));
-}
+BENCH(coshf)

@@ -7,7 +7,4 @@
 #include "src/math/float/tanf.c"
 #undef tanf
 
-int main(void)
-{
-    printf("%f\n%f\n", bench(metallic_tanf), bench(tanf));
-}
+BENCH(tanf)
