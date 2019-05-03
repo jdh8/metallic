@@ -1,4 +1,4 @@
-#include "src/math/double/log2.c"
+#include "src/math/double/log10.c"
 #include "log.h"
 
 int main(void)
