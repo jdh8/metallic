@@ -16,13 +16,8 @@ static double _finite(int64_t i)
     uint64_t j = reinterpret(uint64_t, x - h) & 0xFFFFFFFF00000000;
     double a = reinterpret(double, j);
     double b = x - a - h + z * (h + _kernel_log(z));
-    double c = exponent * log10_2[1] + (a + b) * log10_e[1] + b * log10_e[0];
-    double u = exponent * log10_2[0];
-    double v = a * log10_e[0];
-    double s = u + v;
-    double e = u - s + v;
 
-    return c + e + s;
+    return exponent * log10_2[1] + (a + b) * log10_e[1] + b * log10_e[0] + a * log10_e[0] + exponent * log10_2[0];
 }
 
 double log10(double x)
