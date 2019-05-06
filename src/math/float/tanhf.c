@@ -3,7 +3,7 @@
 
 static float _right(float x)
 {
-    if (x >= 256)
+    if (x > 9.010913f)
         return 1;
 
     double y = _expm1f(2 * x);
