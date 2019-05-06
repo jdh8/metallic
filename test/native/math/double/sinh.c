@@ -14,7 +14,7 @@ int main(void)
         double x = reinterpret(double, i);
         double y = sinh(x);
         verify(faithful(y, sinhl(x)), x);
-        verify(-y == sinh(-x), x);
+        verify(identical(-y, sinh(-x)), x);
     }
 
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += step) {
