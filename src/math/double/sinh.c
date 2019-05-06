@@ -3,7 +3,7 @@
 #include <math.h>
 #include <float.h>
 
-/* Restriction of (x -> sinh(√x) / √x - 1) to [0, (1.25 ln 2)^2] */
+/* Restriction of (x -> sinh(√x) / √x - 1) to [0, (ln 2)^2] */
 static double _kernel(double x)
 {
     const double c[] = {
