@@ -37,9 +37,6 @@ double sinh(double x)
     if (reinterpret(uint64_t, r) > 0x408633CE8FB9F87D)
         return x * HUGE_VAL;
 
-    if (r < 0x1p-52)
-        return x;
-
     if (r < ln2[0] + ln2[1])
         return x + x * _kernel(x * x);
 
