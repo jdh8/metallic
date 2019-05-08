@@ -2,9 +2,7 @@
 #include "shift.h"
 #include <math.h>
 #include <float.h>
-
-static const double _log2e = 1.44269504088896340736;
-static const double _ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
+#include <stdint.h>
 
 static double _kernel(double x)
 {
@@ -19,39 +17,36 @@ static double _kernel(double x)
 
     double xx = x * x;
 
-    return (c[5] * xx + c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x + 1;
+    return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x + c[5] * xx) * (xx * xx);
 }
 
 static double _half(double x)
 {
-    double n = rint(x * _log2e);
-    double a = x - n * _ln2[0];
-    double b = n * -_ln2[1];
+    const double log2e = 1.44269504088896340736;
+    const double ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
+
+    double n = rint(x * log2e);
+    double a = x - n * ln2[0];
+    double b = n * -ln2[1];
     double y = _kernel_expb(a, b);
-    double t = n == 2 ? 4 * y + 3 : 2 * y + 1;
 
-    return t / (t + 2);
-}
+    switch (reinterpret(uint64_t, n)) {
+        case 0x3FF0000000000000:
+            return (2 * y + 1) / (2 * y + 3);
+        case 0x4000000000000000:
+            return (4 * y + 3) / (4 * y + 5);
+    }
 
-static double _exp(double x)
-{
-    double n = rint(x * _log2e);
-    double a = x - n * _ln2[0];
-    double b = n * -_ln2[1];
-
-    return _shift(_kernel_expb(a, b) + 1, n);
+    return 1 - 2 / (_shift(y + 1, n) + 1);
 }
 
 static double _right(double x)
 {
     if (x < 0.2554128118829953416)
-        return x / _kernel(x * x);
-
-    if (x < 0.5493061443340548457)
-        return _half(2 * x);
+        return x / (_kernel(x * x) + 1);
 
     if (x < 19.061547465398495995)
-        return 1 - 2 / (_exp(2 * x) + 1);
+        return _half(2 * x);
 
     return 1 + 0 / x;
 }
