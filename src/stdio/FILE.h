@@ -7,11 +7,11 @@ typedef struct __FILE FILE;
 
 struct __FILE
 {
-    int (*_get)(FILE*);
-    int (*_put)(int, FILE*);
-    int (*_unget)(int, FILE*);
-    size_t (*_read)(void*, size_t, FILE*);
-    size_t (*_write)(const void*, size_t, FILE*);
+    int (*const _get)(FILE*);
+    int (*const _put)(int, FILE*);
+    int (*const _unget)(int, FILE*);
+    size_t (*const _read)(void*, size_t, FILE*);
+    size_t (*const _write)(const void*, size_t, FILE*);
 };
 
 #endif
