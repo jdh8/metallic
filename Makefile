@@ -35,11 +35,11 @@ bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.log)
 	$< > $@
 
 %.out: CC = $(WACC)
-%.out: CPPFLAGS += -I include -iquote .
+%.out: CPPFLAGS = -I include -iquote .
 %.out: %.c metallic.bc
 	$(CC) $(CPPFLAGS) $(CFLAGS) -nostdlib -o $@ $^
 
-%.exe: CPPFLAGS += -iquote test/native -iquote .
+%.exe: CPPFLAGS = -iquote test/native -iquote .
 %.exe: CFLAGS += -march=native
 %.exe: %.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
