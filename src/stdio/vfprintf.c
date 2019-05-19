@@ -26,12 +26,14 @@ static int _write(const void* restrict buffer, size_t size, FILE stream[restrict
 static int _pad(unsigned char c, size_t length, FILE stream[static 1])
 {
     uint64_t vector;
+
     memset(&vector, c, sizeof(uint64_t));
 
     for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
         TRY(_write, &vector, sizeof(uint64_t), stream);
 
     TRY(_write, &vector, length % sizeof(uint64_t), stream);
+
     return 0;
 }
 
@@ -98,7 +100,38 @@ static unsigned _length(const char s[static 1])
         case 'L':
             return *s << 2 | 1;
     }
+
     return 0;
+}
+
+static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
+{
+    switch (length) {
+        case 0:
+            return va_arg(*list, unsigned);
+        case 'h' << 2 | 1:
+            return (unsigned short) va_arg(*list, unsigned);
+        case 'h' << 2 | 2:
+            return (unsigned char) va_arg(*list, unsigned);
+        case 'l' << 2 | 1:
+            return va_arg(*list, unsigned long);
+        case 'l' << 2 | 2:
+            return va_arg(*list, unsigned long long);
+        case 'j' << 2 | 1:
+            return va_arg(*list, uintmax_t);
+        case 'z' << 2 | 1:
+            return va_arg(*list, size_t);
+        case 't' << 2 | 1:
+            return _Generic((ptrdiff_t)0,
+                int: va_arg(*list, unsigned),
+                long: va_arg(*list, unsigned long),
+                long long: va_arg(*list, unsigned long long)
+            );
+    }
+
+    #ifdef __GNUC__
+        __builtin_unreachable();
+    #endif
 }
 
 static int _print(size_t, FILE[restrict static 1], const char[restrict static 1], va_list);
@@ -111,46 +144,14 @@ struct Spec
     unsigned length;
 };
 
-static int _convertu(struct Spec spec, size_t count,
+static int _convert_unsigned(struct Spec spec, size_t count,
     FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
     const int size = sizeof(uintmax_t) * CHAR_BIT * 0.3010;
+
     char buffer[size];
     char* end = buffer + size;
-    char* begin;
-
-    switch (spec.length) {
-        case 0:
-            begin = _decimal(va_arg(list, unsigned), end);
-            break;
-        case 'h' << 2 | 1:
-            begin = _decimal((unsigned short)va_arg(list, unsigned), end);
-            break;
-        case 'h' << 2 | 2:
-            begin = _decimal((unsigned char)va_arg(list, unsigned), end);
-            break;
-        case 'l' << 2 | 1:
-            begin = _decimal(va_arg(list, unsigned long), end);
-            break;
-        case 'l' << 2 | 2:
-            begin = _decimal(va_arg(list, unsigned long long), end);
-            break;
-        case 'j' << 2 | 1:
-            begin = _decimal(va_arg(list, uintmax_t), end);
-            break;
-        case 'z' << 2 | 1:
-            begin = _decimal(va_arg(list, size_t), end);
-            break;
-        case 't' << 2 | 1:
-            begin = _decimal(_Generic((ptrdiff_t)0,
-                int: va_arg(list, unsigned),
-                long: va_arg(list, unsigned long),
-                long long: va_arg(list, unsigned long long)
-            ), end);
-            break;
-        default:
-            return -2;
-    }
+    char* begin = _decimal(_read_unsigned(spec.length, &list), end);
 
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
@@ -180,6 +181,7 @@ static int _convertu(struct Spec spec, size_t count,
             TRY(_write, begin, digits, stream);
         }
     }
+
     return _print(count + length, stream, format, list);
 }
 
@@ -210,7 +212,7 @@ static int _convert(size_t count, FILE stream[restrict static 1], const char for
 
     switch (c) {
         case 'u':
-            return _convertu(spec, count, stream, format, list);
+            return _convert_unsigned(spec, count, stream, format, list);
     }
 
     return -2;
