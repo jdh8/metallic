@@ -104,6 +104,40 @@ static unsigned _length(const char s[static 1])
     return 0;
 }
 
+#ifdef __GNUC__
+#define UNREACHABLE() __builtin_unreachable()
+#else
+static _Noreturn void UNREACHABLE(void) {}
+#endif
+
+static intmax_t _read_signed(unsigned length, va_list list[static 1])
+{
+    switch (length) {
+        case 0:
+            return va_arg(*list, int);
+        case 'h' << 2 | 1:
+            return (short) va_arg(*list, int);
+        case 'h' << 2 | 2:
+            return (char) va_arg(*list, int);
+        case 'l' << 2 | 1:
+            return va_arg(*list, long);
+        case 'l' << 2 | 2:
+            return va_arg(*list, long long);
+        case 'j' << 2 | 1:
+            return va_arg(*list, intmax_t);
+        case 'z' << 2 | 1:
+            return _Generic(sizeof(0),
+                unsigned: va_arg(*list, int),
+                unsigned long: va_arg(*list, long),
+                unsigned long long: va_arg(*list, long long)
+            );
+        case 't' << 2 | 1:
+            return va_arg(*list, ptrdiff_t);
+    }
+
+    UNREACHABLE();
+}
+
 static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
 {
     switch (length) {
@@ -129,9 +163,7 @@ static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
             );
     }
 
-    #ifdef __GNUC__
-        __builtin_unreachable();
-    #endif
+    UNREACHABLE();
 }
 
 static int _print(size_t, FILE[restrict static 1], const char[restrict static 1], va_list);
