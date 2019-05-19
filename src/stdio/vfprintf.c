@@ -23,11 +23,9 @@ static int _write(const void* restrict buffer, size_t size, FILE stream[restrict
     return stream->_write(buffer, size, stream) != size;
 }
 
-static int _pad(unsigned char c, size_t length, FILE stream[static 1])
+static int _pad(uint8_t c, size_t length, FILE stream[static 1])
 {
-    uint64_t vector;
-
-    memset(&vector, c, sizeof(uint64_t));
+    uint64_t vector = c * 0x0101010101010101u;
 
     for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
         TRY(_write, &vector, sizeof(uint64_t), stream);
@@ -104,12 +102,6 @@ static unsigned _length(const char s[static 1])
     return 0;
 }
 
-#ifdef __GNUC__
-#define UNREACHABLE() __builtin_unreachable()
-#else
-static _Noreturn void UNREACHABLE(void) {}
-#endif
-
 static intmax_t _read_signed(unsigned length, va_list list[static 1])
 {
     switch (length) {
@@ -118,24 +110,16 @@ static intmax_t _read_signed(unsigned length, va_list list[static 1])
         case 'h' << 2 | 1:
             return (short) va_arg(*list, int);
         case 'h' << 2 | 2:
-            return (char) va_arg(*list, int);
+            return (signed char) va_arg(*list, int);
         case 'l' << 2 | 1:
             return va_arg(*list, long);
         case 'l' << 2 | 2:
             return va_arg(*list, long long);
         case 'j' << 2 | 1:
             return va_arg(*list, intmax_t);
-        case 'z' << 2 | 1:
-            return _Generic(sizeof(0),
-                unsigned: va_arg(*list, int),
-                unsigned long: va_arg(*list, long),
-                unsigned long long: va_arg(*list, long long)
-            );
-        case 't' << 2 | 1:
-            return va_arg(*list, ptrdiff_t);
     }
 
-    UNREACHABLE();
+    return va_arg(*list, ptrdiff_t);
 }
 
 static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
@@ -153,17 +137,9 @@ static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
             return va_arg(*list, unsigned long long);
         case 'j' << 2 | 1:
             return va_arg(*list, uintmax_t);
-        case 'z' << 2 | 1:
-            return va_arg(*list, size_t);
-        case 't' << 2 | 1:
-            return _Generic((ptrdiff_t)0,
-                int: va_arg(*list, unsigned),
-                long: va_arg(*list, unsigned long),
-                long long: va_arg(*list, unsigned long long)
-            );
     }
 
-    UNREACHABLE();
+    return va_arg(*list, size_t);
 }
 
 static int _print(size_t, FILE[restrict static 1], const char[restrict static 1], va_list);
