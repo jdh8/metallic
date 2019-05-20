@@ -152,10 +152,12 @@ struct Spec
     unsigned length;
 };
 
+#define DECIMAL_DIGITS(T) ((sizeof(T) * CHAR_BIT * 30103 + 199999) / 100000)
+
 static int _convert_unsigned(struct Spec spec, size_t count,
     FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
-    char buffer[(int)(sizeof(uintmax_t) * CHAR_BIT * 0.3010)];
+    char buffer[DECIMAL_DIGITS(uintmax_t)];
     char* end = buffer + sizeof(buffer);
     char* begin = _decimal(_read_unsigned(spec.length, &list), end);
 
