@@ -301,21 +301,6 @@ static int _convert_octal(struct Spec spec, size_t count,
     return _print(count + length, stream, format + 1, list);
 }
 
-static int (*_converter(int specifier))(struct Spec, size_t, FILE[restrict static 1], const char[restrict static 1], va_list)
-{
-    switch (specifier) {
-        case 'd':
-        case 'i':
-            return _convert_integer;
-        case 'o':
-            return _convert_octal;
-        case 'u':
-            return _convert_unsigned;
-    }
-
-    return (void*)0;
-}
-
 static int _convert(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
     uint_least32_t flags = 0;
@@ -337,11 +322,20 @@ static int _convert(size_t count, FILE stream[restrict static 1], const char for
     }
 
     unsigned length = _length(format);
+    char c = *(format += length & 3);
     struct Spec spec = { flags, width, precision, length };
 
-    format += length & 3;
+    switch (c) {
+        case 'd':
+        case 'i':
+            return _convert_integer(spec, count, stream, format, list);
+        case 'o':
+            return _convert_octal(spec, count, stream, format, list);
+        case 'u':
+            return _convert_unsigned(spec, count, stream, format, list);
+    }
 
-    return _converter(*format)(spec, count, stream, format, list);
+    return -2;
 }
 
 static int _print(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
