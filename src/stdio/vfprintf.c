@@ -262,6 +262,45 @@ static int _convert_unsigned(struct Spec spec, size_t count,
     return _print(count + length, stream, format, list);
 }
 
+static int _convert_octal(struct Spec spec, size_t count,
+    FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
+{
+    char buffer[(sizeof(uintmax_t) * CHAR_BIT + 2) / 3];
+    char* end = buffer + sizeof(buffer);
+    char* begin = _octal(_read_unsigned(spec.length, &list), end);
+
+    int precision = spec.precision < 0 ? 1 : spec.precision;
+    int digits = end - begin;
+    int zeros = precision > digits ? precision - digits : (spec.flags >> ('#' - ' ')) & 1;
+    int length = digits + zeros;
+    int padding = spec.width > length ? spec.width - length : 0;
+
+    if (spec.width <= length) {
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+    }
+    else {
+        length = spec.width;
+
+        if (spec.flags & FLAG('-')) {
+            TRY(_pad, '0', zeros, stream);
+            TRY(_write, begin, digits, stream);
+            TRY(_pad, ' ', padding, stream);
+        }
+        else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+            TRY(_pad, '0', zeros + padding, stream);
+            TRY(_write, begin, digits, stream);
+        }
+        else {
+            TRY(_pad, ' ', padding, stream);
+            TRY(_pad, '0', zeros, stream);
+            TRY(_write, begin, digits, stream);
+        }
+    }
+
+    return _print(count + length, stream, format, list);
+}
+
 static int _convert(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
     uint_least32_t flags = 0;
@@ -291,6 +330,8 @@ static int _convert(size_t count, FILE stream[restrict static 1], const char for
         case 'd':
         case 'i':
             return _convert_integer(spec, count, stream, format, list);
+        case 'o':
+            return _convert_octal(spec, count, stream, format, list);
         case 'u':
             return _convert_unsigned(spec, count, stream, format, list);
     }
