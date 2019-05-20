@@ -342,13 +342,14 @@ static int _print(size_t count, FILE stream[restrict static 1], const char forma
 {
     for (size_t i = 0; ; ++i) {
         switch (format[i]) {
-            case '%': {
-                _Bool percent = format[i + 1] == '%';
-                size_t size = i + percent;
+            case '%':
+                if (format[i + 1] == '%') {
+                    TRY(_write, format, i + 1, stream);
+                    return _print(count + i + 1, stream, format + i + 2, list);
+                }
+                TRY(_write, format, i, stream);
+                return _convert(count + i, stream, format + i + 1, list);
 
-                TRY(_write, format, size, stream);
-                return (percent ? _print : _convert)(count + size, stream, format + size + 1, list);
-            }
             case '\0':
                 TRY(_write, format, i, stream);
                 return count + i;
