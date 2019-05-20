@@ -155,10 +155,8 @@ struct Spec
 static int _convert_unsigned(struct Spec spec, size_t count,
     FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
-    const int size = sizeof(uintmax_t) * CHAR_BIT * 0.3010;
-
-    char buffer[size];
-    char* end = buffer + size;
+    char buffer[(int)(sizeof(uintmax_t) * CHAR_BIT * 0.3010)];
+    char* end = buffer + sizeof(buffer);
     char* begin = _decimal(_read_unsigned(spec.length, &list), end);
 
     int precision = spec.precision < 0 ? 1 : spec.precision;
