@@ -220,7 +220,7 @@ static int _convert_integer(struct Spec spec, size_t count,
         }
     }
 
-    return _print(count + length, stream, format, list);
+    return _print(count + length, stream, format + 1, list);
 }
 
 static int _convert_unsigned(struct Spec spec, size_t count,
@@ -259,7 +259,7 @@ static int _convert_unsigned(struct Spec spec, size_t count,
         }
     }
 
-    return _print(count + length, stream, format, list);
+    return _print(count + length, stream, format + 1, list);
 }
 
 static int _convert_octal(struct Spec spec, size_t count,
@@ -298,7 +298,7 @@ static int _convert_octal(struct Spec spec, size_t count,
         }
     }
 
-    return _print(count + length, stream, format, list);
+    return _print(count + length, stream, format + 1, list);
 }
 
 static int _convert(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
@@ -324,7 +324,6 @@ static int _convert(size_t count, FILE stream[restrict static 1], const char for
     unsigned length = _length(format);
     char c = *(format += length & 3);
     struct Spec spec = { flags, width, precision, length };
-    ++format;
 
     switch (c) {
         case 'd':
