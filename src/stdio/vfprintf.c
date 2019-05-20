@@ -124,7 +124,7 @@ static unsigned _length(const char s[static 1])
     return 0;
 }
 
-static intmax_t _read_signed(unsigned length, va_list list[static 1])
+static intmax_t _pop_signed(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -144,7 +144,7 @@ static intmax_t _read_signed(unsigned length, va_list list[static 1])
     return va_arg(*list, ptrdiff_t);
 }
 
-static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
+static uintmax_t _pop_unsigned(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -164,8 +164,6 @@ static uintmax_t _read_unsigned(unsigned length, va_list list[static 1])
     return va_arg(*list, size_t);
 }
 
-static int _print(size_t, FILE[restrict static 1], const char[restrict static 1], va_list);
-
 struct Spec
 {
     uint_least32_t flags;
@@ -176,17 +174,13 @@ struct Spec
 
 #define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - ((T)-1 < 0)) * 30103 + 199999) / 100000)
 
-static int _convert_integer(struct Spec spec, size_t count,
-    FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
+static int _convert_signed(struct Spec spec, FILE stream[restrict static 1], intmax_t arg)
 {
-    intmax_t value = _read_signed(spec.length, &list);
-    _Bool sign = value < 0;
-    int character = _sign_character(sign, spec.flags);
-
     char buffer[DECIMAL_DIGITS(intmax_t)];
     char* end = buffer + sizeof(buffer);
-    char* begin = _decimal(sign ? -value : value, end);
+    char* begin = _decimal(arg < 0 ? -arg : arg, end);
 
+    int character = _sign_character(arg < 0, spec.flags);
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : 0;
@@ -197,38 +191,36 @@ static int _convert_integer(struct Spec spec, size_t count,
         TRY(_putif, character, stream);
         TRY(_pad, '0', zeros, stream);
         TRY(_write, begin, digits, stream);
+
+        return length;
+    }
+
+    if (spec.flags & FLAG('-')) {
+        TRY(_putif, character, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+        TRY(_pad, ' ', padding, stream);
+    }
+    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+        TRY(_putif, character, stream);
+        TRY(_pad, '0', zeros + padding, stream);
+        TRY(_write, begin, digits, stream);
     }
     else {
-        length = spec.width;
-
-        if (spec.flags & FLAG('-')) {
-            TRY(_putif, character, stream);
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-            TRY(_pad, ' ', padding, stream);
-        }
-        else if (spec.precision < 0 && spec.flags & FLAG('0')) {
-            TRY(_putif, character, stream);
-            TRY(_pad, '0', zeros + padding, stream);
-            TRY(_write, begin, digits, stream);
-        }
-        else {
-            TRY(_pad, ' ', padding, stream);
-            TRY(_putif, character, stream);
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-        }
+        TRY(_pad, ' ', padding, stream);
+        TRY(_putif, character, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
     }
 
-    return _print(count + length, stream, format + 1, list);
+    return spec.width;
 }
 
-static int _convert_unsigned(struct Spec spec, size_t count,
-    FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
+static int _convert_unsigned(struct Spec spec, FILE stream[restrict static 1], uintmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(uintmax_t)];
     char* end = buffer + sizeof(buffer);
-    char* begin = _decimal(_read_unsigned(spec.length, &list), end);
+    char* begin = _decimal(arg, end);
 
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
@@ -239,35 +231,32 @@ static int _convert_unsigned(struct Spec spec, size_t count,
     if (spec.width <= length) {
         TRY(_pad, '0', zeros, stream);
         TRY(_write, begin, digits, stream);
+        return length;
+    }
+
+    if (spec.flags & FLAG('-')) {
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+        TRY(_pad, ' ', padding, stream);
+    }
+    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+        TRY(_pad, '0', zeros + padding, stream);
+        TRY(_write, begin, digits, stream);
     }
     else {
-        length = spec.width;
-
-        if (spec.flags & FLAG('-')) {
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-            TRY(_pad, ' ', padding, stream);
-        }
-        else if (spec.precision < 0 && spec.flags & FLAG('0')) {
-            TRY(_pad, '0', zeros + padding, stream);
-            TRY(_write, begin, digits, stream);
-        }
-        else {
-            TRY(_pad, ' ', padding, stream);
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-        }
+        TRY(_pad, ' ', padding, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
     }
 
-    return _print(count + length, stream, format + 1, list);
+    return spec.width;
 }
 
-static int _convert_octal(struct Spec spec, size_t count,
-    FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
+static int _convert_octal(struct Spec spec, FILE stream[restrict static 1], uintmax_t arg)
 {
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 2) / 3];
     char* end = buffer + sizeof(buffer);
-    char* begin = _octal(_read_unsigned(spec.length, &list), end);
+    char* begin = _octal(arg, end);
 
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
@@ -278,30 +267,44 @@ static int _convert_octal(struct Spec spec, size_t count,
     if (spec.width <= length) {
         TRY(_pad, '0', zeros, stream);
         TRY(_write, begin, digits, stream);
+        return length;
+    }
+
+    if (spec.flags & FLAG('-')) {
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+        TRY(_pad, ' ', padding, stream);
+    }
+    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+        TRY(_pad, '0', zeros + padding, stream);
+        TRY(_write, begin, digits, stream);
     }
     else {
-        length = spec.width;
-
-        if (spec.flags & FLAG('-')) {
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-            TRY(_pad, ' ', padding, stream);
-        }
-        else if (spec.precision < 0 && spec.flags & FLAG('0')) {
-            TRY(_pad, '0', zeros + padding, stream);
-            TRY(_write, begin, digits, stream);
-        }
-        else {
-            TRY(_pad, ' ', padding, stream);
-            TRY(_pad, '0', zeros, stream);
-            TRY(_write, begin, digits, stream);
-        }
+        TRY(_pad, ' ', padding, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
     }
 
-    return _print(count + length, stream, format + 1, list);
+    return spec.width;
 }
 
-static int _convert(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
+static int _convert(struct Spec spec, FILE stream[restrict static 1], int format, va_list list[restrict static 1])
+{
+    switch (format) {
+        case 'd':
+        case 'i':
+            return _convert_signed(spec, stream, _pop_signed(spec.length, list));
+        case 'o':
+            return _convert_octal(spec, stream, _pop_unsigned(spec.length, list));
+        case 'u':
+            return _convert_unsigned(spec, stream, _pop_unsigned(spec.length, list));
+    }
+    return -2;
+}
+
+static int _print(size_t, FILE[restrict static 1], const char[restrict static 1], va_list);
+
+static int _parse(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
 {
     uint_least32_t flags = 0;
 
@@ -322,20 +325,10 @@ static int _convert(size_t count, FILE stream[restrict static 1], const char for
     }
 
     unsigned length = _length(format);
-    char c = *(format += length & 3);
     struct Spec spec = { flags, width, precision, length };
+    int written = _convert(spec, stream, *(format += length & 3), &list);
 
-    switch (c) {
-        case 'd':
-        case 'i':
-            return _convert_integer(spec, count, stream, format, list);
-        case 'o':
-            return _convert_octal(spec, count, stream, format, list);
-        case 'u':
-            return _convert_unsigned(spec, count, stream, format, list);
-    }
-
-    return -2;
+    return written < 0 ? written : _print(count + written, stream, format + 1, list);
 }
 
 static int _print(size_t count, FILE stream[restrict static 1], const char format[restrict static 1], va_list list)
@@ -348,7 +341,7 @@ static int _print(size_t count, FILE stream[restrict static 1], const char forma
                     return _print(count + i + 1, stream, format + i + 2, list);
                 }
                 TRY(_write, format, i, stream);
-                return _convert(count + i, stream, format + i + 1, list);
+                return _parse(count + i, stream, format + i + 1, list);
 
             case '\0':
                 TRY(_write, format, i, stream);
