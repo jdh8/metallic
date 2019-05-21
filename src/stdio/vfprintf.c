@@ -201,7 +201,7 @@ static int _convert_signed(struct Spec spec, FILE stream[static 1], intmax_t arg
         TRY(_write, begin, digits, stream);
         TRY(_pad, ' ', padding, stream);
     }
-    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+    else if (spec.flags & FLAG('0') && spec.precision < 0) {
         TRY(_putif, character, stream);
         TRY(_pad, '0', zeros + padding, stream);
         TRY(_write, begin, digits, stream);
@@ -231,6 +231,7 @@ static int _convert_unsigned(struct Spec spec, FILE stream[static 1], uintmax_t 
     if (spec.width <= length) {
         TRY(_pad, '0', zeros, stream);
         TRY(_write, begin, digits, stream);
+
         return length;
     }
 
@@ -239,7 +240,7 @@ static int _convert_unsigned(struct Spec spec, FILE stream[static 1], uintmax_t 
         TRY(_write, begin, digits, stream);
         TRY(_pad, ' ', padding, stream);
     }
-    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+    else if (spec.flags & FLAG('0') && spec.precision < 0) {
         TRY(_pad, '0', zeros + padding, stream);
         TRY(_write, begin, digits, stream);
     }
@@ -267,6 +268,7 @@ static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg
     if (spec.width <= length) {
         TRY(_pad, '0', zeros, stream);
         TRY(_write, begin, digits, stream);
+
         return length;
     }
 
@@ -275,7 +277,7 @@ static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg
         TRY(_write, begin, digits, stream);
         TRY(_pad, ' ', padding, stream);
     }
-    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+    else if (spec.flags & FLAG('0') && spec.precision < 0) {
         TRY(_pad, '0', zeros + padding, stream);
         TRY(_write, begin, digits, stream);
     }
@@ -316,7 +318,7 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
         TRY(_write, begin, digits, stream);
         TRY(_pad, ' ', padding, stream);
     }
-    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+    else if (spec.flags & FLAG('0') && spec.precision < 0) {
         TRY(_write, cache, prefix, stream);
         TRY(_pad, '0', zeros + padding, stream);
         TRY(_write, begin, digits, stream);
