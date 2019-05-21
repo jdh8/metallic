@@ -31,7 +31,7 @@ static int _sign_character(_Bool sign, uint_least32_t flags)
     return 0;
 }
 
-#define TRY(f, ...) do if (f(__VA_ARGS__)) return -1; while (0)
+#define TRY(x) do if (x) return -1; while (0)
 
 static int _putif(int c, FILE stream[static 1])
 {
@@ -50,9 +50,9 @@ static int _pad(int c, size_t length, FILE stream[static 1])
     memset(&vector, c, sizeof(uint64_t));
 
     for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
-        TRY(_write, &vector, sizeof(uint64_t), stream);
+        TRY(_write(&vector, sizeof(uint64_t), stream));
 
-    TRY(_write, &vector, length % sizeof(uint64_t), stream);
+    TRY(_write(&vector, length % sizeof(uint64_t), stream));
 
     return 0;
 }
@@ -188,29 +188,29 @@ static int _convert_signed(struct Spec spec, FILE stream[static 1], intmax_t arg
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_putif, character, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_putif(character, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
 
         return length;
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_putif, character, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
-        TRY(_pad, ' ', padding, stream);
+        TRY(_putif(character, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
+        TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_putif, character, stream);
-        TRY(_pad, '0', zeros + padding, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_putif(character, stream));
+        TRY(_pad('0', zeros + padding, stream));
+        TRY(_write(begin, digits, stream));
     }
     else {
-        TRY(_pad, ' ', padding, stream);
-        TRY(_putif, character, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad(' ', padding, stream));
+        TRY(_putif(character, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
     }
 
     return spec.width;
@@ -229,25 +229,25 @@ static int _convert_unsigned(struct Spec spec, FILE stream[static 1], uintmax_t 
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
 
         return length;
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
-        TRY(_pad, ' ', padding, stream);
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
+        TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_pad, '0', zeros + padding, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad('0', zeros + padding, stream));
+        TRY(_write(begin, digits, stream));
     }
     else {
-        TRY(_pad, ' ', padding, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad(' ', padding, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
     }
 
     return spec.width;
@@ -266,25 +266,25 @@ static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
 
         return length;
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
-        TRY(_pad, ' ', padding, stream);
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
+        TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_pad, '0', zeros + padding, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad('0', zeros + padding, stream));
+        TRY(_write(begin, digits, stream));
     }
     else {
-        TRY(_pad, ' ', padding, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad(' ', padding, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
     }
 
     return spec.width;
@@ -305,29 +305,29 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_write, cache, prefix, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_write(cache, prefix, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
 
         return length;
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_write, cache, prefix, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
-        TRY(_pad, ' ', padding, stream);
+        TRY(_write(cache, prefix, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
+        TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_write, cache, prefix, stream);
-        TRY(_pad, '0', zeros + padding, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_write(cache, prefix, stream));
+        TRY(_pad('0', zeros + padding, stream));
+        TRY(_write(begin, digits, stream));
     }
     else {
-        TRY(_pad, ' ', padding, stream);
-        TRY(_write, cache, prefix, stream);
-        TRY(_pad, '0', zeros, stream);
-        TRY(_write, begin, digits, stream);
+        TRY(_pad(' ', padding, stream));
+        TRY(_write(cache, prefix, stream));
+        TRY(_pad('0', zeros, stream));
+        TRY(_write(begin, digits, stream));
     }
 
     return spec.width;
@@ -414,17 +414,17 @@ int vfprintf(FILE stream[restrict static 1], const char format[restrict static 1
     for (const char* s = format; ; ++s) {
         switch (*s) {
             case '\0':
-                TRY(_write, format, s - format, stream);
+                TRY(_write(format, s - format, stream));
                 return s - format + count;
 
             case '%':
                 if (s[1] == '%') {
                     ++s;
-                    TRY(_write, format, s - format, stream);
+                    TRY(_write(format, s - format, stream));
                     count += s - format;
                 }
                 else {
-                    TRY(_write, format, s - format, stream);
+                    TRY(_write(format, s - format, stream));
                     count += s - format;
                     ++s;
 
