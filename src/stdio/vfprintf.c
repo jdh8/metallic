@@ -333,7 +333,35 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
     return spec.width;
 }
 
-static int _convert(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+static int _store_count(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
+{
+    switch (spec.length) {
+        case 0:
+            *va_arg(*list, int*) = count;
+            break;
+        case 'h' << 2 | 1:
+            *va_arg(*list, short*) = count;
+            break;
+        case 'h' << 2 | 2:
+            *va_arg(*list, signed char*) = count;
+            break;
+        case 'l' << 2 | 1:
+            *va_arg(*list, long*) = count;
+            break;
+        case 'l' << 2 | 2:
+            *va_arg(*list, long long*) = count;
+            break;
+        case 'j' << 2 | 1:
+            *va_arg(*list, intmax_t*) = count;
+            break;
+        default:
+            *va_arg(*list, ptrdiff_t*) = count;
+    }
+
+    return 0;
+}
+
+static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int format, va_list list[static 1])
 {
     switch (format) {
         case 'd':
@@ -346,6 +374,8 @@ static int _convert(struct Spec spec, FILE stream[static 1], int format, va_list
         case 'x':
         case 'X':
             return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
+        case 'n':
+            return _store_count(spec, count, stream, list);
     }
     return -2;
 }
@@ -399,7 +429,7 @@ int vfprintf(FILE stream[restrict static 1], const char format[restrict static 1
                     ++s;
 
                     struct Spec spec = _parse(&s, &list);
-                    int written = _convert(spec, stream, *s, &list);
+                    int written = _convert(spec, count, stream, *s, &list);
 
                     if (written < 0)
                         return written;
