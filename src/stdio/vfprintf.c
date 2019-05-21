@@ -288,6 +288,49 @@ static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg
     return spec.width;
 }
 
+static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
+{
+    const char cache[] = { '0', format };
+    char buffer[(sizeof(uintmax_t) * CHAR_BIT + 3) >> 2];
+    char* end = buffer + sizeof(buffer);
+    char* begin = _hexadecimal(arg, end, format & 0x20);
+
+    int precision = spec.precision < 0 ? 1 : spec.precision;
+    int digits = end - begin;
+    int zeros = precision > digits ? precision - digits : 0;
+    int prefix = (spec.flags & FLAG('#') && arg) << 1;
+    int length = digits + zeros + prefix;
+    int padding = spec.width > length ? spec.width - length : 0;
+
+    if (spec.width <= length) {
+        TRY(_write, cache, prefix, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+
+        return length;
+    }
+
+    if (spec.flags & FLAG('-')) {
+        TRY(_write, cache, prefix, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+        TRY(_pad, ' ', padding, stream);
+    }
+    else if (spec.precision < 0 && spec.flags & FLAG('0')) {
+        TRY(_write, cache, prefix, stream);
+        TRY(_pad, '0', zeros + padding, stream);
+        TRY(_write, begin, digits, stream);
+    }
+    else {
+        TRY(_pad, ' ', padding, stream);
+        TRY(_write, cache, prefix, stream);
+        TRY(_pad, '0', zeros, stream);
+        TRY(_write, begin, digits, stream);
+    }
+
+    return spec.width;
+}
+
 static int _convert(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
 {
     switch (format) {
@@ -298,6 +341,9 @@ static int _convert(struct Spec spec, FILE stream[static 1], int format, va_list
             return _convert_octal(spec, stream, _pop_unsigned(spec.length, list));
         case 'u':
             return _convert_unsigned(spec, stream, _pop_unsigned(spec.length, list));
+        case 'x':
+        case 'X':
+            return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
     }
     return -2;
 }
