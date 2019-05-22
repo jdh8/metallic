@@ -7,6 +7,33 @@
 #include <string.h>
 #include <wchar.h>
 
+static size_t _strnlen(const char begin[static 1], size_t length)
+{
+    const char* end = begin;
+
+    for (; (uintptr_t)end % sizeof(uint64_t) && length--; ++end)
+        if (!*end)
+            return end - begin;
+
+    const uint64_t* vector = (const uint64_t*)end;
+    const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
+
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
+        if (((*vector + magic) ^ ~*vector) & ~magic)
+            for (int k = 0; k < sizeof(uint64_t); ++k)
+                if (!end[k])
+                    return end - begin + k;
+
+        end = (const char*)++vector;
+    }
+
+    for (; length--; ++end)
+        if (!*end)
+            break;
+
+    return end - begin;
+}
+
 #define FLAG(c) (UINT32_C(1) << ((c) - ' '))
 
 static uint_least32_t _flag(unsigned c)
@@ -352,6 +379,39 @@ static int _convert_character(struct Spec spec, FILE stream[static 1], va_list l
     return 1;
 }
 
+static int _convert_string(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+{
+    size_t precision = spec.precision < 0 ? -1 : spec.precision;
+
+    if (spec.length >> 2 == 'l') {
+        mbstate_t state = {};
+        size_t count = 0;
+
+        for (const wchar_t* s = va_arg(*list, wchar_t*); *s; ++s) {
+            char buffer[MB_LEN_MAX];
+            size_t length = wcrtomb(buffer, *s, &state);
+
+            if (length == -1)
+                return -3;
+
+            if (precision < count + length)
+                break;
+
+            TRY(_write(buffer, length, stream));
+            count += length;
+        }
+
+        return count;
+    }
+
+    const char* s = va_arg(*list, char*);
+    size_t length = _strnlen(s, precision);
+
+    TRY(_write(s, length, stream));
+
+    return length;
+}
+
 static int _convert_pointer(FILE stream[static 1], void* arg)
 {
     if (!arg) {
@@ -413,6 +473,8 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
             return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
         case 'c':
             return _convert_character(spec, stream, list);
+        case 's':
+            return _convert_string(spec, stream, list);
         case 'p':
             return _convert_pointer(stream, va_arg(*list, void*));
         case 'n':
