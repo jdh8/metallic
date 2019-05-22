@@ -1,10 +1,12 @@
 #include "FILE.h"
+#include <limits.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <limits.h>
+#include <wchar.h>
 
 #define FLAG(c) (UINT32_C(1) << ((c) - ' '))
 
@@ -333,6 +335,24 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
     return spec.width;
 }
 
+static int _convert_character(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+{
+    if (spec.length >> 2 == 'l') {
+        mbstate_t state = {};
+        char buffer[MB_CUR_MAX];
+        size_t length = wcrtomb(buffer, va_arg(*list, wint_t), &state);
+
+        if (length == -1)
+            return -3;
+
+        TRY(_write(buffer, length, stream));
+        return length;
+    }
+
+    TRY(stream->_put(va_arg(*list, int), stream) == EOF);
+    return 1;
+}
+
 static int _convert_pointer(FILE stream[static 1], void* arg)
 {
     if (!arg) {
@@ -392,6 +412,8 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
         case 'x':
         case 'X':
             return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
+        case 'c':
+            return _convert_character(spec, stream, list);
         case 'p':
             return _convert_pointer(stream, va_arg(*list, void*));
         case 'n':
