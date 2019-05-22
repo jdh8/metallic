@@ -4,7 +4,7 @@
 #define CHAR_BIT __CHAR_BIT__
 
 /* Unicode may consume 32 bits for a character. */
-#define MB_LEN_MAX (32 / CHAR_BIT + !!(32 % CHAR_BIT))
+#define MB_LEN_MAX (31 / CHAR_BIT + 1)
 
 #define SCHAR_MIN (-SCHAR_MAX - (-1 == ~0))
 #define SCHAR_MAX __SCHAR_MAX__
