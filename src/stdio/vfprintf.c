@@ -333,6 +333,24 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
     return spec.width;
 }
 
+static int _convert_pointer(FILE stream[static 1], void* arg)
+{
+    if (!arg) {
+        TRY(_write("NULL", 4, stream));
+        return 4;
+    }
+
+    char buffer[(sizeof(uintptr_t) * CHAR_BIT + 3) >> 2];
+    char* end = buffer + sizeof(buffer);
+    char* begin = _hexadecimal((uintptr_t)arg, end, 0);
+    ptrdiff_t length = end - begin;
+
+    TRY(_write("0x", 2, stream));
+    TRY(_write(begin, length, stream));
+
+    return length + 2;
+}
+
 static int _store_count(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
 {
     switch (spec.length) {
@@ -374,6 +392,8 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
         case 'x':
         case 'X':
             return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
+        case 'p':
+            return _convert_pointer(stream, va_arg(*list, void*));
         case 'n':
             return _store_count(spec, count, stream, list);
     }
