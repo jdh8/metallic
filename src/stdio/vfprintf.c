@@ -4,7 +4,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
 
@@ -339,7 +338,7 @@ static int _convert_character(struct Spec spec, FILE stream[static 1], va_list l
 {
     if (spec.length >> 2 == 'l') {
         mbstate_t state = {};
-        char buffer[MB_CUR_MAX];
+        char buffer[MB_LEN_MAX];
         size_t length = wcrtomb(buffer, va_arg(*list, wint_t), &state);
 
         if (length == -1)
