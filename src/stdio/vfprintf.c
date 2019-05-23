@@ -1,5 +1,7 @@
 #include "FILE.h"
+#include "../math/reinterpret.h"
 #include <limits.h>
+#include <math.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -208,15 +210,15 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
     char* end = buffer + sizeof(buffer);
     char* begin = _decimal(arg < 0 ? -arg : arg, end);
 
-    int character = _signchar(arg < 0, spec.flags);
+    int sign = _signchar(arg < 0, spec.flags);
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : 0;
-    int length = digits + zeros + !!character;
+    int length = digits + zeros + !!sign;
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_putif(character, stream));
+        TRY(_putif(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
 
@@ -224,19 +226,19 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_putif(character, stream));
+        TRY(_putif(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
         TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_putif(character, stream));
+        TRY(_putif(sign, stream));
         TRY(_pad('0', zeros + padding, stream));
         TRY(_write(begin, digits, stream));
     }
     else {
         TRY(_pad(' ', padding, stream));
-        TRY(_putif(character, stream));
+        TRY(_putif(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
@@ -359,6 +361,42 @@ static int _convertx(struct Spec spec, FILE stream[static 1], int format, uintma
     }
 
     return spec.width;
+}
+
+static int _nonfinite(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
+{
+    const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
+    int length = 3 + !!sign;
+    int padding = spec.width > length ? spec.width - length : 0;
+
+    if (!(spec.flags & FLAG('-')))
+        TRY(_pad(' ', padding, stream));
+
+    TRY(_putif(sign, stream));
+    TRY(_write(output, 3, stream));
+
+    if (spec.flags & FLAG('-'))
+        TRY(_pad(' ', padding, stream));
+
+    return length + padding;
+}
+
+static int _converta(struct Spec spec, FILE stream[static 1], int format, double arg)
+{
+    int lower = format & 0x20;
+    int sign = _signchar(signbit(arg), spec.flags);
+
+    if (isinf(arg))
+        return _nonfinite(spec, stream, lower, sign, "INF");
+
+    if (isnan(arg))
+        return _nonfinite(spec, stream, lower, sign, "NAN");
+
+    int64_t magnitude = reinterpret(int64_t, fabs(arg));
+    int64_t significand = magnitude & 0x000FFFFFFFFFFFFF;
+    int64_t biased = magnitude >> 52;
+    int64_t exp = biased ? biased - 0x3FF : -1022 * !!magnitude;
+    const char prefix[] = { '0', 'X' | lower, '0' + !!biased };
 }
 
 static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
