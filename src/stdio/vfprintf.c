@@ -45,7 +45,7 @@ static uint_least32_t _flag(unsigned c)
     return s < 32 ? flags & UINT32_C(1) << s : UINT32_C(0);
 }
 
-static int _sign_character(_Bool sign, uint_least32_t flags)
+static int _signchar(_Bool sign, uint_least32_t flags)
 {
     if (sign)
         return '-';
@@ -152,7 +152,7 @@ static unsigned _length(const char s[static 1])
     return 0;
 }
 
-static intmax_t _pop_signed(unsigned length, va_list list[static 1])
+static intmax_t _pop(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -172,7 +172,7 @@ static intmax_t _pop_signed(unsigned length, va_list list[static 1])
     return va_arg(*list, ptrdiff_t);
 }
 
-static uintmax_t _pop_unsigned(unsigned length, va_list list[static 1])
+static uintmax_t _popu(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -202,13 +202,13 @@ struct Spec
 
 #define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - ((T)-1 < 0)) * 30103 + 199999) / 100000)
 
-static int _convert_signed(struct Spec spec, FILE stream[static 1], intmax_t arg)
+static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(intmax_t)];
     char* end = buffer + sizeof(buffer);
     char* begin = _decimal(arg < 0 ? -arg : arg, end);
 
-    int character = _sign_character(arg < 0, spec.flags);
+    int character = _signchar(arg < 0, spec.flags);
     int precision = spec.precision < 0 ? 1 : spec.precision;
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : 0;
@@ -244,7 +244,7 @@ static int _convert_signed(struct Spec spec, FILE stream[static 1], intmax_t arg
     return spec.width;
 }
 
-static int _convert_unsigned(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int _convertu(struct Spec spec, FILE stream[static 1], uintmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(uintmax_t)];
     char* end = buffer + sizeof(buffer);
@@ -281,7 +281,7 @@ static int _convert_unsigned(struct Spec spec, FILE stream[static 1], uintmax_t 
     return spec.width;
 }
 
-static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int _converto(struct Spec spec, FILE stream[static 1], uintmax_t arg)
 {
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 2) / 3];
     char* end = buffer + sizeof(buffer);
@@ -318,7 +318,7 @@ static int _convert_octal(struct Spec spec, FILE stream[static 1], uintmax_t arg
     return spec.width;
 }
 
-static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
+static int _convertx(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
 {
     const char cache[] = { '0', format };
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 3) >> 2];
@@ -361,7 +361,7 @@ static int _convert_hexadecimal(struct Spec spec, FILE stream[static 1], int for
     return spec.width;
 }
 
-static int _convert_character(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     if (spec.length >> 2 == 'l') {
         mbstate_t state = {};
@@ -379,7 +379,7 @@ static int _convert_character(struct Spec spec, FILE stream[static 1], va_list l
     return 1;
 }
 
-static int _convert_string(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int _converts(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     size_t precision = spec.precision < 0 ? -1 : spec.precision;
 
@@ -412,7 +412,7 @@ static int _convert_string(struct Spec spec, FILE stream[static 1], va_list list
     return length;
 }
 
-static int _convert_pointer(FILE stream[static 1], void* arg)
+static int _convertp(FILE stream[static 1], void* arg)
 {
     if (!arg) {
         TRY(_write("NULL", 4, stream));
@@ -430,7 +430,7 @@ static int _convert_pointer(FILE stream[static 1], void* arg)
     return length + 2;
 }
 
-static int _store_count(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
+static int _storen(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
 {
     switch (spec.length) {
         case 0:
@@ -463,22 +463,22 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
     switch (format) {
         case 'd':
         case 'i':
-            return _convert_signed(spec, stream, _pop_signed(spec.length, list));
+            return _converti(spec, stream, _pop(spec.length, list));
         case 'o':
-            return _convert_octal(spec, stream, _pop_unsigned(spec.length, list));
+            return _converto(spec, stream, _popu(spec.length, list));
         case 'u':
-            return _convert_unsigned(spec, stream, _pop_unsigned(spec.length, list));
+            return _convertu(spec, stream, _popu(spec.length, list));
         case 'x':
         case 'X':
-            return _convert_hexadecimal(spec, stream, format, _pop_unsigned(spec.length, list));
+            return _convertx(spec, stream, format, _popu(spec.length, list));
         case 'c':
-            return _convert_character(spec, stream, list);
+            return _convertc(spec, stream, list);
         case 's':
-            return _convert_string(spec, stream, list);
+            return _converts(spec, stream, list);
         case 'p':
-            return _convert_pointer(stream, va_arg(*list, void*));
+            return _convertp(stream, va_arg(*list, void*));
         case 'n':
-            return _store_count(spec, count, stream, list);
+            return _storen(spec, count, stream, list);
     }
     return -2;
 }
