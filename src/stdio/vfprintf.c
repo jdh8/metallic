@@ -441,6 +441,40 @@ static int _converta(struct Spec spec, FILE stream[static 1], int format, double
         }
         return length + padding;
     }
+    else {
+        for (int i = 16; i > 3; --i) {
+            buffer[i] = "0123456789ABCDEF"[magnitude & 0xF] | lower;
+            magnitude >>= 4;
+        }
+
+        int zeros = spec.precision - 13;
+        int length = !!sign + 17 + zeros + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 17, stream));
+            TRY(_pad('0', zeros, stream));
+            TRY(_write(postfix, end - postfix, stream));
+            TRY(_pad(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 2, stream));
+            TRY(_pad('0', padding, stream));
+            TRY(_write(buffer + 2, 15, stream));
+            TRY(_pad('0', zeros, stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(_pad(' ', padding, stream));
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 17, stream));
+            TRY(_pad('0', zeros, stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
 }
 
 static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
