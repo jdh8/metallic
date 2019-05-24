@@ -1,5 +1,6 @@
 #include "FILE.h"
 #include "../math/reinterpret.h"
+#include <float.h>
 #include <limits.h>
 #include <math.h>
 #include <stdarg.h>
@@ -347,7 +348,7 @@ static int _nonfinite(struct Spec spec, FILE stream[restrict static 1], int lowe
     return length + padding;
 }
 
-static int _converta(struct Spec spec, FILE stream[static 1], int format, double arg)
+static int _hexfloat(struct Spec spec, FILE stream[static 1], int format, double arg)
 {
     int lower = format & 0x20;
     int sign = _signchar(signbit(arg), spec.flags);
@@ -477,6 +478,19 @@ static int _converta(struct Spec spec, FILE stream[static 1], int format, double
     }
 }
 
+static int _converta(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+{
+    if ((spec.length >> 2 | 0x20) == 'l') {
+        switch (LDBL_MANT_DIG) {
+            case 53:
+                return _hexfloat(spec, stream, format, va_arg(*list, long double));
+            default:
+                return -2;
+        }
+    }
+    return _hexfloat(spec, stream, format, va_arg(*list, double));
+}
+
 static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     if (spec.length >> 2 == 'l') {
@@ -589,7 +603,7 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
             return _convertx(spec, stream, format, _popu(spec.length, list));
         case 'a':
         case 'A':
-            return _converta(spec, stream, format, va_arg(*list, double));
+            return _converta(spec, stream, format, list);
         case 'c':
             return _convertc(spec, stream, list);
         case 's':
