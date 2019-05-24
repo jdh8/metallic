@@ -63,9 +63,9 @@ static int _signchar(_Bool sign, uint_least32_t flags)
 
 #define TRY(x) do if (x) return -1; while (0)
 
-static int _putif(int c, FILE stream[static 1])
+static int _put(int c, FILE stream[static 1])
 {
-    return c && stream->_put(c, stream) == EOF;
+    return stream->_put(c, stream) == EOF;
 }
 
 static int _write(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
@@ -218,7 +218,7 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
     int padding = spec.width > length ? spec.width - length : 0;
 
     if (spec.width <= length) {
-        TRY(_putif(sign, stream));
+        TRY(sign && _put(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
 
@@ -226,19 +226,19 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
     }
 
     if (spec.flags & FLAG('-')) {
-        TRY(_putif(sign, stream));
+        TRY(sign && _put(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
         TRY(_pad(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(_putif(sign, stream));
+        TRY(sign && _put(sign, stream));
         TRY(_pad('0', zeros + padding, stream));
         TRY(_write(begin, digits, stream));
     }
     else {
         TRY(_pad(' ', padding, stream));
-        TRY(_putif(sign, stream));
+        TRY(sign && _put(sign, stream));
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
@@ -372,7 +372,7 @@ static int _nonfinite(struct Spec spec, FILE stream[restrict static 1], int lowe
     if (!(spec.flags & FLAG('-')))
         TRY(_pad(' ', padding, stream));
 
-    TRY(_putif(sign, stream));
+    TRY(sign && _put(sign, stream));
     TRY(_write(output, 3, stream));
 
     if (spec.flags & FLAG('-'))
@@ -393,10 +393,53 @@ static int _converta(struct Spec spec, FILE stream[static 1], int format, double
         return _nonfinite(spec, stream, lower, sign, "NAN");
 
     int64_t magnitude = reinterpret(int64_t, fabs(arg));
-    int64_t significand = magnitude & 0x000FFFFFFFFFFFFF;
     int64_t biased = magnitude >> 52;
     int64_t exp = biased ? biased - 0x3FF : -1022 * !!magnitude;
-    const char prefix[] = { '0', 'X' | lower, '0' + !!biased };
+
+    char buffer[24] = { '0', 'X' | lower, '0' + !!biased, '.' };
+    char* end = buffer + sizeof(buffer);
+    char* postfix = _decimal(exp < 0 ? -exp : exp, end);
+
+    if (!exp)
+        *--postfix = '0';
+
+    *--postfix = exp < 0 ? '-' : '+';
+    *--postfix = 'P' | lower;
+
+    if (spec.precision < 0) {
+        uint64_t mantissa = magnitude << 12;
+        char* middle = buffer + 4;
+
+        if (mantissa)
+            for (uint64_t i = mantissa; i; i <<= 4)
+                *middle++ = "0123456789ABCDEF"[i >> 60] | lower;
+        else
+            middle -= !(spec.flags & FLAG('#'));
+
+        int length = !!sign + (middle - buffer) + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, middle - buffer, stream));
+            TRY(_write(postfix, end - postfix, stream));
+            TRY(_pad(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 2, stream));
+            TRY(_pad('0', padding, stream));
+            TRY(_write(buffer + 2, middle - (buffer + 2), stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(_pad(' ', padding, stream));
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, middle - buffer, stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
 }
 
 static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
@@ -413,7 +456,7 @@ static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[stati
         return length;
     }
 
-    TRY(stream->_put(va_arg(*list, int), stream) == EOF);
+    TRY(_put(va_arg(*list, int), stream));
     return 1;
 }
 
@@ -509,6 +552,9 @@ static int _convert(struct Spec spec, size_t count, FILE stream[static 1], int f
         case 'x':
         case 'X':
             return _convertx(spec, stream, format, _popu(spec.length, list));
+        case 'a':
+        case 'A':
+            return _converta(spec, stream, format, va_arg(*list, double));
         case 'c':
             return _convertc(spec, stream, list);
         case 's':
