@@ -477,7 +477,7 @@ static int _hexfloat(struct Spec spec, FILE stream[static 1], int format, double
 
 static int _converta(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
 {
-    if ((spec.length >> 2 | 0x20) == 'l') {
+    if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
                 return _hexfloat(spec, stream, format, va_arg(*list, long double));
