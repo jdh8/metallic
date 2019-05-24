@@ -374,13 +374,10 @@ static int _converta(struct Spec spec, FILE stream[static 1], int format, double
 
     if (spec.precision < 0) {
         uint64_t mantissa = magnitude << 12;
-        char* middle = buffer + 4;
+        char* middle = buffer + 4 - !(mantissa || spec.flags & FLAG('#'));
 
-        if (mantissa)
-            for (uint64_t i = mantissa; i; i <<= 4)
-                *middle++ = "0123456789ABCDEF"[i >> 60] | lower;
-        else
-            middle -= !(spec.flags & FLAG('#'));
+        for (uint64_t i = mantissa; i; i <<= 4)
+            *middle++ = "0123456789ABCDEF"[i >> 60] | lower;
 
         int length = !!sign + (middle - buffer) + (end - postfix);
         int padding = (spec.width > length) * (spec.width - length);
