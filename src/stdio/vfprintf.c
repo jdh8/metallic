@@ -215,15 +215,7 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : 0;
     int length = digits + zeros + !!sign;
-    int padding = spec.width > length ? spec.width - length : 0;
-
-    if (spec.width <= length) {
-        TRY(sign && _put(sign, stream));
-        TRY(_pad('0', zeros, stream));
-        TRY(_write(begin, digits, stream));
-
-        return length;
-    }
+    int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
         TRY(sign && _put(sign, stream));
@@ -242,8 +234,7 @@ static int _converti(struct Spec spec, FILE stream[static 1], intmax_t arg)
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
-
-    return spec.width;
+    return length + padding;
 }
 
 static int _convertu(struct Spec spec, FILE stream[static 1], uintmax_t arg)
@@ -256,14 +247,7 @@ static int _convertu(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : 0;
     int length = digits + zeros;
-    int padding = spec.width > length ? spec.width - length : 0;
-
-    if (spec.width <= length) {
-        TRY(_pad('0', zeros, stream));
-        TRY(_write(begin, digits, stream));
-
-        return length;
-    }
+    int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
         TRY(_pad('0', zeros, stream));
@@ -279,8 +263,7 @@ static int _convertu(struct Spec spec, FILE stream[static 1], uintmax_t arg)
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
-
-    return spec.width;
+    return length + padding;
 }
 
 static int _converto(struct Spec spec, FILE stream[static 1], uintmax_t arg)
@@ -293,14 +276,7 @@ static int _converto(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     int digits = end - begin;
     int zeros = precision > digits ? precision - digits : (spec.flags >> ('#' - ' ')) & 1;
     int length = digits + zeros;
-    int padding = spec.width > length ? spec.width - length : 0;
-
-    if (spec.width <= length) {
-        TRY(_pad('0', zeros, stream));
-        TRY(_write(begin, digits, stream));
-
-        return length;
-    }
+    int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
         TRY(_pad('0', zeros, stream));
@@ -316,8 +292,7 @@ static int _converto(struct Spec spec, FILE stream[static 1], uintmax_t arg)
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
-
-    return spec.width;
+    return length + padding;
 }
 
 static int _convertx(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
@@ -332,15 +307,7 @@ static int _convertx(struct Spec spec, FILE stream[static 1], int format, uintma
     int zeros = precision > digits ? precision - digits : 0;
     int prefix = (spec.flags & FLAG('#') && arg) << 1;
     int length = digits + zeros + prefix;
-    int padding = spec.width > length ? spec.width - length : 0;
-
-    if (spec.width <= length) {
-        TRY(_write(cache, prefix, stream));
-        TRY(_pad('0', zeros, stream));
-        TRY(_write(begin, digits, stream));
-
-        return length;
-    }
+    int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
         TRY(_write(cache, prefix, stream));
@@ -359,15 +326,14 @@ static int _convertx(struct Spec spec, FILE stream[static 1], int format, uintma
         TRY(_pad('0', zeros, stream));
         TRY(_write(begin, digits, stream));
     }
-
-    return spec.width;
+    return length + padding;
 }
 
 static int _nonfinite(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
 {
     const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
     int length = 3 + !!sign;
-    int padding = spec.width > length ? spec.width - length : 0;
+    int padding = (spec.width > length) * (spec.width - length);
 
     if (!(spec.flags & FLAG('-')))
         TRY(_pad(' ', padding, stream));
