@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <string.h>
 #include <wchar.h>
 
 static size_t _strnlen(const char begin[static 1], size_t length)
@@ -74,11 +73,9 @@ static int _write(const void* restrict buffer, size_t size, FILE stream[restrict
     return stream->_write(buffer, size, stream) != size;
 }
 
-static int _pad(int c, size_t length, FILE stream[static 1])
+static int _pad(uint8_t c, size_t length, FILE stream[static 1])
 {
-    uint64_t vector;
-
-    memset(&vector, c, sizeof(uint64_t));
+    uint64_t vector = c * 0x0101010101010101u;
 
     for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
         TRY(_write(&vector, sizeof(uint64_t), stream));
