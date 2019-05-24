@@ -403,6 +403,44 @@ static int _converta(struct Spec spec, FILE stream[static 1], int format, double
         }
         return length + padding;
     }
+    else if (spec.precision < 13) {
+        uint64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | (uint64_t)!!biased << 52;
+        uint64_t low = significand << (12 + spec.precision * 4);
+        uint64_t high = significand >> (52 - spec.precision * 4);
+        uint64_t carry = ((high & 1) | low) > 0x8000000000000000;
+        uint64_t rounded = high + carry;
+
+        for (; rounded > 0xF; rounded >>= 4)
+            *--postfix = "0123456789ABCDEF"[rounded & 0xF] | lower;
+
+        if (spec.precision || spec.flags & FLAG('#'))
+            *--postfix = '.';
+
+        *--postfix = "0123456789ABCDEF"[rounded & 0xF] | lower;
+
+        int length = !!sign + 2 + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 2, stream));
+            TRY(_write(postfix, end - postfix, stream));
+            TRY(_pad(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 2, stream));
+            TRY(_pad('0', padding, stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(_pad(' ', padding, stream));
+            TRY(sign && _put(sign, stream));
+            TRY(_write(buffer, 2, stream));
+            TRY(_write(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
 }
 
 static int _convertc(struct Spec spec, FILE stream[static 1], va_list list[static 1])
