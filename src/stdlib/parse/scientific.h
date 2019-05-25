@@ -1,4 +1,4 @@
-#include "../../math/reinterpret.h"
+#include "../../math/double/shift.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -40,12 +40,6 @@ static double _scaleup(uint64_t significand, int exp)
     return ldexp(significand, shift);
 }
 
-static double _fastldexp(double x, int64_t exp)
-{
-    uint64_t i = reinterpret(uint64_t, x) + (exp << 52);
-    return reinterpret(double, i);
-}
-
 static double _scaledown(uint64_t significand, int exp)
 {
     const uint64_t denom = 1e14 * 0x1p-14;
@@ -66,7 +60,7 @@ static double _scaledown(uint64_t significand, int exp)
     uint64_t q = significand / b;
     uint64_t r = significand % b;
     int s = __builtin_clzll(q);
-    significand = (q << s) + (uint64_t)(_fastldexp(r, s) / b);
+    significand = (q << s) + (uint64_t)(_shift(r, s) / b);
     shift -= s;
 
     return ldexp(significand, shift);
