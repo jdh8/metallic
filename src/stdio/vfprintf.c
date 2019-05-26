@@ -332,14 +332,15 @@ static int _nonfinite(struct Spec spec, FILE stream[restrict static 1], int lowe
     const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
     int length = 3 + !!sign;
     int padding = (spec.width > length) * (spec.width - length);
+    _Bool flushleft = spec.flags & FLAG('-');
 
-    if (!(spec.flags & FLAG('-')))
+    if (!flushleft)
         TRY(_pad(' ', padding, stream));
 
     TRY(sign && _put(sign, stream));
     TRY(_write(output, 3, stream));
 
-    if (spec.flags & FLAG('-'))
+    if (flushleft)
         TRY(_pad(' ', padding, stream));
 
     return length + padding;
