@@ -21,7 +21,7 @@ static uint64_t _fixmul(uint64_t a, uint32_t b, int shift[static 1])
     uint32_t overflow = high >> 32;
     int space = overflow ? __builtin_clz(overflow) : 32;
     *shift += 32 - space;
-    return high << space | (low & 0xFFFFFFFF) >> (32 - space);
+    return (high << space | (low & 0xFFFFFFFF) >> (32 - space)) + (low << space >> 31 & 1);
 }
 
 static double _scaleup(uint64_t significand, int exp)
@@ -52,7 +52,7 @@ static double _scaledown(uint64_t significand, int exp)
         uint64_t q = significand / denom;
         uint64_t r = significand % denom;
         int s = __builtin_clzll(q);
-        significand = (q << s) + (uint64_t)(1e-14 * 0x1p32 * (r << (s - 18)));
+        significand = (q << s) + (uint64_t) rint(1e-14 * 0x1p32 * (r << (s - 18)));
         shift -= s;
     }
 
