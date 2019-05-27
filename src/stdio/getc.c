@@ -1,4 +1,8 @@
 #include "getc.h"
 
-int getc(FILE[static 1]) __attribute__((alias("_getc")));
-int fgetc(FILE[static 1]) __attribute__((alias("_getc")));
+int getc(FILE stream[static 1])
+{
+    return _getc(stream);
+}
+
+int fgetc(FILE[static 1]) __attribute__((alias("getc")));
