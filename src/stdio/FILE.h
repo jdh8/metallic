@@ -18,9 +18,8 @@ struct __FILE
 
 enum
 {
-    _badbit = 1,
-    _eofbit = 2,
-    _failbit = 4
+    _eofbit = 0x10,
+    _errbit = 0x20
 };
 
 #endif

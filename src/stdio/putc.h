@@ -9,7 +9,7 @@ static int _putc(int c, FILE stream[static 1])
     int result = stream->put(c, stream);
 
     if (result == EOF)
-        stream->state |= _badbit;
+        stream->state |= _errbit;
 
     return result;
 }
