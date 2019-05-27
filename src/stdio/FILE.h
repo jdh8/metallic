@@ -7,11 +7,20 @@ typedef struct __FILE FILE;
 
 struct __FILE
 {
-    int (*const _get)(FILE*);
-    int (*const _put)(int, FILE*);
-    int (*const _unget)(int, FILE*);
-    size_t (*const _read)(void*, size_t, FILE*);
-    size_t (*const _write)(const void*, size_t, FILE*);
+    unsigned state;
+
+    int (*const get)(FILE*);
+    int (*const put)(int, FILE*);
+    int (*const unget)(int, FILE*);
+    size_t (*const read)(void*, size_t, FILE*);
+    size_t (*const write)(const void*, size_t, FILE*);
+};
+
+enum
+{
+    _badbit = 1,
+    _eofbit = 2,
+    _failbit = 4
 };
 
 #endif

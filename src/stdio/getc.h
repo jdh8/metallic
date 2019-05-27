@@ -3,9 +3,9 @@
 
 #include "FILE.h"
 
-inline int getc(FILE stream[static 1])
+static int _getc(FILE stream[static 1])
 {
-    return stream->_get(stream);
+    return stream->get(stream);
 }
 
 #endif

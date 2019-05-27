@@ -5,7 +5,7 @@
 
 inline int ungetc(int c, FILE stream[static 1])
 {
-    return stream->_unget(c, stream);
+    return stream->unget(c, stream);
 }
 
 #endif

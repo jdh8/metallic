@@ -15,7 +15,7 @@ const env =
 		return read;
 	},
 
-	getchar()
+	__getchar()
 	{
 		const buffer = new Uint8Array(1);
 		return fs.readSync(0, buffer, 0, 1) ? buffer[0] : -1;
@@ -23,7 +23,7 @@ const env =
 
 	__stdout: write(process.stdout),
 	__stderr: write(process.stderr),
-	putchar: putc(process.stdout),
+	__putchar: putc(process.stdout),
 	__putcerr: putc(process.stderr),
 };
 

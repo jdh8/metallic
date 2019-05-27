@@ -1,9 +1,10 @@
-#include "stdout.h"
+#include "fwrite.h"
 #include <string.h>
 #include <stdio.h>
 
 int puts(const char s[static 1])
 {
-    __stdout(s, strlen(s), (void*)0);
+    _fwrite(s, strlen(s), stdout);
+
     return putchar('\n');
 }

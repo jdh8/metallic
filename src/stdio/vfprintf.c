@@ -1,4 +1,5 @@
-#include "FILE.h"
+#include "fwrite.h"
+#include "putc.h"
 #include "../math/reinterpret.h"
 #include <float.h>
 #include <limits.h>
@@ -65,12 +66,12 @@ static int _signchar(_Bool sign, uint_least32_t flags)
 
 static int _put(int c, FILE stream[static 1])
 {
-    return stream->_put(c, stream) == EOF;
+    return _putc(c, stream) == EOF;
 }
 
 static int _write(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
 {
-    return stream->_write(buffer, size, stream) != size;
+    return _fwrite(buffer, size, stream) != size;
 }
 
 static int _pad(uint8_t c, size_t length, FILE stream[static 1])
