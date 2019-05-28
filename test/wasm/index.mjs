@@ -7,13 +7,7 @@ const putc = stream => c => stream.write(new Uint8Array([c])) ? c & 255 : -1;
 
 const env =
 {
-	__stdin(pointer, size)
-	{
-		const buffer = new Uint8Array(memory, pointer, size);
-		let read = 0;
-		for (let some; (some = fs.readSync(0, buffer, read, size - read)); read += some);
-		return read;
-	},
+	__stdin: (pointer, size) => fs.readSync(0, memory, pointer, size),
 
 	__getchar()
 	{
