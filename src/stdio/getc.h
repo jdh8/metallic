@@ -2,10 +2,16 @@
 #define METALLIC_GETC_H
 
 #include "FILE.h"
+#include <stdio.h>
 
 static int _getc(FILE stream[static 1])
 {
-    return stream->get(stream);
+    int result = stream->get(stream);
+
+    if (result == EOF)
+        stream->state |= _eofbit;
+
+    return result;
 }
 
 #endif
