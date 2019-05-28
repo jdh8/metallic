@@ -1,3 +1,4 @@
+#include <stddef.h>
 #include <stdio.h>
 
 int __invalid_get(FILE* stream)
@@ -10,12 +11,12 @@ int __invalid_put(int c, FILE* stream)
     return EOF;
 }
 
-size_t __invalid_read(void* buffer, size_t size, FILE* stream)
+ptrdiff_t __invalid_read(void* buffer, size_t size, FILE* stream)
 {
     return 0;
 }
 
-size_t __invalid_write(const void* buffer, size_t size, FILE* stream)
+ptrdiff_t __invalid_write(const void* buffer, size_t size, FILE* stream)
 {
     return 0;
 }
