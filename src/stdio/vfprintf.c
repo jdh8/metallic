@@ -1,4 +1,4 @@
-#include "fwrite.h"
+#include "FILE.h"
 #include "putc.h"
 #include "../math/reinterpret.h"
 #include <float.h>
@@ -71,7 +71,7 @@ static int _put(int c, FILE stream[static 1])
 
 static int _write(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
 {
-    return _fwrite(buffer, size, stream) != size;
+    return stream->write(buffer, size, stream) != size;
 }
 
 static int _pad(uint8_t c, size_t length, FILE stream[static 1])

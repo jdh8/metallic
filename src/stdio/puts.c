@@ -1,10 +1,10 @@
-#include "fwrite.h"
 #include <string.h>
 #include <stdio.h>
+#include <unistd.h>
 
 int puts(const char s[static 1])
 {
-    _fwrite(s, strlen(s), stdout);
+    write(1, s, strlen(s));
 
     return putchar('\n');
 }

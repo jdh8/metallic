@@ -9,8 +9,10 @@ struct __FILE
 {
     unsigned state;
 
-    ptrdiff_t (*const read)(void*, size_t, FILE*);
-    ptrdiff_t (*const write)(const void*, size_t, FILE*);
+    size_t (*const read)(void*, size_t, FILE*);
+    size_t (*const write)(const void*, size_t, FILE*);
+
+    int fd;
 };
 
 enum
