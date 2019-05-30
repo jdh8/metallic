@@ -1,10 +1,11 @@
 #include <string.h>
 #include <stdio.h>
-#include <unistd.h>
+
+size_t __stdio_write(const void*, size_t, FILE*);
 
 int puts(const char s[static 1])
 {
-    write(1, s, strlen(s));
+    __stdio_write(s, strlen(s), stdout);
 
     return putchar('\n');
 }
