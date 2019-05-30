@@ -1,17 +1,10 @@
 import fs from "fs";
+import * as syscalls from "./syscalls.mjs";
 
-let memory;
-
-const env =
-{
-	read: (fd, pointer, size) => fs.readSync(fd, new Uint8Array(memory, pointer, size)),
-	write: (fd, pointer, size) => fs.writeSync(fd, new Uint8Array(memory, pointer, size)),
-};
-
-WebAssembly.instantiate(fs.readFileSync(process.argv[2]), { env }).then(module =>
+WebAssembly.instantiate(fs.readFileSync(process.argv[2]), { env: syscalls }).then(module =>
 {
 	const { exports } = module.instance;
-	memory = exports.memory.buffer;
+	syscalls.setup(exports.memory.buffer);
 	exports._start();
 })
 .catch(error =>
