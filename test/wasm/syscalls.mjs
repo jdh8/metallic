@@ -17,6 +17,8 @@ const wrap = f => (...x) =>
 
 let userspace;
 
+const cstring = pointer => userspace.slice(pointer, userspace.indexOf(0, pointer));
+
 export const __setup = buffer =>
 {
 	const valid = buffer instanceof ArrayBuffer;
@@ -30,5 +32,7 @@ export const __setup = buffer =>
 export const __read = wrap((fd, pointer, size) => fs.readSync(fd, userspace, pointer, size));
 
 export const __write = wrap((fd, pointer, size) => fs.writeSync(fd, userspace, pointer, size));
+
+export const __open = wrap((path, flags, mode) => fs.openSync(cstring(path), flags, mode));
 
 export const __lseek = () => -38;
