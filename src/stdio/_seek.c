@@ -1,10 +1,9 @@
 #include "FILE.h"
 #include <errno.h>
 #include <limits.h>
-#include <stdint.h>
 #include <stdio.h>
 
-typedef int_least64_t off_t;
+typedef long long off_t;
 
 off_t __lseek(int, off_t, int);
 
