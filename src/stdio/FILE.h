@@ -11,6 +11,7 @@ struct __FILE
 
     size_t (*const read)(void*, size_t, FILE*);
     size_t (*const write)(const void*, size_t, FILE*);
+    long (*const seek)(FILE*, long, int);
 
     int fd;
 };
