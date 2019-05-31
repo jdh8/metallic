@@ -35,4 +35,6 @@ export const __write = wrap((fd, pointer, size) => fs.writeSync(fd, userspace, p
 
 export const __open = wrap((path, flags, mode) => fs.openSync(cstring(path), flags, mode));
 
+export const __close = wrap(fd => fs.closeSync(fd));
+
 export const __lseek = () => -38;
