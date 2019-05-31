@@ -1,11 +1,9 @@
-struct __FILE;
-
 #ifdef __cplusplus
 extern "C"
 #endif
-__SIZE_TYPE__ __stderr(const void*, __SIZE_TYPE__, struct __FILE*);
+long __write(int, const void*, __SIZE_TYPE__);
 
-#define _STDERR(x) __stderr((x), sizeof(x) - 1, 0)
+#define _STDERR(x) __write(2, (x), sizeof(x) - 1)
 #define _STRINGIFYIMPL(x) #x
 #define _STRINGIFY(x) _STRINGIFYIMPL(x)
 
