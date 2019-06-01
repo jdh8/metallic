@@ -23,25 +23,27 @@ const settime = (view, date) =>
 	view.setInt32(8, 1e6 * (date - 1000 * seconds), true);
 };
 
-const setstat = (view, big, normal) =>
+const callstat = (stat, file, pointer) =>
 {
-	view.setBigUint64(0, big.dev, true);
-	view.setBigUint64(8, big.ino, true);
-	view.setUint32(16, normal.mode, true);
-	view.setUint32(20, normal.nlink, true);
-	view.setUint32(24, normal.uid, true);
-	view.setUint32(28, normal.gid, true);
-	view.setBigUint64(32, big.rdev, true);
-	view.setBigInt64(40, big.size, true);
-	view.setInt32(48, normal.blksize, true);
-	view.setBigInt64(56, big.blocks, true);
+	const { buffer } = userspace;
+	const view = new DataView(buffer, pointer, 64);
+	const bigints = stat(file, { bigint: true });
+	const numbers = stat(file);
 
-	const buffer = view.buffer;
-	const pointer = view.byteOffset;
+	view.setBigUint64(0, bigints.dev, true);
+	view.setBigUint64(8, bigints.ino, true);
+	view.setUint32(16, numbers.mode, true);
+	view.setUint32(20, numbers.nlink, true);
+	view.setUint32(24, numbers.uid, true);
+	view.setUint32(28, numbers.gid, true);
+	view.setBigUint64(32, bigints.rdev, true);
+	view.setBigInt64(40, bigints.size, true);
+	view.setInt32(48, numbers.blksize, true);
+	view.setBigInt64(56, bigints.blocks, true);
 
-	settime(new DataView(buffer, pointer + 64, 16), normal.atimeMs);
-	settime(new DataView(buffer, pointer + 80, 16), normal.mtimeMs);
-	settime(new DataView(buffer, pointer + 96, 16), normal.ctimeMs);
+	settime(new DataView(buffer, pointer + 64, 16), numbers.atimeMs);
+	settime(new DataView(buffer, pointer + 80, 16), numbers.mtimeMs);
+	settime(new DataView(buffer, pointer + 96, 16), numbers.ctimeMs);
 };
 
 let userspace;
@@ -66,12 +68,6 @@ export const __open = wrap((path, flags, mode) => fs.openSync(cstring(path), fla
 
 export const __close = wrap(fd => fs.closeSync(fd));
 
-export const __stat = wrap((path, pointer) =>
-{
-	const string = cstring(path);
-	const view = new DataView(userspace.buffer, pointer, 112);
-
-	setstat(view, fs.statSync(string, { bigint: true }), fs.statSync(string));
-});
+export const __stat = wrap((path, pointer) => callstat(fs.statSync, cstring(path), pointer));
 
 export const __lseek = () => -38;
