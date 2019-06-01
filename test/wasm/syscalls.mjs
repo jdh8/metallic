@@ -20,12 +20,13 @@ const wrap = f => (...x) =>
 	}
 };
 
-const settime = (view, date) =>
+const timespec = (view, nanoseconds) =>
 {
-	const seconds = Math.trunc(date / 1000);
+	const seconds = nanoseconds / 1000000000n;
+	const nanos = nanoseconds % 1000000000n;
 
-	view.setBigInt64(0, BigInt(seconds), true);
-	view.setInt32(8, 1e6 * (date - 1000 * seconds), true);
+	view.setBigInt64(0, seconds, true);
+	view.setInt32(8, Number(nanos), true);
 };
 
 let userspace;
@@ -49,9 +50,9 @@ const callstat = (stat, file, pointer) =>
 	view.setInt32(48, numbers.blksize, true);
 	view.setBigInt64(56, bigints.blocks, true);
 
-	settime(struct(pointer + 64, 16), numbers.atimeMs);
-	settime(struct(pointer + 80, 16), numbers.mtimeMs);
-	settime(struct(pointer + 96, 16), numbers.ctimeMs);
+	timespec(struct(pointer + 64, 16), BigInt(Math.round(1e6 * numbers.atimeMs)));
+	timespec(struct(pointer + 80, 16), BigInt(Math.round(1e6 * numbers.mtimeMs)));
+	timespec(struct(pointer + 96, 16), BigInt(Math.round(1e6 * numbers.ctimeMs)));
 };
 
 const cstring = pointer => userspace.slice(pointer, userspace.indexOf(0, pointer));
@@ -88,12 +89,25 @@ export const __lseek = enosys;
 
 export const __clock_gettime = wrap((id, pointer) =>
 {
+	const realtime = () => 1000000n * BigInt(Date.now());
+	const monotonic = () => process.hrtime.bigint();
+	const cputime = () => BigInt(Math.round(1e6 * perf.performance()));
+	const clocks = [realtime, monotonic, cputime];
 	const EINVAL = -22;
-	const index = id >>> 0;
-	const clocks = [Date, perf.performance];
 
-	if (index >= clocks.length)
+	if (id >= clocks.length)
 		return EINVAL;
 
-	settime(struct(pointer, 16), clocks[index].now());
+	timespec(struct(pointer, 16), clocks[id]());
+});
+
+export const __clock_getres = wrap((id, pointer) =>
+{
+	const resolutions = [1000000n, 1n, 1n];
+	const EINVAL = -22;
+
+	if (id >= resolutions.length)
+		return EINVAL;
+
+	timespec(struct(pointer, 16), resolutions[id]);
 });
