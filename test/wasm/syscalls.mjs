@@ -70,4 +70,8 @@ export const __close = wrap(fd => fs.closeSync(fd));
 
 export const __stat = wrap((path, pointer) => callstat(fs.statSync, cstring(path), pointer));
 
+export const __fstat = wrap((fd, pointer) => callstat(fs.fstatSync, fd, pointer));
+
+export const __lstat = wrap((path, pointer) => callstat(fs.lstatSync, cstring(path), pointer));
+
 export const __lseek = () => -38;
