@@ -1,4 +1,5 @@
 import fs from "fs";
+import perf from "perf_hooks";
 
 const wrap = f => (...x) =>
 {
@@ -7,9 +8,13 @@ const wrap = f => (...x) =>
 	}
 	catch (e) {
 		const errno = e.errno | 0;
+		const EFAULT = -14;
 
-		if (errno)
+		if (errno < 0)
 			return errno;
+
+		if (e instanceof RangeError)
+			return EFAULT;
 
 		throw e;
 	}
@@ -23,10 +28,13 @@ const settime = (view, date) =>
 	view.setInt32(8, 1e6 * (date - 1000 * seconds), true);
 };
 
+let userspace;
+
+const struct = (pointer, size) => new DataView(userspace.buffer, pointer, size);
+
 const callstat = (stat, file, pointer) =>
 {
-	const { buffer } = userspace;
-	const view = new DataView(buffer, pointer, 64);
+	const view = struct(pointer, 64);
 	const bigints = stat(file, { bigint: true });
 	const numbers = stat(file);
 
@@ -41,12 +49,10 @@ const callstat = (stat, file, pointer) =>
 	view.setInt32(48, numbers.blksize, true);
 	view.setBigInt64(56, bigints.blocks, true);
 
-	settime(new DataView(buffer, pointer + 64, 16), numbers.atimeMs);
-	settime(new DataView(buffer, pointer + 80, 16), numbers.mtimeMs);
-	settime(new DataView(buffer, pointer + 96, 16), numbers.ctimeMs);
+	settime(struct(pointer + 64, 16), numbers.atimeMs);
+	settime(struct(pointer + 80, 16), numbers.mtimeMs);
+	settime(struct(pointer + 96, 16), numbers.ctimeMs);
 };
-
-let userspace;
 
 const cstring = pointer => userspace.slice(pointer, userspace.indexOf(0, pointer));
 
@@ -79,3 +85,15 @@ export const __lstat = wrap((path, pointer) => callstat(fs.lstatSync, cstring(pa
 export const __poll = enosys;
 
 export const __lseek = enosys;
+
+export const __clock_gettime = wrap((id, pointer) =>
+{
+	const EINVAL = -22;
+	const index = id >>> 0;
+	const clocks = [Date, perf.performance];
+
+	if (index >= clocks.length)
+		return EINVAL;
+
+	settime(struct(pointer, 16), clocks[index].now());
+});
