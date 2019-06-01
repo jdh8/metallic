@@ -50,6 +50,8 @@ let userspace;
 
 const cstring = pointer => userspace.slice(pointer, userspace.indexOf(0, pointer));
 
+const enosys = () => -38;
+
 export const __setup = buffer =>
 {
 	const valid = buffer instanceof ArrayBuffer;
@@ -74,4 +76,6 @@ export const __fstat = wrap((fd, pointer) => callstat(fs.fstatSync, fd, pointer)
 
 export const __lstat = wrap((path, pointer) => callstat(fs.lstatSync, cstring(path), pointer));
 
-export const __lseek = () => -38;
+export const __poll = enosys;
+
+export const __lseek = enosys;
