@@ -87,6 +87,8 @@ export const __poll = enosys;
 
 export const __lseek = enosys;
 
+export const __clock_settime = id => id ? -22 : -1;
+
 export const __clock_gettime = wrap((id, pointer) =>
 {
 	const realtime = () => 1000000n * BigInt(Date.now());
