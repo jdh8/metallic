@@ -1,6 +1,8 @@
 #ifndef	_SYS_STAT_H
 #define	_SYS_STAT_H
 
+#include "../bits/types/timespec.h"
+
 typedef unsigned long long dev_t;
 typedef unsigned long long ino_t;
 typedef unsigned mode_t;
@@ -8,15 +10,8 @@ typedef unsigned long nlink_t;
 typedef unsigned uid_t;
 typedef unsigned gid_t;
 typedef long long off_t;
-typedef long long time_t;
 typedef long blksize_t;
 typedef long long blkcnt_t;
-
-struct timespec
-{
-    time_t tv_sec;
-    long tv_nsec;
-};
 
 struct stat
 {
