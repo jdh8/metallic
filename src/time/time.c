@@ -1,10 +1,21 @@
 #include <time.h>
 
-extern double _Date_now(void);
+extern _Thread_local int errno;
 
-time_t time(time_t* timer)
+int __clock_gettime(unsigned, struct timespec[static 1]);
+
+time_t time(time_t* t)
 {
-    time_t result = _Date_now() / 1000;
-    if (timer) *timer = result;
-    return result;
+    struct timespec spec;
+    int code = __clock_gettime(0, &spec);
+
+    if (code < 0) {
+        errno = -code;
+        return -1;
+    }
+
+    if (t)
+        *t = spec.tv_sec;
+
+    return spec.tv_sec;
 }
