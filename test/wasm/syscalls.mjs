@@ -31,6 +31,15 @@ const timespec = (view, nanoseconds) =>
 
 let userspace;
 
+const [,, ...argv] = process.argv;
+
+export const __argc = () => argv.length;
+
+export const __argv = pointer => new Uint32Array(userspace.buffer, pointer)
+	.set(argv.map(s => s.length + 1).reduce((x, y, i) => [...x, x[i] + y], [0]));
+
+export const __args = pointer => Buffer.from(userspace.buffer, pointer).write(argv.join('\0') + '\0');
+
 const struct = (pointer, size) => new DataView(userspace.buffer, pointer, size);
 
 const callstat = (stat, file, pointer) =>
