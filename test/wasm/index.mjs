@@ -1,10 +1,10 @@
+import { env, memory } from "../../node/index.mjs";
 import fs from "fs";
-import * as syscalls from "./syscalls.mjs";
 
-WebAssembly.instantiate(fs.readFileSync(process.argv[2]), { env: syscalls }).then(module =>
+WebAssembly.instantiate(fs.readFileSync(process.argv[2]), { env }).then(module =>
 {
 	const { exports } = module.instance;
-	syscalls.__setup(exports.memory.buffer);
+	memory.set(exports.memory.buffer);
 	exports._start();
 })
 .catch(error =>
