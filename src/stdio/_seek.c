@@ -5,21 +5,32 @@
 
 typedef long long off_t;
 
-off_t __lseek(int, off_t, int);
+long __lseek(int, long, int);
+int __llseek(int, long, unsigned long, off_t[static 1], int);
 
-long __stdio_seek(FILE stream[restrict static 1], long offset, int origin)
+long __stdio_seek(FILE stream[static 1], long offset, int origin)
 {
-    off_t position = __lseek(stream->fd, offset, origin);
+#if LONG_MAX == 0x7FFFFFFF
+    off_t position;
+    int status = __llseek(stream->fd, offset >> 31, offset, &position, origin);
 
-    if (position > LONG_MAX) {
+    if (status < 0) {
+        errno = -status;
+        return EOF;
+    }
+
+    if (position >> 31) {
         errno = EOVERFLOW;
         return EOF;
     }
+#else
+    off_t position = __lseek(stream->fd, offset, origin);
 
     if (position < 0) {
         errno = -position;
         return EOF;
     }
+#endif
 
     return position;
 }
