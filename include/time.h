@@ -27,7 +27,7 @@ struct tm
 #define CLOCKS_PER_SEC ((clock_t)1000000)
 
 #if _POSIX_C_SOURCE >= 199309L
-typedef unsigned clockid_t;
+typedef int clockid_t;
 typedef void* timer_t;
 
 struct itimerspec

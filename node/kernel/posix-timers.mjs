@@ -9,19 +9,21 @@ export const __clock_gettime = (id, pointer) =>
 	const monotonic = () => process.hrtime.bigint();
 	const cputime = () => BigInt(Math.round(1e6 * perf.performance()));
 	const clocks = [realtime, monotonic, cputime];
+	const i = id >>> 0;
 
-	if (id >= clocks.length)
+	if (i >= clocks.length)
 		return -22;
 
-	timespec(pointer, clocks[id]());
+	timespec(pointer, clocks[i]());
 };
 
 export const __clock_getres = (id, pointer) =>
 {
 	const resolutions = [1000000n, 1n, 1n];
+	const i = id >>> 0;
 
-	if (id >= resolutions.length)
+	if (i >= resolutions.length)
 		return -22;
 
-	timespec(pointer, resolutions[id]);
+	timespec(pointer, resolutions[i]);
 };
