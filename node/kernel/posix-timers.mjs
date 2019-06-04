@@ -1,7 +1,8 @@
+import errno from "../internal/errno.json";
 import timespec from "../internal/timespec.mjs";
 import perf from "perf_hooks";
 
-export const __clock_settime = id => id ? -22 : -1;
+export const __clock_settime = id => id ? -errno.EINVAL : -errno.EPERM;
 
 export const __clock_gettime = (id, pointer) =>
 {
@@ -12,7 +13,7 @@ export const __clock_gettime = (id, pointer) =>
 	const i = id >>> 0;
 
 	if (i >= clocks.length)
-		return -22;
+		return -errno.EINVAL;
 
 	timespec(pointer, clocks[i]());
 };
@@ -23,7 +24,7 @@ export const __clock_getres = (id, pointer) =>
 	const i = id >>> 0;
 
 	if (i >= resolutions.length)
-		return -22;
+		return -errno.EINVAL;
 
 	timespec(pointer, resolutions[i]);
 };
