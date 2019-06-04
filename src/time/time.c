@@ -1,13 +1,17 @@
+#if _POSIX_C_SOURCE < 199309L
+#define _POSIX_C_SOURCE 199309L
+#endif
+
 #include <time.h>
 
 extern _Thread_local int errno;
 
-int __clock_gettime(unsigned, struct timespec[static 1]);
+int __clock_gettime(clockid_t, struct timespec*);
 
 time_t time(time_t* t)
 {
     struct timespec spec;
-    int code = __clock_gettime(0, &spec);
+    int code = __clock_gettime(CLOCK_REALTIME, &spec);
 
     if (code < 0) {
         errno = -code;
