@@ -29,3 +29,10 @@ const call = (stat, file, pointer) =>
 export const __stat = wrap((path, pointer) => call(fs.statSync, cstring(buffer, path), pointer));
 export const __fstat = wrap((fd, pointer) => call(fs.fstatSync, fd, pointer));
 export const __lstat = wrap((path, pointer) => call(fs.lstatSync, cstring(buffer, path), pointer));
+
+export const __readlink = wrap((path, pointer, size) =>
+{
+	const value = fs.readlinkSync(cstring(buffer, path), "buffer");
+	new Uint8Array(buffer, pointer, size).set(value);
+	return value.length;
+});
