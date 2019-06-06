@@ -2,7 +2,7 @@ override CPPFLAGS += -MMD -MP -MQ $@
 override CFLAGS += -pipe -O3 -Wall -flto
 
 WACC = clang --target=wasm32-unknown-unknown-wasm
-LDFLAGS = -lm
+LDLIBS = -lm
 
 metallic.bc: CC = $(WACC)
 metallic.bc: CPPFLAGS += -I include
@@ -36,13 +36,14 @@ bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.log)
 
 %.out: CC = $(WACC)
 %.out: CPPFLAGS = -I include -iquote .
+%.out: LDFLAGS = -nostdlib -Wl,--allow-undefined
 %.out: %.c metallic.bc
-	$(CC) $(CPPFLAGS) $(CFLAGS) -nostdlib -o $@ $^
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.exe: CPPFLAGS = -iquote test/native -iquote .
 %.exe: CFLAGS += -march=native
 %.exe: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS) -o $@ $<
 
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}{,/*}.{o,d,out,exe,run,log}
