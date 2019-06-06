@@ -1,54 +1,41 @@
-#include <stdint.h>
+#include <stddef.h>
 
 void __wasm_call_ctors(void);
 
-/*!
- * `argc` getter
- *
- * This function returns 0 if passing arguments to main() is unsupported.
- */
 int __argc(void);
 
 /*!
  * `argv` builder
  *
- * This function stores `argv` as offset from `argv[0]`,
- * and appends `sizeof(args)`.
- *
- * For example, if the command line is `foo -c alfa`,
- * { 0, 4, 7, 12 } will be written because
- *
- *     argv[0] = args + 0
- *     argv[1] = args + 4
- *     argv[2] = args + 7
- *     sizeof(args) = 12
- *
- * See __args() for format of `args`.
- */
-void __argv(uintptr_t* argv);
-
-/*!
- * This function stores null-separated command line.
- *
+ * This function writes null-separated command line to non-null buffer.
  * For example, if the command line is `foo -c alfa`,
  * it is stored as `"foo\0-c\0alfa"`.
  * Note that there is an implied '\0' at the end of a string.
+ *
+ * \return Characters supposed to be written
  */
-void __args(char* args);
+size_t __argv(char*);
 
-int main(int argc, char** argv);
+static size_t _strlen(char s[static 1])
+{
+    for (size_t i = 0; ; ++i)
+        if (!s[i])
+            return i;
+}
 
-void _start(void)
+int main(int, char**);
+
+int _start(void)
 {
     int argc = __argc();
     char* argv[argc + 1];
-    __argv((uintptr_t*)argv);
+    char args[__argv((void*)0)];
 
-    char args[argc ? (uintptr_t)argv[argc] : 0];
-    __args(args);
+    __argv(args);
+    argv[0] = args;
 
-    for (int i = 0; i < argc; ++i)
-        argv[i] = args + (uintptr_t)argv[i];
+    for (int i = 0; i < argc - 1; ++i)
+        argv[i + 1] = argv[i] + _strlen(argv[i]) + 1;
 
     argv[argc] = (void*)0;
 
