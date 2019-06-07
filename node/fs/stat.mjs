@@ -33,6 +33,6 @@ export const __lstat = wrap((path, pointer) => call(fs.lstatSync, cstring(buffer
 export const __readlink = wrap((path, pointer, size) =>
 {
 	const value = fs.readlinkSync(cstring(buffer, path), "buffer");
-	new Uint8Array(buffer, pointer, size).set(value);
+	new Uint8Array(buffer, pointer).set(value.slice(0, size));
 	return value.length;
 });
