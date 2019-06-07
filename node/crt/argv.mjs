@@ -7,10 +7,8 @@ const args = new TextEncoder().encode(argv.join('\0') + '\0');
 
 export const __argc = () => argv.length;
 
-export const __argv = pointer =>
+export const __argv = (pointer, size) =>
 {
-	if (pointer)
-		new Uint8Array(buffer, pointer).set(args);
-
+	new Uint8Array(buffer, pointer).set(args.slice(0, size));
 	return args.length;
 };

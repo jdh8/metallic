@@ -7,14 +7,14 @@ int __argc(void);
 /*!
  * `argv` builder
  *
- * This function writes null-separated command line to non-null buffer.
+ * This function writes null-separated command line to buffer.
  * For example, if the command line is `foo -c alfa`,
  * it is stored as `"foo\0-c\0alfa"`.
  * Note that there is an implied '\0' at the end of a string.
  *
  * \return Characters supposed to be written
  */
-size_t __argv(char*);
+size_t __argv(char*, size_t);
 
 static size_t _strlen(char s[static 1])
 {
@@ -29,9 +29,9 @@ int _start(void)
 {
     int argc = __argc();
     char* argv[argc + 1];
-    char args[__argv((void*)0)];
+    char args[__argv((void*)0, 0)];
 
-    __argv(args);
+    __argv(args, sizeof(args));
     argv[0] = args;
 
     for (int i = 0; i < argc - 1; ++i)
