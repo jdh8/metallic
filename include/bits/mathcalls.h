@@ -27,18 +27,18 @@ _Scalar _MATHCALL(tanh)(_Scalar);
 _Scalar _MATHCALL(ceil)(_Scalar);
 _Scalar _MATHCALL(floor)(_Scalar);
 
-_Scalar _MATHCALL(frexp)(_Scalar, int[_STATIC 1]);
+_Scalar _MATHCALL(frexp)(_Scalar, int*);
 _Scalar _MATHCALL(ldexp)(_Scalar, int);
-_Scalar _MATHCALL(modf)(_Scalar, _Scalar[_STATIC 1]);
+_Scalar _MATHCALL(modf)(_Scalar, _Scalar*);
 
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
 _Scalar _MATHCALL(remainder)(_Scalar, _Scalar);
-_Scalar _MATHCALL(remquo)(_Scalar, _Scalar, int[_STATIC 1]);
+_Scalar _MATHCALL(remquo)(_Scalar, _Scalar, int*);
 _Scalar _MATHCALL(fma)(_Scalar, _Scalar, _Scalar);
 _Scalar _MATHCALL(fmax)(_Scalar, _Scalar);
 _Scalar _MATHCALL(fmin)(_Scalar, _Scalar);
 _Scalar _MATHCALL(fdim)(_Scalar, _Scalar);
-_Scalar _MATHCALL(nan)(const char[_STATIC 1]);
+_Scalar _MATHCALL(nan)(const char*);
 
 _Scalar _MATHCALL(exp2)(_Scalar);
 _Scalar _MATHCALL(expm1)(_Scalar);

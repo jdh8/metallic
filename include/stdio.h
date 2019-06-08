@@ -2,7 +2,6 @@
 #define _STDIO_H
 
 #include "bits/null.h"
-#include "bits/specifiers.h"
 
 typedef struct __FILE FILE;
 typedef struct __fpos_t fpos_t;
@@ -12,8 +11,8 @@ typedef __SIZE_TYPE__ size_t;
 extern "C" {
 #endif
 
-FILE* fopen(const char[_RESTRICT _STATIC 1], const char[_RESTRICT _STATIC 1]);
-FILE* freopen(const char[_RESTRICT _STATIC 1], const char[_RESTRICT _STATIC 1], FILE* __restrict);
+FILE* fopen(const char* __restrict, const char* __restrict);
+FILE* freopen(const char* __restrict, const char* __restrict, FILE* __restrict);
 int fclose(FILE*);
 int fflush(FILE*);
 void setbuf(FILE* __restrict, char* __restrict);
@@ -24,7 +23,7 @@ size_t fwrite(const void* __restrict, size_t, size_t, FILE* __restrict);
 
 int fgetc(FILE*);
 int getc(FILE*);
-char* fgets(char[_RESTRICT _STATIC 1], int, FILE* __restrict);
+char* fgets(char* __restrict, int, FILE* __restrict);
 
 int fputc(int, FILE*);
 int putc(int, FILE*);
@@ -37,27 +36,27 @@ char* gets(char*);
 #endif
 
 int putchar(int);
-int puts(const char[_STATIC 1]);
+int puts(const char*);
 
 int ungetc(int, FILE*);
 
-int scanf(const char[_RESTRICT _STATIC 1], ...);
-int fscanf(FILE* __restrict, const char[_RESTRICT _STATIC 1], ...);
-int sscanf(const char* __restrict, const char[_RESTRICT _STATIC 1], ...);
+int scanf(const char* __restrict, ...);
+int fscanf(FILE* __restrict, const char* __restrict, ...);
+int sscanf(const char* __restrict, const char* __restrict, ...);
 
-int vscanf(const char[_RESTRICT _STATIC 1], __builtin_va_list);
-int vfscanf(FILE* __restrict, const char[_RESTRICT _STATIC 1], __builtin_va_list);
-int vsscanf(const char* __restrict, const char[_RESTRICT _STATIC 1], __builtin_va_list);
+int vscanf(const char* __restrict, __builtin_va_list);
+int vfscanf(FILE* __restrict, const char* __restrict, __builtin_va_list);
+int vsscanf(const char* __restrict, const char* __restrict, __builtin_va_list);
 
-int printf(const char[_RESTRICT _STATIC 1], ...);
-int fprintf(FILE* __restrict, const char[_RESTRICT _STATIC 1], ...);
-int sprintf(char[_RESTRICT _STATIC 1], const char[_RESTRICT _STATIC 1], ...);
-int snprintf(char* __restrict, size_t, const char[_RESTRICT _STATIC 1], ...);
+int printf(const char* __restrict, ...);
+int fprintf(FILE* __restrict, const char* __restrict, ...);
+int sprintf(char* __restrict, const char* __restrict, ...);
+int snprintf(char* __restrict, size_t, const char* __restrict, ...);
 
-int vprintf(const char[_RESTRICT _STATIC 1], __builtin_va_list);
-int vfprintf(FILE* __restrict, const char[_RESTRICT _STATIC 1], __builtin_va_list);
-int vsprintf(char[_RESTRICT _STATIC 1], const char[_RESTRICT _STATIC 1], __builtin_va_list);
-int vsnprintf(char* __restrict, size_t, const char[_RESTRICT _STATIC 1], __builtin_va_list);
+int vprintf(const char* __restrict, __builtin_va_list);
+int vfprintf(FILE* __restrict, const char* __restrict, __builtin_va_list);
+int vsprintf(char* __restrict, const char* __restrict, __builtin_va_list);
+int vsnprintf(char* __restrict, size_t, const char* __restrict, __builtin_va_list);
 
 long ftell(FILE*);
 int fgetpos(FILE* __restrict, fpos_t* __restrict);
@@ -68,10 +67,10 @@ void rewind(FILE*);
 void clearerr(FILE*);
 int feof(FILE*);
 int ferror(FILE*);
-void perror(const char[_STATIC 1]);
+void perror(const char*);
 
-int remove(const char[_STATIC 1]);
-int rename(const char[_STATIC 1], const char[_STATIC 1]);
+int remove(const char*);
+int rename(const char*, const char*);
 FILE* tmpfile(void);
 char* tmpnam(char*);
 

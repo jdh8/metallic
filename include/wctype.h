@@ -1,8 +1,6 @@
 #ifndef _WCTYPE_H
 #define _WCTYPE_H
 
-#include "bits/specifiers.h"
-
 typedef __WINT_TYPE__ wint_t;
 typedef unsigned wctrans_t;
 typedef unsigned wctype_t;
@@ -27,13 +25,13 @@ int iswxdigit(wint_t);
 int iswalnum(wint_t);
 int iswpunct(wint_t);
 
-wctype_t wctype(const char[_STATIC 1]);
+wctype_t wctype(const char*);
 int iswctype(wint_t, wctype_t);
 
 wint_t towupper(wint_t);
 wint_t towlower(wint_t);
 
-wctrans_t wctrans(const char[_STATIC 1]);
+wctrans_t wctrans(const char*);
 wint_t towctrans(wint_t, wctrans_t);
 
 #ifdef __cplusplus

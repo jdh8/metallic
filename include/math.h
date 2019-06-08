@@ -1,8 +1,6 @@
 #ifndef _MATH_H
 #define _MATH_H
 
-#include "bits/specifiers.h"
-
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
 #define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
 

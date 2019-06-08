@@ -27,7 +27,7 @@ int at_quick_exit(void(void));
 #endif
 
 int system(const char*);
-char* getenv(const char[_STATIC 1]);
+char* getenv(const char*);
 
 /******************* Memory management ********************/
 void* malloc(size_t);
@@ -40,23 +40,23 @@ void* aligned_alloc(size_t, size_t);
 #endif
 
 /********************* Number parsing *********************/
-double atof(const char[_STATIC 1]);
-int atoi(const char[_STATIC 1]);
-long atol(const char[_STATIC 1]);
+double atof(const char*);
+int atoi(const char*);
+long atol(const char*);
 
-long strtol(const char[_STATIC 1], char**, int);
-unsigned long strtoul(const char[_STATIC 1], char**, int);
+long strtol(const char*, char**, int);
+unsigned long strtoul(const char*, char**, int);
 
-double strtod(const char[_STATIC 1], char**);
+double strtod(const char*, char**);
 
 #if __STDC_VERSION__ >= 199901L || __cplusplus >= 201103L
-long long atoll(const char[_STATIC 1]);
+long long atoll(const char*);
 
-long long strtoll(const char[_STATIC 1], char**, int);
-unsigned long long strtoull(const char[_STATIC 1], char**, int);
+long long strtoll(const char*, char**, int);
+unsigned long long strtoull(const char*, char**, int);
 
-float strtof(const char[_STATIC 1], char**);
-long double strtold(const char[_STATIC 1], char**);
+float strtof(const char*, char**);
+long double strtold(const char*, char**);
 #endif
 
 /********************** Wide strings **********************/
@@ -66,8 +66,8 @@ int mblen(const char*, size_t);
 int mbtowc(wchar_t*__restrict, const char*__restrict, size_t);
 int wctomb(char*, wchar_t);
 
-size_t mbstowcs(wchar_t[_STATIC 1], const char[_STATIC 1], size_t);
-size_t wcstombs(char[_STATIC 1], const wchar_t[_STATIC 1], size_t);
+size_t mbstowcs(wchar_t*, const char*, size_t);
+size_t wcstombs(char*, const wchar_t*, size_t);
 
 /*********************** Algorithms ***********************/
 #define RAND_MAX 2147483646
