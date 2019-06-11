@@ -43,7 +43,7 @@ bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.log)
 %.exe: CPPFLAGS = -iquote test/native -iquote .
 %.exe: CFLAGS += -march=native
 %.exe: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDLIBS) -o $@ $<
+	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDLIBS)
 
 clean:
 	$(RM) *.{a,bc} */*/*{,/*}{,/*}.{o,d,out,exe,run,log}
