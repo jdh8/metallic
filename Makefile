@@ -46,7 +46,7 @@ bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.log)
 	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDLIBS)
 
 clean:
-	$(RM) *.{a,bc} */*/*{,/*}{,/*}.{o,d,out,exe,run,log}
+	$(RM) *.bc */*/*.[!chjm]* */*/*/*.[!chjm]* */*/*/*/*.[!chjm]*
 
 .DELETE_ON_ERROR:
 
