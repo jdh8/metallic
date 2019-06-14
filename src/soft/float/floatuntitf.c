@@ -8,7 +8,7 @@ long double __floatuntitf(unsigned __int128 a)
     if (!a)
         return 0;
 
-    int space = _clzti2(a);
+    int space = clzti2_(a);
     unsigned __int128 normalized = a << space;
     unsigned __int128 adjustment = normalized & 0x4000 && normalized & 0xBFFF;
     unsigned __int128 significand = normalized >> 15 & mask;

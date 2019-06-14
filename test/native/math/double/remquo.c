@@ -12,10 +12,10 @@ static void run(double numerator, double denominator)
     int q0, q1;
     double r0 = remquo(numerator, denominator, &q0);
 
-    assert(identical(r0, _remquo(numerator, denominator, &q1)) && coterminal(q0, q1));
-    assert(identical(r0, _remquo(numerator, -denominator, &q1)) && coterminal(q0, q1));
-    assert(identical(-r0, _remquo(-numerator, denominator, &q1)) && coterminal(-q0, q1));
-    assert(identical(-r0, _remquo(-numerator, -denominator, &q1)) && coterminal(-q0, q1));
+    assert(identical(r0, remquo_(numerator, denominator, &q1)) && coterminal(q0, q1));
+    assert(identical(r0, remquo_(numerator, -denominator, &q1)) && coterminal(q0, q1));
+    assert(identical(-r0, remquo_(-numerator, denominator, &q1)) && coterminal(-q0, q1));
+    assert(identical(-r0, remquo_(-numerator, -denominator, &q1)) && coterminal(-q0, q1));
 }
 
 int main(void)

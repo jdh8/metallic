@@ -2,7 +2,7 @@
 
 int getc(FILE stream[static 1])
 {
-    return _getc(stream);
+    return getc_(stream);
 }
 
 int fgetc(FILE[static 1]) __attribute__((alias("getc")));

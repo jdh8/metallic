@@ -6,5 +6,5 @@ typedef unsigned long Unsigned;
 
 long strtol(const char s[restrict static 1], char** restrict end, int base)
 {
-    return _parseint(s, end, base, LONG_MAX);
+    return parseint_(s, end, base, LONG_MAX);
 }

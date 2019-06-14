@@ -2,7 +2,7 @@
 #include <math.h>
 
 /* Error function restricted to [-0.5, 0.5] */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         1.128379165627683563,
@@ -18,7 +18,7 @@ static double _kernel(double x)
     return x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + c[4] * (x4 * x4));
 }
 
-static double _complement(double x)
+static double complement_(double x)
 {
     const double c[] = {
        -1.265537997442867325,
@@ -37,7 +37,7 @@ static double _complement(double x)
     double t2 = t * t;
     double t4 = t2 * t2;
 
-    return t * _expf(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
+    return t * expf_(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
         + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
         + (c[8] + c[9] * t) * (t4 * t4)
         - x * x);
@@ -47,5 +47,5 @@ float erff(float x)
 {
     float r = fabsf(x);
 
-    return r > 0.4769362762044699f ? copysignf(1 - _complement(r), x) : _kernel(x);
+    return r > 0.4769362762044699f ? copysignf(1 - complement_(r), x) : kernel_(x);
 }

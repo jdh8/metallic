@@ -8,5 +8,5 @@ typedef uint64_t Bitset;
 double nan(const char s[static 1])
 {
     char* dummy;
-    return _nan(s, &dummy, '\0');
+    return nan_(s, &dummy, '\0');
 }

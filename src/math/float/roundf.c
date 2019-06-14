@@ -1,3 +1,3 @@
 #include "roundf.h"
 
-float roundf(float x) { return _roundf(x); }
+float roundf(float x) { return roundf_(x); }

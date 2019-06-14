@@ -1,7 +1,7 @@
 #include "expf.h"
 #include <math.h>
 
-static double _right(double x)
+static double right_(double x)
 {
     const double c[] = {
        -1.2655414002954096370,
@@ -21,7 +21,7 @@ static double _right(double x)
     double t2 = t * t;
     double t4 = t2 * t2;
 
-    return t * _expf(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
+    return t * expf_(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
         + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
         + (c[8] + c[9] * t + c[10] * t2) * (t4 * t4)
         - x * x);
@@ -29,7 +29,7 @@ static double _right(double x)
 
 float erfcf(float x)
 {
-    double t = _right(fabsf(x));
+    double t = right_(fabsf(x));
 
     return signbit(x) ? 2 - t : t;
 }

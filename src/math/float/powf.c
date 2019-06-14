@@ -4,7 +4,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static float _unsigned(float x, float y)
+static float unsigned_(float x, float y)
 {
     if (x == 1)
         return 1;
@@ -18,7 +18,7 @@ static float _unsigned(float x, float y)
     if (signbit(x))
         return NAN;
 
-    return _exp2f(y * _log2f(x));
+    return exp2f_(y * log2f_(x));
 }
 
 float powf(float x, float y)
@@ -33,5 +33,5 @@ float powf(float x, float y)
         sign = -(rintf(y / 2) != y / 2);
     }
 
-    return copysignf(_unsigned(x, y), reinterpret(float, sign));
+    return copysignf(unsigned_(x, y), reinterpret(float, sign));
 }

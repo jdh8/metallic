@@ -4,7 +4,7 @@
 #include "FILE.h"
 #include <stdio.h>
 
-static int _putc(int c, FILE stream[static 1])
+static int putc_(int c, FILE stream[static 1])
 {
     unsigned char byte = c;
     

@@ -11,7 +11,7 @@ long double __floattitf(__int128 a)
     unsigned __int128 sign = a & (unsigned __int128)1 << 127;
     unsigned __int128 magnitude = a < 0 ? -a : a;
 
-    int space = _clzti2(magnitude);
+    int space = clzti2_(magnitude);
     unsigned __int128 normalized = magnitude << space;
     unsigned __int128 adjustment = normalized & 0x4000 && normalized & 0xBFFF;
     unsigned __int128 significand = normalized >> 15 & mask;

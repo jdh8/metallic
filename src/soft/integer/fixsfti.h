@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static __int128 _fixsfti(float x)
+static __int128 fixsfti_(float x)
 {
     float r = fabsf(x);
     uint64_t high = 0x1p-64f * r;

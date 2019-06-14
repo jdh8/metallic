@@ -1,7 +1,7 @@
 /* Restriction of expm1(a + b) to [-0.5 ln 2, 0.5 ln 2]
  * where |b| < |a|
  */
-static void _kernel_expm1(double y[static 2], double a, double b)
+static void kernel_expm1_(double y[static 2], double a, double b)
 {
     const double c[] = {
        -3.33333333333271196132e-2,

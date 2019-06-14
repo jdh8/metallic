@@ -5,5 +5,5 @@ typedef unsigned long long Unsigned;
 
 unsigned long long strtoull(const char s[restrict static 1], char** restrict end, int base)
 {
-    return _parseint(s, end, base, -1);
+    return parseint_(s, end, base, -1);
 }

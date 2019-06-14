@@ -5,7 +5,7 @@ int main(void)
 {
     for (uint32_t i = 0; i < 0x7F800000; i += 71) {
         float x = reinterpret(float, i);
-        verify(_fixunssfti(x) == (unsigned __int128)x, x);
-        verify(!_fixunssfti(-x), x);
+        verify(fixunssfti_(x) == (unsigned __int128)x, x);
+        verify(!fixunssfti_(-x), x);
     }
 }

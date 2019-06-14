@@ -5,9 +5,9 @@
 
 /* Normalize nonzero magnitude
  *
- * See _normalize(int64_t) for details
+ * See normalize_(int64_t) for details
  */
-static int32_t _normalizef(int32_t i)
+static int32_t normalizef_(int32_t i)
 {
     if (i < 0x00800000) {
         int32_t shift = __builtin_clz(i) - 8;

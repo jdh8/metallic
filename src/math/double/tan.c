@@ -1,6 +1,6 @@
 int __rem_pio2(double x, double y[static 2]);
 
-static double _ncot(double a, double b)
+static double ncot_(double a, double b)
 {
     const double c[] = {
         3.3333333333333492367e-1,
@@ -22,7 +22,7 @@ static double _ncot(double a, double b)
     return r * a + b + b / x - 1 / a;
 }
 
-static double _tan(double a, double b)
+static double tan_(double a, double b)
 {
     const double c[] = {
         3.0000000000000000533,
@@ -47,5 +47,5 @@ double tan(double x)
     double y[2];
     unsigned q = __rem_pio2(x, y);
 
-    return (q & 1 ? _ncot : _tan)(y[0], y[1]);
+    return (q & 1 ? ncot_ : tan_)(y[0], y[1]);
 }

@@ -1,4 +1,4 @@
-static unsigned _digit(unsigned c)
+static unsigned digit_(unsigned c)
 {
     if (c - '0' < 10)
         return c - '0';

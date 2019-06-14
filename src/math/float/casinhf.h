@@ -1,6 +1,6 @@
 #include "finite/cashf.h"
 
-static float _Complex _casinhf(float x, float y)
+static float _Complex casinhf_(float x, float y)
 {
     const double pi = 3.14159265358979323846;
 
@@ -13,5 +13,5 @@ static float _Complex _casinhf(float x, float y)
     if (isunordered(x, y))
         return CMPLXF(NAN, y ? NAN : 0);
 
-    return _cashf(x, y, _carg);
+    return cashf_(x, y, carg_);
 }

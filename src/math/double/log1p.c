@@ -26,5 +26,5 @@ double log1p(double x)
     double z = y / (y + 2);
     double h = 0.5 * y * y;
 
-    return exponent * ln2[1] + (1 - u + x) / u + z * (h + _kernel_log(z)) - h + y + exponent * ln2[0];
+    return exponent * ln2[1] + (1 - u + x) / u + z * (h + kernel_log_(z)) - h + y + exponent * ln2[0];
 }

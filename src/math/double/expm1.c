@@ -25,7 +25,7 @@ double expm1(double x)
     double b = n * -ln2[1];
     double y[2];
 
-    _kernel_expm1(y, a, b);
+    kernel_expm1_(y, a, b);
 
     int64_t exponent = n;
 
@@ -39,10 +39,10 @@ double expm1(double x)
     }
 
     if ((uint64_t)exponent > 56)
-        return _shift(y[0] + y[1] + 1, exponent) - 1;
+        return shift_(y[0] + y[1] + 1, exponent) - 1;
 
     double small = reinterpret(double, (uint64_t)(0xBFF - exponent) << 52);
     double base = exponent < 20 ? y[0] + y[1] + (1 + small) : y[1] + small + y[0] + 1;
 
-    return _shift(base, exponent);
+    return shift_(base, exponent);
 }

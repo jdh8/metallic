@@ -23,7 +23,7 @@ double exp(double x)
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
 
-    int64_t i = reinterpret(int64_t, _kernel_expb(a, b) + 1) + ((int64_t)n << 52);
+    int64_t i = reinterpret(int64_t, kernel_expb_(a, b) + 1) + ((int64_t)n << 52);
 
     if (x < subnorm)
         return 0x1p-1020 * reinterpret(double, i + 0x3FC0000000000000);

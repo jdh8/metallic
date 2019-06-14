@@ -1,7 +1,7 @@
 int __rem_pio2f(float x, double y[static 1]);
 
 /* Restriction of (x -> √x cot(√x)) to [0, (π/4)^2] */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         9.9999999547970088679e-1,
@@ -20,7 +20,7 @@ float tanf(float x)
 {
     double y;
     unsigned q = __rem_pio2f(x, &y);
-    double ycoty = _kernel(y * y);
+    double ycoty = kernel_(y * y);
 
     return q & 1 ? ycoty / -y : y / ycoty;
 }

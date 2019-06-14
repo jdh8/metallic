@@ -1,5 +1,5 @@
 /* Arctangent restricted to [-1, 1] */
-static double _kernel_atanf(double x)
+static double kernel_atanf_(double x)
 {
     const double n[] = {
         80.3271869581482272,

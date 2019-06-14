@@ -10,7 +10,7 @@ int __cmptf2(long double x, long double y)
     if ((a | b) << 1 == 0)
         return 0;
 
-    if (_unordtf2(a, b))
+    if (unordtf2_(a, b))
         return 1;
 
     return ((a > b) - (a < b) + sign) ^ sign;

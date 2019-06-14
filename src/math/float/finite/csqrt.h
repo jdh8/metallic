@@ -2,7 +2,7 @@
 #include <math.h>
 
 /* Finite nonzero complex square root */
-static double _Complex _csqrt(double x, double y)
+static double _Complex csqrt_(double x, double y)
 {
     double s = sqrt(0.5 * (fabs(x) + sqrt(x * x + y * y)));
     double t = 0.5 * y / s;

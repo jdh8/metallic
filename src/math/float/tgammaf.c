@@ -4,13 +4,13 @@
 #include "exp2f.h"
 #include <math.h>
 
-static double _gamma1p(double z)
+static double gamma1p_(double z)
 {
     const double log2e = 1.442695040888963407;
 
-    double base = _lanczos_g + 0.5 + z;
+    double base = lanczos_g_ + 0.5 + z;
 
-    return _exp2f((0.5 + z) * _log2f(base) - log2e * base) * _lanczos_series(z);
+    return exp2f_((0.5 + z) * log2f_(base) - log2e * base) * lanczos_series_(z);
 }
 
 float tgammaf(float z)
@@ -26,8 +26,8 @@ float tgammaf(float z)
     if (z < 0.5f) {
         if (rintf(z) == z)
             return NAN;
-        return pi / (_sinpif(z) * _gamma1p(-z));
+        return pi / (sinpif_(z) * gamma1p_(-z));
     }
 
-    return _gamma1p(z - 1.0);
+    return gamma1p_(z - 1.0);
 }

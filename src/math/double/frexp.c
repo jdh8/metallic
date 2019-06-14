@@ -12,7 +12,7 @@ double frexp(double x, int exp[static 1])
         return x;
     }
 
-    i = _normalize(i);
+    i = normalize_(i);
     *exp = (i >> 52) - 1022;
 
     return copysign(reinterpret(double, (i & 0x000FFFFFFFFFFFFF) | 0x3FE0000000000000), x);

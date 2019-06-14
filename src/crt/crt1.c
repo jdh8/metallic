@@ -16,7 +16,7 @@ int __argc(void);
  */
 size_t __argv(char*, size_t);
 
-static size_t _strlen(char s[static 1])
+static size_t strlen_(char s[static 1])
 {
     for (size_t i = 0; ; ++i)
         if (!s[i])
@@ -35,10 +35,11 @@ int _start(void)
     argv[0] = args;
 
     for (int i = 0; i < argc - 1; ++i)
-        argv[i + 1] = argv[i] + _strlen(argv[i]) + 1;
+        argv[i + 1] = argv[i] + strlen_(argv[i]) + 1;
 
     argv[argc] = (void*)0;
 
     __wasm_call_ctors();
-    main(argc, argv);
+
+    return main(argc, argv);
 }

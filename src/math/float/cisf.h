@@ -1,12 +1,12 @@
 #include "kernel/sincosf.h"
 #include <complex.h>
 
-static double _Complex _cisf(float t)
+static double _Complex cisf_(float t)
 {
     double r;
     unsigned q = __rem_pio2f(t, &r);
-    double x = _kernel_cosf(r);
-    double y = _kernel_sinf(r);
+    double x = kernel_cosf_(r);
+    double y = kernel_sinf_(r);
 
     switch (q & 3) {
         case 1:

@@ -2,7 +2,7 @@
 #include "../../math/reinterpret.h"
 #include <math.h>
 
-static Scalar _nan(const char s[restrict static 1], char* end[restrict static 1], int tail)
+static Scalar nan_(const char s[restrict static 1], char* end[restrict static 1], int tail)
 {
     Bitset mantissa = 0;
     unsigned base = 10;
@@ -16,7 +16,7 @@ static Scalar _nan(const char s[restrict static 1], char* end[restrict static 1]
         else base = 8;
     }
 
-    for (unsigned digit = _digit(*s); digit < base; digit = _digit(*++s))
+    for (unsigned digit = digit_(*s); digit < base; digit = digit_(*++s))
         mantissa = mantissa * base + digit;
 
     if (*s == tail) {

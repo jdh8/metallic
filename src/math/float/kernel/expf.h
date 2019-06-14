@@ -2,7 +2,7 @@
 #define METALLIC_KERNEL_EXPF_H
 
 /* Restriction of `expm1f` to [-0.5 ln 2, 0.5 ln 2] */
-static double _kernel_expf(double x)
+static double kernel_expf_(double x)
 {
     const double c[] = {
         1.000000010775500705,

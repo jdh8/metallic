@@ -1,14 +1,14 @@
 #include <complex.h>
 #include <math.h>
 
-static double _Complex _kernel(double a, double b, double c, double d)
+static double _Complex kernel_(double a, double b, double c, double d)
 {
     return CMPLX(a * c + b * d, b * c - a * d) / (c * c + d * d);
 }
 
 float _Complex __divsc3(float a, float b, float c, float d)
 {
-    float _Complex z = _kernel(a, b, c, d);
+    float _Complex z = kernel_(a, b, c, d);
 
     if (isnan(crealf(z)) && isnan(cimagf(z))) {
         if (c == 0 && d == 0 && (a == a || b == b))

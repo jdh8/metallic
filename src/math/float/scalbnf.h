@@ -2,7 +2,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static double _coeff(Integer exp)
+static double coeff_(Integer exp)
 {
     if (exp >= 1024)
         return DBL_MAX;
@@ -15,5 +15,5 @@ static double _coeff(Integer exp)
 
 float SCALBNF(float x, Integer exp)
 {
-    return x * _coeff(exp);
+    return x * coeff_(exp);
 }

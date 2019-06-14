@@ -1,4 +1,4 @@
-static double _lanczos_series(double z)
+static double lanczos_series_(double z)
 {
     const double p[] = {
         2.5066282972608683788,
@@ -11,4 +11,4 @@ static double _lanczos_series(double z)
     return p[4] / (z + 4) + p[3] / (z + 3) + (p[2] / (z + 2) + p[1] / (z + 1)) + p[0];
 }
 
-static const double _lanczos_g = 4.3644453082153116114;
+static const double lanczos_g_ = 4.3644453082153116114;

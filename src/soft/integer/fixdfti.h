@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static __int128 _fixdfti(double x)
+static __int128 fixdfti_(double x)
 {
     double r = fabs(x);
     uint64_t high = 0x1p-64 * r;

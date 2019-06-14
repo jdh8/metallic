@@ -3,7 +3,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _finite(double c)
+static double finite_(double c)
 {
     const double ln2 = 0.6931471805599453094;
 
@@ -12,7 +12,7 @@ static double _finite(double c)
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
     double y = reinterpret(double, i - (exponent << 52));
 
-    return 2 * _kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+    return 2 * kernel_atanhf_((y - 1) / (y + 1)) + exponent * ln2;
 }
 
 float acoshf(float x)
@@ -23,7 +23,7 @@ float acoshf(float x)
         return NAN;
 
     if (i < 0x7F800000)
-        return _finite(x);
+        return finite_(x);
 
     return x;
 }

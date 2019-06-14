@@ -4,7 +4,7 @@
  * c = ------  the solution to ----- = √2.
  *     √2 + 1,                 1 - c
  */
-static double _kernel_log(double x)
+static double kernel_log_(double x)
 {
     const double c[] = {
         0.66666666666666697269,

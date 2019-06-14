@@ -5,7 +5,7 @@
  * If x > 1, this function returns NaN to indicate complex result.
  * If x < 0.5, the result is inaccurate.
  */
-static double _acos(double x)
+static double acos_(double x)
 {
     const double c[] = {
         1.57060812392777102,
@@ -22,7 +22,7 @@ static double _acos(double x)
 }
 
 /* Arcsine restricted to [-0.5, 0.5] */
-static float _asin(double x)
+static float asin_(double x)
 {
     double c[] = {
         9.99999995478096602e-1,
@@ -45,5 +45,5 @@ float asinf(float x)
 
     float r = fabsf(x);
 
-    return r < 0.5f ? _asin(x) : copysignf(pi_2 - _acos(r), x);
+    return r < 0.5f ? asin_(x) : copysignf(pi_2 - acos_(r), x);
 }

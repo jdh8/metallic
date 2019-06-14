@@ -6,7 +6,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _exp2f(double x)
+static double exp2f_(double x)
 {
     if (x < -1022)
         return 0;
@@ -15,9 +15,9 @@ static double _exp2f(double x)
         return x * HUGE_VAL;
 
     double n = rint(x);
-    double y = 1 + _kernel_exp2f(x - n);
+    double y = 1 + kernel_exp2f_(x - n);
 
-    return _shift(y, n);
+    return shift_(y, n);
 }
 
 #endif

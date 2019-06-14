@@ -2,5 +2,5 @@
 
 double fmod(double numerator, double denominator)
 {
-    return _fmod(numerator, denominator);
+    return fmod_(numerator, denominator);
 }

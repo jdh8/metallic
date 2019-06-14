@@ -2,5 +2,5 @@
 
 float _Complex clogf(float _Complex z)
 {
-    return _clogf(z);
+    return clogf_(z);
 }

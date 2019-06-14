@@ -2,5 +2,5 @@
 
 unsigned __int128 __fixunsdfti(double x)
 {
-    return _fixunsdfti(x);
+    return fixunsdfti_(x);
 }

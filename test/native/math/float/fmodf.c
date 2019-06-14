@@ -6,15 +6,15 @@ static void convergent(float x, float y)
 {
     float r = fmodf(x, y);
 
-    verify2(identical(r, _fmodf(x, y)), x, y);
-    verify2(identical(r, _fmodf(x, -y)), x, y);
-    verify2(identical(-r, _fmodf(-x, y)), x, y);
-    verify2(identical(-r, _fmodf(-x, -y)), x, y);
+    verify2(identical(r, fmodf_(x, y)), x, y);
+    verify2(identical(r, fmodf_(x, -y)), x, y);
+    verify2(identical(-r, fmodf_(-x, y)), x, y);
+    verify2(identical(-r, fmodf_(-x, -y)), x, y);
 }
 
 static void divergent(float x, float y)
 {
-    verify2(isnan(_fmodf(x, y)), x, y);
+    verify2(isnan(fmodf_(x, y)), x, y);
 }
 
 int main(void)

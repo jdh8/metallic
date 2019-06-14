@@ -2,5 +2,5 @@
 
 double __floatuntidf(unsigned __int128 a)
 {
-    return _floatuntidf(a);
+    return floatuntidf_(a);
 }

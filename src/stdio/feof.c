@@ -2,5 +2,5 @@
 
 int feof(FILE stream[static 1])
 {
-    return stream->state & _eofbit;
+    return stream->state & eofbit_;
 }

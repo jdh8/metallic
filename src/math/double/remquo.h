@@ -3,7 +3,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static double _remquo(double numerator, double denominator, int quotient[static 1])
+static double remquo_(double numerator, double denominator, int quotient[static 1])
 {
     int64_t from = reinterpret(int64_t, numerator);
     int q = 0;

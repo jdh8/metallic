@@ -5,7 +5,7 @@
 #include "../double/shift.h"
 #include <math.h>
 
-static double _expm1f(float x)
+static double expm1f_(float x)
 {
     const float minimum = -37.42994775023704671;
     const float maximum = 709.78271289338399684;
@@ -20,11 +20,11 @@ static double _expm1f(float x)
         return x * HUGE_VAL;
 
     float n = rintf(x * log2e) + 0;
-    double y = _kernel_expf(x - n * ln2);
+    double y = kernel_expf_(x - n * ln2);
 
     if (n == 0)
         return y;
 
-    return _shift(y + 1, n) - 1;
+    return shift_(y + 1, n) - 1;
 }
 #endif

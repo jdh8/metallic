@@ -12,7 +12,7 @@ float exp2f(float x)
         return 128 * FLT_MAX;
 
     float n = rintf(x);
-    double y = 1 + _kernel_exp2f(x - n);
+    double y = 1 + kernel_exp2f_(x - n);
 
-    return _shift(y, n);
+    return shift_(y, n);
 }

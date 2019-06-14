@@ -1,6 +1,6 @@
 #include <complex.h>
 
-static Complex _complex(Real x, Real y)
+static Complex complex_(Real x, Real y)
 {
     return _Generic(x,
         float: CMPLXF(x, y),

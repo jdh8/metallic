@@ -11,13 +11,13 @@ int main(void)
 
     for (uint64_t i = 0; i < inf; i += step) {
         double x = reinterpret(double, i);
-        verify(identical(floor(x), _floor(x)), x);
-        verify(identical(floor(-x), _floor(-x)), x);
+        verify(identical(floor(x), floor_(x)), x);
+        verify(identical(floor(-x), floor_(-x)), x);
     }
 
     for (uint64_t i = nan; i < sign; i += step) {
         double x = reinterpret(double, i);
-        verify(isnan(_floor(x)), x);
-        verify(isnan(_floor(-x)), x);
+        verify(isnan(floor_(x)), x);
+        verify(isnan(floor_(-x)), x);
     }
 }

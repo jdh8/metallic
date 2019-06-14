@@ -7,7 +7,7 @@ float _Complex cacosf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    double _Complex first = _cacoshf(fabsf(x), fabsf(y));
+    double _Complex first = cacoshf_(fabsf(x), fabsf(y));
 
     return CMPLXF(fabs(cimag(first) - (x < 0) * pi), copysignf(first, -y));
 }

@@ -2,7 +2,7 @@
 #include "../../reinterpret.h"
 #include <stdint.h>
 
-static double _log2f(double x)
+static double log2f_(double x)
 {
     const double log2e = 1.44269504088896340736;
 
@@ -11,5 +11,5 @@ static double _log2f(double x)
 
     x = reinterpret(double, i - (exponent << 52));
 
-    return 2 * log2e * _kernel_atanhf((x - 1) / (x + 1)) + exponent;
+    return 2 * log2e * kernel_atanhf_((x - 1) / (x + 1)) + exponent;
 }

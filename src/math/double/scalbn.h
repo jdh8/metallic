@@ -11,7 +11,7 @@ double SCALBN(double x, Integer exp)
     if (i == 0 || i >= 0x7FF0000000000000)
         return x;
 
-    i = _normalize(i);
+    i = normalize_(i);
 
     int64_t biased = exp + (i >> 52);
 

@@ -5,7 +5,7 @@
 #include "../double/shift.h"
 #include <math.h>
 
-static double _expf(double x)
+static double expf_(double x)
 {
     const double minimum = -708.39641853226410622;
     const double maximum = 709.78271289338399684;
@@ -20,9 +20,9 @@ static double _expf(double x)
         return x * HUGE_VAL;
 
     double n = rint(x * log2e);
-    double y = 1 + _kernel_expf(x - n * ln2);
+    double y = 1 + kernel_expf_(x - n * ln2);
 
-    return _shift(y, n);
+    return shift_(y, n);
 }
 
 #endif

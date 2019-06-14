@@ -2,7 +2,7 @@
 #include <ctype.h>
 #include <errno.h>
 
-static Integer _parseint(const char s[restrict static 1], char** restrict pointer, unsigned base, Unsigned max)
+static Integer parseint_(const char s[restrict static 1], char** restrict pointer, unsigned base, Unsigned max)
 {
     Integer sign = 1;
     const char* end = s;
@@ -35,7 +35,7 @@ static Integer _parseint(const char s[restrict static 1], char** restrict pointe
     Unsigned magnitude = 0;
     _Bool overflow = 0;
 
-    for (unsigned digit = _digit(*s); digit < base; digit = _digit(*s)) {
+    for (unsigned digit = digit_(*s); digit < base; digit = digit_(*s)) {
         Unsigned next = magnitude * base + digit;
         overflow |= threshold < magnitude || next < digit;
         magnitude = next;

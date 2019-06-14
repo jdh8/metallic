@@ -18,8 +18,8 @@ struct __FILE
 
 enum
 {
-    _eofbit = 0x10,
-    _errbit = 0x20,
+    eofbit_ = 0x10,
+    errbit_ = 0x20,
 };
 
 #endif

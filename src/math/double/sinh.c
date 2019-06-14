@@ -4,7 +4,7 @@
 #include <float.h>
 
 /* Restriction of (x -> sinh(√x) / √x - 1) to [0, (ln 2)^2] */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         1.66666666666666662045e-01,
@@ -20,11 +20,11 @@ static double _kernel(double x)
     return (c[5] * xx + c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x;
 }
 
-static double _base(const double y[static 2], uint64_t n)
+static double base_(const double y[static 2], uint64_t n)
 {
     double yy = y[0] + y[1] + 1;
 
-    return n > 56 ? yy : y[1] - 1 / _shift(yy, 2 * n) + y[0] + 1;
+    return n > 56 ? yy : y[1] - 1 / shift_(yy, 2 * n) + y[0] + 1;
 }
 
 double sinh(double x)
@@ -38,14 +38,14 @@ double sinh(double x)
         return x * HUGE_VAL;
 
     if (r < ln2[0] + ln2[1])
-        return x + x * _kernel(x * x);
+        return x + x * kernel_(x * x);
 
     double n = rint(r * log2e);
     double a = r - n * ln2[0];
     double b = n * -ln2[1];
     double y[2];
 
-    _kernel_expm1(y, a, b);
+    kernel_expm1_(y, a, b);
 
-    return _shift(copysign(0.5, x) * _base(y, n), n);
+    return shift_(copysign(0.5, x) * base_(y, n), n);
 }

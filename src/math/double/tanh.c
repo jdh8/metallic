@@ -4,7 +4,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         3.33333333333333325270e-1,
@@ -20,7 +20,7 @@ static double _kernel(double x)
     return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x + c[5] * xx) * (xx * xx);
 }
 
-static double _half(double x)
+static double half_(double x)
 {
     const double log2e = 1.44269504088896340736;
     const double ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
@@ -28,7 +28,7 @@ static double _half(double x)
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y = _kernel_expb(a, b);
+    double y = kernel_expb_(a, b);
 
     switch (reinterpret(uint64_t, n)) {
         case 0x3FF0000000000000:
@@ -37,21 +37,21 @@ static double _half(double x)
             return (4 * y + 3) / (4 * y + 5);
     }
 
-    return 1 - 2 / (_shift(y + 1, n) + 1);
+    return 1 - 2 / (shift_(y + 1, n) + 1);
 }
 
-static double _right(double x)
+static double right_(double x)
 {
     if (x < 0.2554128118829953416)
-        return x / (_kernel(x * x) + 1);
+        return x / (kernel_(x * x) + 1);
 
     if (x < 19.061547465398495995)
-        return _half(2 * x);
+        return half_(2 * x);
 
     return 1 + 0 / x;
 }
 
 double tanh(double x)
 {
-    return copysign(_right(fabs(x)), x);
+    return copysign(right_(fabs(x)), x);
 }

@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static float _floorf(float x)
+static float floorf_(float x)
 {
     int32_t bits = reinterpret(int32_t, x);
     int32_t magnitude = bits & 0x7FFFFFFF;
@@ -21,11 +21,11 @@ static float _floorf(float x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define FLOORF(x) __builtin_floorf(x)
 #else
-#define FLOORF(x) _floorf(x)
+#define FLOORF(x) floorf_(x)
 #endif
 
 float floorf(float x)
 {
-    (void)_floorf;
+    (void)floorf_;
     return FLOORF(x);
 }

@@ -2,5 +2,5 @@
 
 __int128 __fixsfti(float x)
 {
-    return _fixsfti(x);
+    return fixsfti_(x);
 }

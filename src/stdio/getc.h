@@ -4,7 +4,7 @@
 #include "FILE.h"
 #include <stdio.h>
 
-static int _getc(FILE stream[static 1])
+static int getc_(FILE stream[static 1])
 {
     unsigned char c;
 

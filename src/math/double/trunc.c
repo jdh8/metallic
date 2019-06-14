@@ -1,7 +1,7 @@
 #include "../reinterpret.h"
 #include <stdint.h>
 
-static double _trunc(double x)
+static double trunc_(double x)
 {
     const int64_t mask = 0xFFF0000000000000;
     int64_t bits = reinterpret(int64_t, x);
@@ -19,11 +19,11 @@ static double _trunc(double x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define TRUNC(x) __builtin_trunc(x)
 #else
-#define TRUNC(x) _trunc(x)
+#define TRUNC(x) trunc_(x)
 #endif
 
 double trunc(double x)
 {
-    (void)_trunc;
+    (void)trunc_;
     return TRUNC(x);
 }

@@ -2,5 +2,5 @@
 
 int ferror(FILE stream[static 1])
 {
-    return stream->state & _errbit;
+    return stream->state & errbit_;
 }

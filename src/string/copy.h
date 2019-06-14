@@ -9,22 +9,22 @@
     return destination;                                         \
 }
 
-static void* _copy64 COPY(uint_least64_t);
-static void* _copy32 COPY(uint_least32_t);
-static void* _copy16 COPY(uint_least16_t);
-static void* _copy8 COPY(unsigned char);
+static void* copy64_ COPY(uint_least64_t);
+static void* copy32_ COPY(uint_least32_t);
+static void* copy16_ COPY(uint_least16_t);
+static void* copy8_ COPY(unsigned char);
 
-static void* _copy(void* destination, const void* source, size_t size, size_t alignment)
+static void* copy_(void* destination, const void* source, size_t size, size_t alignment)
 {
     switch (alignment & -alignment) {
         top:
-            return _copy64(destination, source, size >> 3);
+            return copy64_(destination, source, size >> 3);
         case 4:
-            return _copy32(destination, source, size >> 2);
+            return copy32_(destination, source, size >> 2);
         case 2:
-            return _copy16(destination, source, size >> 1);
+            return copy16_(destination, source, size >> 1);
         case 1:
-            return _copy8(destination, source, size);
+            return copy8_(destination, source, size);
         default:
             goto top;
     }

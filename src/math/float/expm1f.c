@@ -2,5 +2,5 @@
 
 float expm1f(float x)
 {
-    return _expm1f(x);
+    return expm1f_(x);
 }

@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _ceil(double x)
+static double ceil_(double x)
 {
     int64_t bits = reinterpret(int64_t, x);
     int64_t magnitude = bits & 0x7FFFFFFFFFFFFFFF;
@@ -21,11 +21,11 @@ static double _ceil(double x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define CEIL(x) __builtin_ceil(x)
 #else
-#define CEIL(x) _ceil(x)
+#define CEIL(x) ceil_(x)
 #endif
 
 double ceil(double x)
 {
-    (void)_ceil;
+    (void)ceil_;
     return CEIL(x);
 }

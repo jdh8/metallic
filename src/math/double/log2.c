@@ -3,7 +3,7 @@
 #include "../reinterpret.h"
 #include <math.h>
 
-static double _finite(int64_t i)
+static double finite_(int64_t i)
 {
     const double log2e[] = { 0x1.71547652p0, 0x1.705fc2eefa2p-33 };
 
@@ -14,7 +14,7 @@ static double _finite(int64_t i)
     
     uint64_t j = reinterpret(uint64_t, x - h) & 0xFFFFFFFF00000000;
     double a = reinterpret(double, j);
-    double b = x - a - h + z * (h + _kernel_log(z));
+    double b = x - a - h + z * (h + kernel_log_(z));
 
     return (a + b) * log2e[1] + b * log2e[0] + a * log2e[0] + exponent;
 }
@@ -27,7 +27,7 @@ double log2(double x)
         return i << 1 == 0 ? -HUGE_VAL : NAN;
 
     if (i < 0x7FF0000000000000)
-        return _finite(_normalize(i));
+        return finite_(normalize_(i));
 
     return x;
 }

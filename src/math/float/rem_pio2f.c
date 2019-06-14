@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /* Get 96 bits of 2/π with `offset` bits skipped */
-static uint64_t _segment(int offset, uint32_t low[static 1])
+static uint64_t segment_(int offset, uint32_t low[static 1])
 {
     const uint64_t bits[] = { 0xA2F9836E4E441529, 0xFC2757D1F534DDC0, 0xDB6295993C439041, 0xFE5163ABDEBBC561 };
 
@@ -44,7 +44,7 @@ int __rem_pio2f(float x, double y[static 1])
     }
 
     uint32_t low;
-    uint64_t high = _segment((magnitude >> 23) - 152, &low);
+    uint64_t high = segment_((magnitude >> 23) - 152, &low);
     uint64_t significand = (i & 0x007FFFFF) | 0x00800000;
 
     /* First 64 bits of fractional part of x/(2π) */

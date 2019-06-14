@@ -2,7 +2,7 @@
 #define METALLIC_KERNEL_EXP2F_H
 
 /* Restriction of (x -> 2^x - 1) to [-0.5, 0.5] */
-static double _kernel_exp2f(double x)
+static double kernel_exp2f_(double x)
 {
     const double c[] = {
         6.931471880289532425e-1,

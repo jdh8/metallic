@@ -7,7 +7,7 @@ float _Complex cexpf(float _Complex z)
     float y = cimagf(z);
 
     if (y == 0)
-        return CMPLXF(_expf(x), y);
+        return CMPLXF(expf_(x), y);
 
     if (y - y) {
         if (x == INFINITY)
@@ -17,5 +17,5 @@ float _Complex cexpf(float _Complex z)
             return 0;
     }
 
-    return _expf(x) * _cisf(y);
+    return expf_(x) * cisf_(y);
 }

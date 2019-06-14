@@ -10,7 +10,7 @@ size_t __stdio_write(const void* restrict buffer, size_t size, FILE stream[restr
     size_t count = status < 0 ? 0 : status;
 
     if (count < size)
-        stream->state |= _errbit;
+        stream->state |= errbit_;
 
     if (status < 0)
         errno = -status;

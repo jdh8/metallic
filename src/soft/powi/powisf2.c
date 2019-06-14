@@ -4,5 +4,5 @@ typedef float Scalar;
 
 float __powisf2(float x, int i)
 {
-    return _powi(x, i);
+    return powi_(x, i);
 }

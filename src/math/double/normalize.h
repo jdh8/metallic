@@ -18,7 +18,7 @@
  * smallest normal number is already mapped to 0 and there is no other suitable
  * result for 0.
  */
-static int64_t _normalize(int64_t i)
+static int64_t normalize_(int64_t i)
 {
     if (i < 0x0010000000000000) {
         int64_t shift = __builtin_clzll(i) - 11;

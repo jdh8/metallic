@@ -2,5 +2,5 @@
 
 float fmodf(float numerator, float denominator)
 {
-    return _fmodf(numerator, denominator);
+    return fmodf_(numerator, denominator);
 }

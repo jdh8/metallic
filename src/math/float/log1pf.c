@@ -14,7 +14,7 @@ float log1pf(float x)
         return NAN;
 
     if (i < 0x7F800000)
-        return _log1pf(x);
+        return log1pf_(x);
 
     return x;
 }

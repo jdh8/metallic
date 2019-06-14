@@ -4,7 +4,7 @@
 #include <float.h>
 
 /* Restriction of (cosh ∘ √) to [0, (0.5 ln 2)^2] */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         9.99999999999999996932e-1,
@@ -31,19 +31,19 @@ double cosh(double x)
         return x * HUGE_VAL;
 
     if (x < 0.5 * (ln2[0] + ln2[1]))
-        return _kernel(x * x);
+        return kernel_(x * x);
 
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
     double y[2];
 
-    _kernel_expm1(y, a, b);
+    kernel_expm1_(y, a, b);
 
     int64_t exponent = n;
     int64_t head = 0x3FF - 2 * exponent;
     double z = y[1] + y[0] + 1;
     double c = reinterpret(double, (head * (head > 0)) << 52);
 
-    return _shift(c / z + y[1] + y[0] + 1, exponent - 1);
+    return shift_(c / z + y[1] + y[0] + 1, exponent - 1);
 }

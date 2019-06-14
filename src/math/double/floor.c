@@ -2,7 +2,7 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _floor(double x)
+static double floor_(double x)
 {
     int64_t bits = reinterpret(int64_t, x);
     int64_t magnitude = bits & 0x7FFFFFFFFFFFFFFF;
@@ -21,11 +21,11 @@ static double _floor(double x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define FLOOR(x) __builtin_floor(x)
 #else
-#define FLOOR(x) _floor(x)
+#define FLOOR(x) floor_(x)
 #endif
 
 double floor(double x)
 {
-    (void)_floor;
+    (void)floor_;
     return FLOOR(x);
 }

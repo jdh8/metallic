@@ -1,7 +1,7 @@
 #include <string.h>
 #include <stddef.h>
 
-static size_t _split(int comp(int, int), const unsigned char* x, size_t n, size_t period[static 1])
+static size_t split_(int comp(int, int), const unsigned char* x, size_t n, size_t period[static 1])
 {
     size_t i = -1;
     size_t j = 0;
@@ -36,21 +36,21 @@ static size_t _split(int comp(int, int), const unsigned char* x, size_t n, size_
     return i;
 }
 
-static int _lt(int a, int b)
+static int lt_(int a, int b)
 {
     return a < b;
 }
 
-static int _gt(int a, int b)
+static int gt_(int a, int b)
 {
     return a > b;
 }
 
-static size_t _factorize(const unsigned char* x, size_t n, size_t period[static 1])
+static size_t factorize_(const unsigned char* x, size_t n, size_t period[static 1])
 {
     size_t p;
-    size_t lt = _split(_lt, x, n, period);
-    size_t gt = _split(_gt, x, n, &p);
+    size_t lt = split_(lt_, x, n, period);
+    size_t gt = split_(gt_, x, n, &p);
 
     if (lt >= gt)
         return lt;
@@ -59,7 +59,7 @@ static size_t _factorize(const unsigned char* x, size_t n, size_t period[static 
     return gt;
 }
 
-static const unsigned char* _nonperiodic(const unsigned char* source, size_t excess,
+static const unsigned char* nonperiodic_(const unsigned char* source, size_t excess,
     const unsigned char* x, size_t n, size_t index, size_t period)
 {
     for (size_t j = 0; j <= excess;) {
@@ -87,19 +87,19 @@ static const unsigned char* _nonperiodic(const unsigned char* source, size_t exc
     return 0;
 }
 
-static size_t _max(size_t a, size_t b)
+static size_t max_(size_t a, size_t b)
 {
     return a < b ? b : a;
 }
 
-static const unsigned char* _periodic(const unsigned char* source, size_t excess,
+static const unsigned char* periodic_(const unsigned char* source, size_t excess,
     const unsigned char* x, size_t n, size_t index, size_t period)
 {
     /* Big enough because the needle is periodic */
     ptrdiff_t memory = 0;
 
     for (size_t j = 0; j <= excess;) {
-        ptrdiff_t i = _max(index + 1, memory);
+        ptrdiff_t i = max_(index + 1, memory);
 
         while (i < n && x[i] == source[i + j])
             ++i;
@@ -126,13 +126,13 @@ static const unsigned char* _periodic(const unsigned char* source, size_t excess
     return 0;
 }
 
-static const unsigned char* _search(const unsigned char* source, size_t excess,
+static const unsigned char* search_(const unsigned char* source, size_t excess,
     const unsigned char* x, size_t n, size_t index, size_t period)
 {
     if (memcmp(x, x + period, index + 1))
-        return _nonperiodic(source, excess, x, n, index, period);
+        return nonperiodic_(source, excess, x, n, index, period);
     else
-        return _periodic(source, excess, x, n, index, period);
+        return periodic_(source, excess, x, n, index, period);
 }
 
 void* memmem(const void* source, size_t length, const void* x, size_t n)
@@ -141,9 +141,9 @@ void* memmem(const void* source, size_t length, const void* x, size_t n)
         return 0;
 
     size_t period;
-    size_t index = _factorize(x, n, &period);
+    size_t index = factorize_(x, n, &period);
 
-    return (unsigned char*)_search(source, length - n, x, n, index, period);
+    return (unsigned char*)search_(source, length - n, x, n, index, period);
 }
 
 char* strstr(const char source[static 1], const char x[static 1])

@@ -3,5 +3,5 @@
 
 float cargf(float _Complex z)
 {
-    return _atan2f(cimagf(z), z);
+    return atan2f_(cimagf(z), z);
 }

@@ -4,12 +4,12 @@
 
 float _Complex cpowf(float _Complex base, float _Complex exp)
 {
-    double _Complex z = exp * _clogf(base);
+    double _Complex z = exp * clogf_(base);
     double x = z;
     double y = cimag(z);
 
     if (y == 0)
-        return CMPLX(_expf(x), y);
+        return CMPLX(expf_(x), y);
 
     if (y - y) {
         if (x == INFINITY)
@@ -19,5 +19,5 @@ float _Complex cpowf(float _Complex base, float _Complex exp)
             return 0;
     }
 
-    return _expf(x) * _cisf(y);
+    return expf_(x) * cisf_(y);
 }

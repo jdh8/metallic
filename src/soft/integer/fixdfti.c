@@ -3,5 +3,5 @@
 
 __int128 __fixdfti(double x)
 {
-    return _fixdfti(x);
+    return fixdfti_(x);
 }

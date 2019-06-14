@@ -18,7 +18,7 @@ int main(void)
 
     for (long i = 0; i < 1L << 26; ++i) {
         unsigned __int128 c[2];
-        _umulti(c, a, b);
+        umulti_(c, a, b);
 
         assert(c[0] == a * b);
         assert((sum(c[0]) + sum(c[1])) % 0xFFFFFFFF == (sum(a) % 0xFFFFFFFF) * (sum(b) % 0xFFFFFFFF) % 0xFFFFFFFF);

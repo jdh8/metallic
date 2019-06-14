@@ -1,4 +1,4 @@
-static Scalar _powu(Scalar x, unsigned i)
+static Scalar powu_(Scalar x, unsigned i)
 {
     Scalar y = 1;
 
@@ -10,10 +10,10 @@ static Scalar _powu(Scalar x, unsigned i)
     return y;
 }
 
-static Scalar _powi(Scalar x, int i)
+static Scalar powi_(Scalar x, int i)
 {
     if (i < 0)
-        return _powu(1 / x, -i);
+        return powu_(1 / x, -i);
 
-    return _powu(x, i);
+    return powu_(x, i);
 }

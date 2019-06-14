@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-static unsigned __int128 _fixunsdfti(double x)
+static unsigned __int128 fixunsdfti_(double x)
 {
     if (x < 1)
         return 0;

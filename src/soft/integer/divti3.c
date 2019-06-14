@@ -7,5 +7,5 @@ __int128 __divti3(__int128 a, __int128 b)
     __int128 signq = signa ^ signb;
     unsigned __int128 r;
 
-    return _udivmodti4(a + signa ^ signa, b + signb ^ signb, &r) + signq ^ signq;
+    return udivmodti4_(a + signa ^ signa, b + signb ^ signb, &r) + signq ^ signq;
 }

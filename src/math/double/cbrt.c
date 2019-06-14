@@ -3,14 +3,14 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _kernel(double x)
+static double kernel_(double x)
 {
     int64_t i = reinterpret(int64_t, x);
 
     if (i == 0 || i >= 0x7FF0000000000000)
         return x;
 
-    i = 0x2A9F7AF196E8E6E8 + _normalize(i) / 3;
+    i = 0x2A9F7AF196E8E6E8 + normalize_(i) / 3;
 
     double y = reinterpret(double, i);
 
@@ -23,5 +23,5 @@ static double _kernel(double x)
 
 double cbrt(double x)
 {
-    return copysign(_kernel(fabs(x)), x);
+    return copysign(kernel_(fabs(x)), x);
 }

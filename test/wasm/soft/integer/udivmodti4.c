@@ -4,7 +4,7 @@
 static void run(unsigned __int128 a, unsigned __int128 b)
 {
     unsigned __int128 r;
-    unsigned __int128 q = _udivmodti4(a, b, &r);
+    unsigned __int128 q = udivmodti4_(a, b, &r);
 
     assert(a == b * q + r);
 }

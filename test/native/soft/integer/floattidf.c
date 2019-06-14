@@ -8,12 +8,12 @@ int main(void)
     const __int128 min = -max - 1;
     unsigned __int128 a = 0;
 
-    assert(identical(_floattidf(min), min));
+    assert(identical(floattidf_(min), min));
 
     for (long i = 0; i < 1L << 26; ++i) {
         __int128 b = a & max;
-        verify(identical(_floattidf(b), b), b);
-        verify(identical(_floattidf(-b), -b), b);
+        verify(identical(floattidf_(b), b), b);
+        verify(identical(floattidf_(-b), -b), b);
         a = a + 1993 + (a >> 3);
     }
 }

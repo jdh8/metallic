@@ -5,7 +5,7 @@
  * If x > 1, this function returns NaN to indicate complex result.
  * If x < 0, the result is inaccurate.
  */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double c[] = {
         1.5707963049952700155,
@@ -27,7 +27,7 @@ static double _kernel(double x)
 float acosf(float x)
 {
     const double pi = 3.14159265358979323846;
-    double y = _kernel(fabsf(x));
+    double y = kernel_(fabsf(x));
 
     return x > 0 ? y : pi - y;
 }

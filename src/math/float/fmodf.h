@@ -2,12 +2,12 @@
 #include <math.h>
 #include <stdint.h>
 
-static uint32_t _significand(uint32_t i)
+static uint32_t significand_(uint32_t i)
 {
     return (i & 0x007FFFFF) | 0x00800000;
 }
 
-static uint32_t _remshift(uint32_t a, uint32_t b, uint32_t exp)
+static uint32_t remshift_(uint32_t a, uint32_t b, uint32_t exp)
 {
     uint_fast64_t remainder = ((uint_fast64_t)a << (exp & 31)) % b;
 
@@ -17,7 +17,7 @@ static uint32_t _remshift(uint32_t a, uint32_t b, uint32_t exp)
     return remainder;
 }
 
-static int32_t _load(int32_t remainder, int32_t template)
+static int32_t load_(int32_t remainder, int32_t template)
 {
     if (remainder == 0)
         return remainder;
@@ -30,15 +30,15 @@ static int32_t _load(int32_t remainder, int32_t template)
     return normalized < 0x00800000 ? significand >> (1 - exp) : normalized;
 }
 
-static uint32_t _finite(uint32_t a, uint32_t b)
+static uint32_t finite_(uint32_t a, uint32_t b)
 {
     if (b <= 0x01000000)
-        return a <= 0x01000000 ? a % b : _remshift(_significand(a), b, (a >> 23) - 1);
+        return a <= 0x01000000 ? a % b : remshift_(significand_(a), b, (a >> 23) - 1);
 
-    return _load(_remshift(_significand(a), _significand(b), (a >> 23) - (b >> 23)), b);
+    return load_(remshift_(significand_(a), significand_(b), (a >> 23) - (b >> 23)), b);
 }
 
-static float _fmodf(float numerator, float denominator)
+static float fmodf_(float numerator, float denominator)
 {
     uint32_t a = reinterpret(uint32_t, fabsf(numerator));
     uint32_t b = reinterpret(uint32_t, fabsf(denominator));
@@ -49,5 +49,5 @@ static float _fmodf(float numerator, float denominator)
     if (a < b)
         return numerator;
 
-    return copysignf(reinterpret(float, _finite(a, b)), numerator);
+    return copysignf(reinterpret(float, finite_(a, b)), numerator);
 }

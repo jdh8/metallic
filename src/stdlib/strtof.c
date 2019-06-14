@@ -8,5 +8,5 @@ typedef uint32_t Bitset;
 
 float strtof(const char s[restrict static 1], char** restrict end)
 {
-    return _parsefloat(s, end);
+    return parsefloat_(s, end);
 }

@@ -5,12 +5,12 @@
 #include <math.h>
 #include <stdint.h>
 
-static double _kernel_clog1pf(double x)
+static double kernel_clog1pf_(double x)
 {
-    return _kernel_atanhf(x / (2 + x));
+    return kernel_atanhf_(x / (2 + x));
 }
 
-static double _real_clogf(float x, float y)
+static double real_clogf_(float x, float y)
 {
     const double ln2 = 0.69314718055994530942;
 
@@ -30,20 +30,20 @@ static double _real_clogf(float x, float y)
 
     if (!exponent) {
         if (x == 1)
-            return _kernel_clog1pf(b * b);
+            return kernel_clog1pf_(b * b);
         if (y == 1)
-            return _kernel_clog1pf(a * a);
+            return kernel_clog1pf_(a * a);
     }
 
     double c = reinterpret(double, i - (exponent << 52));
 
-    return _kernel_atanhf((c - 1) / (c + 1)) + ln2 / 2 * exponent;
+    return kernel_atanhf_((c - 1) / (c + 1)) + ln2 / 2 * exponent;
 }
 
-static double _Complex _clogf(float _Complex z)
+static double _Complex clogf_(float _Complex z)
 {
     float x = z;
     float y = cimagf(z);
 
-    return CMPLX(_real_clogf(fabsf(x), fabsf(y)), _atan2f(y, x));
+    return CMPLX(real_clogf_(fabsf(x), fabsf(y)), atan2f_(y, x));
 }

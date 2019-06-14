@@ -8,11 +8,11 @@ float _Complex ctanhf(float _Complex z)
     float x = z;
     float y = cimagf(z);
 
-    double t = _expm1f(2 * fabsf(x));
+    double t = expm1f_(2 * fabsf(x));
     double sinhcosh = copysign(t, x) * (0.25 + 0.25 / (t + 1));
     double sinhsinh = 0.25 * t * t / (t + 1);
 
-    double _Complex circular = _cisf(y);
+    double _Complex circular = cisf_(y);
     double cos = circular;
     double sin = cimag(circular);
 

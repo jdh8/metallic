@@ -2,5 +2,5 @@
 
 double remquo(double numerator, double denominator, int quotient[static 1])
 {
-    return _remquo(numerator, denominator, quotient);
+    return remquo_(numerator, denominator, quotient);
 }

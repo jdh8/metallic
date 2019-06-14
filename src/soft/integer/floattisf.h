@@ -2,7 +2,7 @@
 #include "../../math/reinterpret.h"
 #include <stdint.h>
 
-static float _floattisf(__int128 a)
+static float floattisf_(__int128 a)
 {
     const unsigned __int128 bit = (unsigned __int128)1 << 103;
     const unsigned __int128 mask = 3 * bit - 1;
@@ -12,7 +12,7 @@ static float _floattisf(__int128 a)
 
     unsigned __int128 magnitude = a < 0 ? -a : a;
 
-    int space = _clzti2(magnitude);
+    int space = clzti2_(magnitude);
     unsigned __int128 normalized = magnitude << space;
     uint32_t adjustment = normalized & bit && normalized & mask;
     uint32_t significand = normalized >> 104 & 0x007FFFFF;

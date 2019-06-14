@@ -1,6 +1,6 @@
 #include <math.h>
 
-static double _kernel_sinpif(double x)
+static double kernel_sinpif_(double x)
 {
     const double c[] = {
         3.14159264393361429, /* No, this is not pi */
@@ -14,7 +14,7 @@ static double _kernel_sinpif(double x)
     return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
 }
 
-static double _kernel_cospif(double x)
+static double kernel_cospif_(double x)
 {
     const double c[] = {
         0.999999972423322921,
@@ -28,7 +28,7 @@ static double _kernel_cospif(double x)
     return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
 }
 
-static double _sinpif(float x)
+static double sinpif_(float x)
 {
     x -= 2 * rintf(x / 2);
 
@@ -37,13 +37,13 @@ static double _sinpif(float x)
 
     switch (3u & (int) q) {
         case 0:
-            return _kernel_sinpif(r);
+            return kernel_sinpif_(r);
         case 1:
-            return _kernel_cospif(r);
+            return kernel_cospif_(r);
         case 2:
-            return _kernel_sinpif(-r);
+            return kernel_sinpif_(-r);
         case 3:
-            return -_kernel_cospif(r);
+            return -kernel_cospif_(r);
     }
 
     __builtin_unreachable();

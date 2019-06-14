@@ -12,10 +12,10 @@ static void run(float numerator, float denominator)
     int q0, q1;
     float r0 = remquof(numerator, denominator, &q0);
 
-    assert(identical(r0, _remquof(numerator, denominator, &q1)) && coterminal(q0, q1));
-    assert(identical(r0, _remquof(numerator, -denominator, &q1)) && coterminal(q0, q1));
-    assert(identical(-r0, _remquof(-numerator, denominator, &q1)) && coterminal(-q0, q1));
-    assert(identical(-r0, _remquof(-numerator, -denominator, &q1)) && coterminal(-q0, q1));
+    assert(identical(r0, remquof_(numerator, denominator, &q1)) && coterminal(q0, q1));
+    assert(identical(r0, remquof_(numerator, -denominator, &q1)) && coterminal(q0, q1));
+    assert(identical(-r0, remquof_(-numerator, denominator, &q1)) && coterminal(-q0, q1));
+    assert(identical(-r0, remquof_(-numerator, -denominator, &q1)) && coterminal(-q0, q1));
 }
 
 int main(void)

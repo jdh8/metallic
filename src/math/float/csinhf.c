@@ -2,5 +2,5 @@
 
 float _Complex csinhf(float _Complex z)
 {
-    return _csinhf(z, cimagf(z));
+    return csinhf_(z, cimagf(z));
 }

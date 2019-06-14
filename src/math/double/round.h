@@ -1,6 +1,6 @@
 #include <math.h>
 
-static double _round(double x)
+static double round_(double x)
 {
     double r = fabs(x);
     double i = trunc(r);

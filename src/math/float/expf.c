@@ -18,7 +18,7 @@ float expf(float x)
         return maximum * FLT_MAX;
 
     float n = rintf(x * log2e);
-    double y = 1 + _kernel_expf(x - n * ln2);
+    double y = 1 + kernel_expf_(x - n * ln2);
 
-    return _shift(y, n);
+    return shift_(y, n);
 }

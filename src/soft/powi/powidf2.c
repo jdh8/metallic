@@ -4,5 +4,5 @@ typedef double Scalar;
 
 double __powidf2(double x, int i)
 {
-    return _powi(x, i);
+    return powi_(x, i);
 }

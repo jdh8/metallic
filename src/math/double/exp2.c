@@ -3,7 +3,7 @@
 #include <stdint.h>
 
 /* Restriction of (x -> √x (2^√x + 1) / (2^√x - 1) - 2 log2(e)) to [0, 0.25] */
-static double _internal(double x)
+static double internal_(double x)
 {
     const double c[] = {
         1.15524530093323580864e-1,
@@ -19,11 +19,11 @@ static double _internal(double x)
 }
 
 /* Restriction of (x -> 2^x - 1) to [-0.5, 0.5] */
-static double _kernel(double x)
+static double kernel_(double x)
 {
     const double log2e2 = 2.88539008177792681693;
 
-    return 2 * x / (_internal(x * x) - x + log2e2);
+    return 2 * x / (internal_(x * x) - x + log2e2);
 }
 
 double exp2(double x)
@@ -35,7 +35,7 @@ double exp2(double x)
         return 0;
 
     double n = rint(x);
-    int64_t i = reinterpret(int64_t, _kernel(x - n) + 1) + ((int64_t)n << 52);
+    int64_t i = reinterpret(int64_t, kernel_(x - n) + 1) + ((int64_t)n << 52);
 
     if (x < -1020)
         return 0x1p-1020 * reinterpret(double, i + 0x3FC0000000000000);

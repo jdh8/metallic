@@ -3,14 +3,14 @@
 #include <math.h>
 #include <stdint.h>
 
-static float _kernel(float x)
+static float kernel_(float x)
 {
     int32_t i = reinterpret(int32_t, x);
 
     if (i == 0 || i >= 0x7F800000)
         return x;
 
-    i = 0x2A512CE3 + _normalizef(i) / 3;
+    i = 0x2A512CE3 + normalizef_(i) / 3;
 
     double y = reinterpret(float, i);
 
@@ -22,5 +22,5 @@ static float _kernel(float x)
 
 float cbrtf(float x)
 {
-    return copysignf(_kernel(fabsf(x)), x);
+    return copysignf(kernel_(fabsf(x)), x);
 }

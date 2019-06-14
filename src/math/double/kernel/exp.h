@@ -1,5 +1,5 @@
 /* Restriction of (x -> (√x * coth(√x / 2) - 2) / x) to [0, (0.5 ln 2)^2] */
-static double _kernel_expa(double x)
+static double kernel_expa_(double x)
 {
     const double c[] = {
         1.6666666666666661553e-1,
@@ -18,10 +18,10 @@ static double _kernel_expa(double x)
  *
  * Preferably, |b| < 0x1p-26 * |a|
  */
-static double _kernel_expb(double a, double b)
+static double kernel_expb_(double a, double b)
 {
     double x = a + b;
-    double y = x - _kernel_expa(x * x);
+    double y = x - kernel_expa_(x * x);
 
     return x * y / (2 - y) + b + a;
 }

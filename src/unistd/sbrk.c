@@ -20,7 +20,7 @@ void* sbrk(intptr_t increment)
 }
 
 __attribute__((constructor))
-static void _initialize(void)
+static void initialize_(void)
 {
     sbrk(pagesize * __builtin_wasm_memory_size(0));
 }

@@ -1,7 +1,7 @@
 #include "clzti2.h"
 #include <stdint.h>
 
-static unsigned __int128 _shl(unsigned __int128 x, int shift)
+static unsigned __int128 shl_(unsigned __int128 x, int shift)
 {
     uint64_t high = x >> 64;
     uint64_t low = x;
@@ -12,11 +12,11 @@ static unsigned __int128 _shl(unsigned __int128 x, int shift)
     return x;
 }
 
-static uint64_t _iterate(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
+static uint64_t iterate_(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
 {
     uint64_t q = 0;
-    int shift = _clzti2(b) - _clzti2(a);
-    b = _shl(b, shift);
+    int shift = clzti2_(b) - clzti2_(a);
+    b = shl_(b, shift);
 
     for (uint64_t bit = (uint64_t)1 << shift; bit; bit >>= 1) {
         if (a >= b) {
@@ -29,7 +29,7 @@ static uint64_t _iterate(unsigned __int128 a, unsigned __int128 b, unsigned __in
     return q;
 }
 
-static unsigned __int128 _udivmodti4(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
+static unsigned __int128 udivmodti4_(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
 {
     uint64_t a2 = a >> 64;
     uint64_t b2 = b >> 64;
@@ -53,9 +53,9 @@ static unsigned __int128 _udivmodti4(unsigned __int128 a, unsigned __int128 b, u
 
     if (!b2) {
         uint64_t q2 = a2 / b0;
-        uint64_t q0 = _iterate((unsigned __int128)(a2 % b0) << 64 | a0, b0, r);
+        uint64_t q0 = iterate_((unsigned __int128)(a2 % b0) << 64 | a0, b0, r);
         return (unsigned __int128)q2 << 64 | q0;
     }
 
-    return _iterate(a, b, r);
+    return iterate_(a, b, r);
 }

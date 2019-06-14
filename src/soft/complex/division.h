@@ -18,20 +18,20 @@ Complex FUNCTION(Real a, Real b, Real c, Real d)
 
     if (x != x && y != y) {
         if (denominator == 0 && (a == a || b == b))
-            return copysign(INFINITY, c) * _complex(a, b);
+            return copysign(INFINITY, c) * complex_(a, b);
 
         if ((isinf(a) || isinf(b)) && isfinite(c) && isfinite(d)) {
             a = copysignf(!!isinf(a), a);
             b = copysignf(!!isinf(b), b);
-            return INFINITY * _complex(a * c + b * d, b * c - a * d);
+            return INFINITY * complex_(a * c + b * d, b * c - a * d);
         }
 
         if (logbw == INFINITY && isfinite(a) && isfinite(b)) {
             c = copysignf(!!isinf(c), c);
             d = copysignf(!!isinf(d), d);
-            return 0 * _complex(a * c + b * d, b * c - a * d);
+            return 0 * complex_(a * c + b * d, b * c - a * d);
         }
     }
 
-    return _complex(x, y);
+    return complex_(x, y);
 }

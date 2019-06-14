@@ -3,9 +3,9 @@
 #include <errno.h>
 #include <tgmath.h>
 
-static Scalar _scientific(Bitset, int);
+static Scalar scientific_(Bitset, int);
 
-static int _parseexp(int c, const char s[restrict static 1], char* end[restrict static 1])
+static int parseexp_(int c, const char s[restrict static 1], char* end[restrict static 1])
 {
     int sign = 1;
     int magnitude = 0;
@@ -37,12 +37,12 @@ static int _parseexp(int c, const char s[restrict static 1], char* end[restrict 
     return sign * magnitude;
 }
 
-static int _min(int a, int b)
+static int min_(int a, int b)
 {
     return a < b ? a : b;
 }
 
-static Scalar _parsehex(const char s[restrict static 1], char* end[restrict static 1])
+static Scalar parsehex_(const char s[restrict static 1], char* end[restrict static 1])
 {
     const int capacity = _Generic((Scalar)0,
         float: 8,
@@ -63,7 +63,7 @@ static Scalar _parsehex(const char s[restrict static 1], char* end[restrict stat
         for (pointed = 1; *++s == '0'; --position)
             *end = (char*)(s + 1);
 
-    for (unsigned digit = _digit(*s); digit < 16 || (*s == '.' && !pointed); digit = _digit(*s)) {
+    for (unsigned digit = digit_(*s); digit < 16 || (*s == '.' && !pointed); digit = digit_(*s)) {
         if (digit < 16) {
             x = x << (4 * (consumed < capacity)) | digit;
             ++consumed;
@@ -78,10 +78,10 @@ static Scalar _parsehex(const char s[restrict static 1], char* end[restrict stat
     if (!pointed)
         position = consumed;
 
-    return ldexp((Scalar)x, 4 * (position - _min(capacity, consumed)) + _parseexp('p', s, end));
+    return ldexp((Scalar)x, 4 * (position - min_(capacity, consumed)) + parseexp_('p', s, end));
 }
 
-static Scalar _parsedec(const char s[restrict static 1], char* end[restrict static 1])
+static Scalar parsedec_(const char s[restrict static 1], char* end[restrict static 1])
 {
     const int capacity = _Generic((Scalar)0,
         float: 32 * 0.3010,
@@ -115,10 +115,10 @@ static Scalar _parsedec(const char s[restrict static 1], char* end[restrict stat
     if (!pointed)
         position = consumed;
 
-    return _scientific(x, position - _min(capacity, consumed) + _parseexp('e', s, end));
+    return scientific_(x, position - min_(capacity, consumed) + parseexp_('e', s, end));
 }
 
-static unsigned _match(const char s[static 1], const char t[static 1])
+static unsigned match_(const char s[static 1], const char t[static 1])
 {
     unsigned i = 0;
 
@@ -128,23 +128,23 @@ static unsigned _match(const char s[static 1], const char t[static 1])
     return i;
 }
 
-static Scalar _magnitude(const char s[restrict static 1], char* end[restrict static 1])
+static Scalar magnitude_(const char s[restrict static 1], char* end[restrict static 1])
 {
-    unsigned match = _match(s, "infinity");
+    unsigned match = match_(s, "infinity");
 
     if (match >= 3) {
         *end = (char*)(s + (match == 8 ? 8 : 3));
         return INFINITY;
     }
 
-    if (_match(s, "nan") == 3) {
+    if (match_(s, "nan") == 3) {
         if (s[3] == '(')
-            return _nan(s + 4, end, ')');
+            return nan_(s + 4, end, ')');
         *end = (char*)(s + 3);
         return NAN;
     }
 
-    Scalar finite = (*s == '0' && (s[1] | 32) == 'x' ? _parsehex : _parsedec)(s, end);
+    Scalar finite = (*s == '0' && (s[1] | 32) == 'x' ? parsehex_ : parsedec_)(s, end);
 
     if (finite == INFINITY)
         errno = ERANGE;
@@ -152,7 +152,7 @@ static Scalar _magnitude(const char s[restrict static 1], char* end[restrict sta
     return finite;
 }
 
-static Scalar _parsefloat(const char s[restrict static 1], char** restrict pointer)
+static Scalar parsefloat_(const char s[restrict static 1], char** restrict pointer)
 {
     Scalar sign = 0;
     char* dummy;
@@ -171,5 +171,5 @@ static Scalar _parsefloat(const char s[restrict static 1], char** restrict point
             ++s;
     }
 
-    return copysign(_magnitude(s, end), sign);
+    return copysign(magnitude_(s, end), sign);
 }

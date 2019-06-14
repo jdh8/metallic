@@ -1,6 +1,6 @@
 #include <math.h>
 
-static float _rintf(float x)
+static float rintf_(float x)
 {
     const float rectifier = 0x1p23f;
     float r = fabsf(x);
@@ -16,12 +16,12 @@ static float _rintf(float x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define RINTF(x) __builtin_rintf(x)
 #else
-#define RINTF(x) _rintf(x)
+#define RINTF(x) rintf_(x)
 #endif
 
 float rintf(float x)
 {
-    (void)_rintf;
+    (void)rintf_;
     return RINTF(x);
 }
 

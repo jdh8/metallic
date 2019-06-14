@@ -3,7 +3,7 @@
 #include <float.h>
 #include <stdint.h>
 
-static float _remquof(float numerator, float denominator, int quotient[static 1])
+static float remquof_(float numerator, float denominator, int quotient[static 1])
 {
     int32_t from = reinterpret(int32_t, numerator);
     int q = 0;

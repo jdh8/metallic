@@ -1,7 +1,7 @@
 #include "../reinterpret.h"
 #include <stdint.h>
 
-static float _truncf(float x)
+static float truncf_(float x)
 {
     const int32_t mask = 0xFF800000;
     int32_t bits = reinterpret(int32_t, x);
@@ -19,11 +19,11 @@ static float _truncf(float x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define TRUNCF(x) __builtin_truncf(x)
 #else
-#define TRUNCF(x) _truncf(x)
+#define TRUNCF(x) truncf_(x)
 #endif
 
 float truncf(float x)
 {
-    (void)_truncf;
+    (void)truncf_;
     return TRUNCF(x);
 }

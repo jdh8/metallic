@@ -1,6 +1,6 @@
 #include <math.h>
 
-static double _rint(double x)
+static double rint_(double x)
 {
     const double rectifier = 0x1p52;
     double r = fabs(x);
@@ -16,12 +16,12 @@ static double _rint(double x)
 #if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
 #define RINT(x) __builtin_rint(x)
 #else
-#define RINT(x) _rint(x)
+#define RINT(x) rint_(x)
 #endif
 
 double rint(double x)
 {
-    (void)_rint;
+    (void)rint_;
     return RINT(x);
 }
 

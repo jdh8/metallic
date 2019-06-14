@@ -2,18 +2,18 @@
 #include "atan2f.h"
 #include <complex.h>
 
-static float _Complex _finite_catanf(double x, double y)
+static float _Complex finite_catanf_(double x, double y)
 {
     double xx = x * x;
     double yy = y * y;
     double t = y - 1;
-    float a = _atan2f(2 * x, 1 - xx - yy);
-    float b = _log1pf(4 * y / (xx + t * t));
+    float a = atan2f_(2 * x, 1 - xx - yy);
+    float b = log1pf_(4 * y / (xx + t * t));
 
     return CMPLXF(0.5f * a, 0.25f * b);
 }
 
-static float _Complex _catanf(float x, float y)
+static float _Complex catanf_(float x, float y)
 {
     const float pi_2 = 1.57079632679489661923;
 
@@ -32,5 +32,5 @@ static float _Complex _catanf(float x, float y)
     if (x != x)
         return CMPLXF(x, y ? x : y);
 
-    return _finite_catanf(x, y);
+    return finite_catanf_(x, y);
 }

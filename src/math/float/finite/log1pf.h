@@ -2,7 +2,7 @@
 #include "../../reinterpret.h"
 #include <stdint.h>
 
-static double _log1pf(double x)
+static double log1pf_(double x)
 {
     const double ln2 = 0.69314718055994530942;
 
@@ -11,7 +11,7 @@ static double _log1pf(double x)
     double y = reinterpret(double, i - (exponent << 52));
 
     if (exponent)
-        return 2 * _kernel_atanhf((y - 1) / (y + 1)) + exponent * ln2;
+        return 2 * kernel_atanhf_((y - 1) / (y + 1)) + exponent * ln2;
     else
-        return 2 * _kernel_atanhf(x / (2 + x));
+        return 2 * kernel_atanhf_(x / (2 + x));
 }
