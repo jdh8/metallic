@@ -4,7 +4,6 @@
 
 static void insertion_sort_(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    size_t alignment = (uintptr_t)data | size;
     char* begin = data;
 
     for (size_t i = 1; i < count; ++i) {
@@ -12,48 +11,44 @@ static void insertion_sort_(void* data, size_t count, size_t size, int compare(c
         char* a = begin + i * size;
         char* b;
 
-        copy_(c, a, size, alignment);
+        copy_(c, a, size);
 
         for (b = a - size; b >= begin && compare(c, b) < 0; b -= size)
-            copy_(b + size, b, size, alignment);
+            copy_(b + size, b, size);
 
-        copy_(b + size, c, size, alignment);
+        copy_(b + size, c, size);
     }
 }
 
-#define MEMSWAP(T) (T a[restrict], T b[restrict], size_t count) \
-{                                                               \
-    for (size_t i = 0; i < count; ++i) {                        \
-        T c = a[i];                                             \
-        a[i] = b[i];                                            \
-        b[i] = c;                                               \
-    }                                                           \
+#define SWAP(T) (T a[restrict], T b[restrict], size_t count) \
+{                                                            \
+    for (size_t i = 0; i < count; ++i) {                     \
+        T c = a[i];                                          \
+        a[i] = b[i];                                         \
+        b[i] = c;                                            \
+    }                                                        \
 }
 
-static void swap64_ MEMSWAP(uint64_t)
-static void swap32_ MEMSWAP(uint32_t)
-static void swap16_ MEMSWAP(uint16_t)
-static void swap8_ MEMSWAP(unsigned char)
+static void swap0_ SWAP(uint8_t)
+static void swap1_ SWAP(uint16_t)
+static void swap2_ SWAP(uint32_t)
+static void swap3_ SWAP(uint64_t)
 
-static void swap_(void* restrict a, void* restrict b, size_t size, size_t alignment)
+static void swap_(void* restrict a, void* restrict b, size_t size)
 {
-    switch (alignment & -alignment) {
-        top:
-            swap64_(a, b, size >> 3);
-            return;
-        case 4:
-            swap32_(a, b, size >> 2);
-            return;
-        case 2:
-            swap16_(a, b, size >> 1);
-            return;
+    switch (size & -size) {
         case 1:
+            swap0_(a, b, size);
+            break;
+        case 2:
+            swap1_(a, b, size >> 1);
+            break;
+        case 4:
+            swap2_(a, b, size >> 2);
             break;
         default:
-            goto top;
+            swap3_(a, b, size >> 3);
     }
-
-    swap8_(a, b, size);
 }
 
 static size_t leaf_(void* data, size_t i, size_t count, size_t size, int compare(const void*, const void*))
@@ -67,7 +62,6 @@ static size_t leaf_(void* data, size_t i, size_t count, size_t size, int compare
 
 static void siftdown_(void* data, size_t stem, size_t count, size_t size, int compare(const void*, const void*))
 {
-    size_t alignment = (uintptr_t)data | size;
     size_t offspring = leaf_(data, stem, count, size, compare);
     char* base = data;
     char buffer[size];
@@ -75,54 +69,52 @@ static void siftdown_(void* data, size_t stem, size_t count, size_t size, int co
     while (compare(base + size * (offspring - 1), base + size * (stem - 1)) < 0)
         offspring >>= 1;
 
-    copy_(buffer, base + size * (offspring - 1), size, alignment);
-    copy_(base + size * (offspring - 1), base + size * (stem - 1), size, alignment);
+    copy_(buffer, base + size * (offspring - 1), size);
+    copy_(base + size * (offspring - 1), base + size * (stem - 1), size);
 
     while (stem < offspring) {
         offspring >>= 1;
-        swap_(buffer, base + size * (offspring - 1), size, alignment);
+        swap_(buffer, base + size * (offspring - 1), size);
     }
 }
 
 static void heapsort_(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    size_t alignment = (uintptr_t)data | size;
-
     for (size_t parent = count >> 1; parent; --parent)
         siftdown_(data, parent, count, size, compare);
 
     while (count--) {
-        swap_(data, (char*)data + count * size, size, alignment);
+        swap_(data, (char*)data + count * size, size);
         siftdown_(data, 1, count, size, compare);
     }
 }
 
 static void* partition_(void* data, size_t count, size_t size, int compare(const void*, const void*))
 {
-    size_t alignment = (uintptr_t)data | size;
     char* front = data;
     char* middle = front + size * (count >> 1);
     char* back = front + size * (count - 1);
 
     if (compare(middle, front) < 0)
-        swap_(front, middle, size, alignment);
+        swap_(front, middle, size);
 
     if (compare(back, front) < 0)
-        swap_(front, back, size, alignment);
+        swap_(front, back, size);
 
     if (compare(middle, back) < 0)
-        swap_(middle, back, size, alignment);
+        swap_(middle, back, size);
 
     void* pivot = back;
 
-    for (;; swap_(front, back, size, alignment)) {
+    while (1) {
         while (compare(front += size, pivot) < 0);
         while (compare(pivot, back -= size) < 0);
 
         if (front >= back) {
-            swap_(front, pivot, size, alignment);
+            swap_(front, pivot, size);
             return front;
         }
+        swap_(front, back, size);
     }
 }
 

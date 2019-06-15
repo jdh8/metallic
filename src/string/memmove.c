@@ -10,33 +10,29 @@
     return destination;                                                 \
 }
 
-static void* rcopy64_ REVERSE_COPY(uint_least64_t)
-static void* rcopy32_ REVERSE_COPY(uint_least32_t)
-static void* rcopy16_ REVERSE_COPY(uint_least16_t)
-static void* rcopy8_ REVERSE_COPY(unsigned char)
+static void* reverse_copy0_ REVERSE_COPY(uint8_t)
+static void* reverse_copy1_ REVERSE_COPY(uint16_t)
+static void* reverse_copy2_ REVERSE_COPY(uint32_t)
+static void* reverse_copy3_ REVERSE_COPY(uint64_t)
 
-static void* reverse_copy_(void* destination, const void* source, size_t size, size_t alignment)
+static void* reverse_copy_(void* destination, const void* source, size_t size)
 {
-    switch (alignment & -alignment) {
-        top:
-            return rcopy64_(destination, source, size >> 3);
-        case 4:
-            return rcopy32_(destination, source, size >> 2);
-        case 2:
-            return rcopy16_(destination, source, size >> 1);
+    switch (size & -size) {
         case 1:
-            return rcopy8_(destination, source, size);
+            return reverse_copy0_(destination, source, size);
+        case 2:
+            return reverse_copy1_(destination, source, size >> 1);
+        case 4:
+            return reverse_copy2_(destination, source, size >> 2);
         default:
-            goto top;
+            return reverse_copy3_(destination, source, size >> 3);
     }
 }
 
 void* memmove(void* destination, const void* source, size_t length)
 {
-    size_t alignment = (uintptr_t)destination | (uintptr_t)source | length;
-
     if ((char*)destination - (const char*)source < length)
-        return reverse_copy_(destination, source, length, alignment);
+        return reverse_copy_(destination, source, length);
 
-    return copy_(destination, source, length, alignment);
+    return copy_(destination, source, length);
 }

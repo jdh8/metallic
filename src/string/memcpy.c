@@ -4,5 +4,5 @@
 
 void* memcpy(void* restrict destination, const void* restrict source, size_t length)
 {
-    return copy_(destination, source, length, (uintptr_t)destination | (uintptr_t)source | length);
+    return copy_(destination, source, length);
 }
