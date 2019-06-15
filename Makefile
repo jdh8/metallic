@@ -5,7 +5,6 @@ LDLIBS = -lm
 
 metallic.a: CC = $(WACC)
 metallic.a: CPPFLAGS += -I include
-metallic.a: CFLAGS += -fno-builtin-memcpy
 metallic.a: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
