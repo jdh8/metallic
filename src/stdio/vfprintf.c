@@ -493,7 +493,7 @@ static int converta_(struct Spec spec, FILE stream[static 1], int format, va_lis
 static int convertc_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     if (spec.length >> 2 == 'l') {
-        mbstate_t state = {};
+        mbstate_t state = { 0 };
         char buffer[MB_LEN_MAX];
         size_t length = wcrtomb(buffer, va_arg(*list, wint_t), &state);
 
@@ -513,7 +513,7 @@ static int converts_(struct Spec spec, FILE stream[static 1], va_list list[stati
     size_t precision = spec.precision < 0 ? -1 : spec.precision;
 
     if (spec.length >> 2 == 'l') {
-        mbstate_t state = {};
+        mbstate_t state = { 0 };
         size_t count = 0;
 
         for (const wchar_t* s = va_arg(*list, wchar_t*); *s; ++s) {

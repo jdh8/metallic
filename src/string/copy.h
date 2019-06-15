@@ -9,10 +9,10 @@
     return destination;                                         \
 }
 
-static void* copy64_ COPY(uint_least64_t);
-static void* copy32_ COPY(uint_least32_t);
-static void* copy16_ COPY(uint_least16_t);
-static void* copy8_ COPY(unsigned char);
+static void* copy64_ COPY(uint_least64_t)
+static void* copy32_ COPY(uint_least32_t)
+static void* copy16_ COPY(uint_least16_t)
+static void* copy8_ COPY(unsigned char)
 
 static void* copy_(void* destination, const void* source, size_t size, size_t alignment)
 {

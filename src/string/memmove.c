@@ -10,10 +10,10 @@
     return destination;                                                 \
 }
 
-static void* rcopy64_ REVERSE_COPY(uint_least64_t);
-static void* rcopy32_ REVERSE_COPY(uint_least32_t);
-static void* rcopy16_ REVERSE_COPY(uint_least16_t);
-static void* rcopy8_ REVERSE_COPY(unsigned char);
+static void* rcopy64_ REVERSE_COPY(uint_least64_t)
+static void* rcopy32_ REVERSE_COPY(uint_least32_t)
+static void* rcopy16_ REVERSE_COPY(uint_least16_t)
+static void* rcopy8_ REVERSE_COPY(unsigned char)
 
 static void* reverse_copy_(void* destination, const void* source, size_t size, size_t alignment)
 {

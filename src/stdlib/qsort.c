@@ -30,27 +30,30 @@ static void insertion_sort_(void* data, size_t count, size_t size, int compare(c
     }                                                           \
 }
 
-static void swap64_ MEMSWAP(uint64_t);
-static void swap32_ MEMSWAP(uint32_t);
-static void swap16_ MEMSWAP(uint16_t);
-static void swap8_ MEMSWAP(unsigned char);
+static void swap64_ MEMSWAP(uint64_t)
+static void swap32_ MEMSWAP(uint32_t)
+static void swap16_ MEMSWAP(uint16_t)
+static void swap8_ MEMSWAP(unsigned char)
 
 static void swap_(void* restrict a, void* restrict b, size_t size, size_t alignment)
 {
     switch (alignment & -alignment) {
         top:
-            return swap64_(a, b, size >> 3);
+            swap64_(a, b, size >> 3);
+            return;
         case 4:
-            return swap32_(a, b, size >> 2);
+            swap32_(a, b, size >> 2);
+            return;
         case 2:
-            return swap16_(a, b, size >> 1);
+            swap16_(a, b, size >> 1);
+            return;
         case 1:
             break;
         default:
             goto top;
     }
 
-    return swap8_(a, b, size);
+    swap8_(a, b, size);
 }
 
 static size_t leaf_(void* data, size_t i, size_t count, size_t size, int compare(const void*, const void*))
@@ -126,16 +129,16 @@ static void* partition_(void* data, size_t count, size_t size, int compare(const
 static void introsort_(void* data, size_t count, size_t size, int ttl, int compare(const void*, const void*))
 {
     if (count <= 8)
-        return insertion_sort_(data, count, size, compare);
+        insertion_sort_(data, count, size, compare);
+    else if (ttl < 0)
+        heapsort_(data, count, size, compare);
+    else {
+        void* pivot = partition_(data, count, size, compare);
+        size_t index = ((char*)pivot - (char*)data) / size;
 
-    if (ttl < 0)
-        return heapsort_(data, count, size, compare);
-
-    void* pivot = partition_(data, count, size, compare);
-    size_t index = ((char*)pivot - (char*)data) / size;
-
-    introsort_(data, index, size, ttl - 1, compare);
-    introsort_(pivot, count - index, size, ttl - 1, compare);
+        introsort_(data, index, size, ttl - 1, compare);
+        introsort_(pivot, count - index, size, ttl - 1, compare);
+    }
 }
 
 void qsort(void* data, size_t count, size_t size, int compare(const void*, const void*))
