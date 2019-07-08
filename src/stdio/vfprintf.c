@@ -477,12 +477,151 @@ static int hexfloat_(struct Spec spec, FILE stream[static 1], int format, double
     }
 }
 
+static int hexfloatq_(struct Spec spec, FILE stream[static 1], int format, long double arg)
+{
+    int lower = format & 0x20;
+    int sign = signchar_(signbit(arg), spec.flags);
+
+    if (isinf(arg))
+        return nonfinite_(spec, stream, lower, sign, "INF");
+
+    if (isnan(arg))
+        return nonfinite_(spec, stream, lower, sign, "NAN");
+
+#ifdef __SIZEOF_INT128__
+    unsigned __int128 magnitude = reinterpret(unsigned __int128, fabsl(arg));
+    int64_t biased = magnitude >> 112;
+    int64_t exp = biased ? biased - 0x3FFF : -16382 * !!magnitude;
+
+    char buffer[40] = { '0', 'X' | lower, '0' + !!biased, '.' };
+    char* end = buffer + sizeof(buffer);
+    char* postfix = decimal_(exp < 0 ? -exp : exp, end);
+
+    if (!exp)
+        *--postfix = '0';
+
+    *--postfix = exp < 0 ? '-' : '+';
+    *--postfix = 'P' | lower;
+
+    if (spec.precision < 0) {
+        unsigned __int128 mantissa = magnitude << 16;
+        char* middle = buffer + 4 - !(mantissa || spec.flags & FLAG('#'));
+
+        for (unsigned __int128 i = mantissa; i; i <<= 4)
+            *middle++ = "0123456789ABCDEF"[i >> 124] | lower;
+
+        int length = !!sign + (middle - buffer) + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, middle - buffer, stream));
+            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 2, stream));
+            TRY(pad_('0', padding, stream));
+            TRY(write_(buffer + 2, middle - (buffer + 2), stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, middle - buffer, stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
+    else if (spec.precision < 28) {
+        const unsigned __int128 mask = (unsigned __int128)-1 >> 16;
+        const unsigned __int128 threshold = (unsigned __int128)1 << 127;
+
+        unsigned __int128 significand = (magnitude & mask) | (unsigned __int128)!!biased << 112;
+        unsigned __int128 low = significand << (16 + spec.precision * 4);
+        unsigned __int128 high = significand >> (112 - spec.precision * 4);
+        unsigned __int128 carry = ((high & 1) | low) > threshold;
+        unsigned __int128 rounded = high + carry;
+
+        for (; rounded > 0xF; rounded >>= 4)
+            *--postfix = "0123456789ABCDEF"[rounded & 0xF] | lower;
+
+        if (spec.precision || spec.flags & FLAG('#'))
+            *--postfix = '.';
+
+        *--postfix = "0123456789ABCDEF"[rounded & 0xF] | lower;
+
+        int length = !!sign + 2 + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 2, stream));
+            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 2, stream));
+            TRY(pad_('0', padding, stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 2, stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
+    else {
+        for (int i = 31; i > 3; --i) {
+            buffer[i] = "0123456789ABCDEF"[magnitude & 0xF] | lower;
+            magnitude >>= 4;
+        }
+
+        int zeros = spec.precision - 28;
+        int length = !!sign + 32 + zeros + (end - postfix);
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 32, stream));
+            TRY(pad_('0', zeros, stream));
+            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 2, stream));
+            TRY(pad_('0', padding, stream));
+            TRY(write_(buffer + 2, 30, stream));
+            TRY(pad_('0', zeros, stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        else {
+            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(sign, stream));
+            TRY(write_(buffer, 32, stream));
+            TRY(pad_('0', zeros, stream));
+            TRY(write_(postfix, end - postfix, stream));
+        }
+        return length + padding;
+    }
+#else
+    return -2;
+#endif
+}
+
 static int converta_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
                 return hexfloat_(spec, stream, format, va_arg(*list, long double));
+            case 113:
+                return hexfloatq_(spec, stream, format, va_arg(*list, long double));
             default:
                 return -2;
         }
