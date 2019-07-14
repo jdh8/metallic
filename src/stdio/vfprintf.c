@@ -86,6 +86,20 @@ static int pad_(uint8_t c, size_t length, FILE stream[static 1])
     return 0;
 }
 
+static int writefrac_(double x, size_t prec, FILE stream[restrict static 1])
+{
+    for (size_t i = 0; i < prec; ++i) {
+        double y = 10 * x;
+
+        if (putc_('0' + (unsigned)y, stream) < 0)
+            return -1;
+
+        x = y - trunc(y);
+    }
+
+    return 0;
+}
+
 static char* octal_(uintmax_t x, char* s)
 {
     for (; x; x >>= 3)
@@ -201,7 +215,7 @@ struct Spec
     unsigned length;
 };
 
-#define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - ((T)-1 < 0)) * 30103 + 199999) / 100000)
+#define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
 
 static int converti_(struct Spec spec, FILE stream[static 1], intmax_t arg)
 {
@@ -328,6 +342,86 @@ static int convertx_(struct Spec spec, FILE stream[static 1], int format, uintma
     return length + padding;
 }
 
+static size_t decmul_(uint_least32_t* restrict product,
+    const uint_least32_t* restrict x, size_t xn,
+    const uint_least32_t* restrict y, size_t yn)
+{
+    for (size_t k = 0; k < xn + yn; ++k)
+        product[k] = 0;
+
+    for (size_t i = 0; i < xn; ++i) {
+        for (size_t j = 0; j < yn; ++j) {
+            size_t k = i + j;
+            uint_fast64_t z = (uint_fast64_t)x[i] * y[j] + product[k];
+            product[k] = z % 1000000000u;
+            product[k + 1] += z / 1000000000u;
+        }
+    }
+    return xn + yn - !product[xn + yn - 1];
+}
+
+static size_t decset64_(uint_fast64_t i, uint_least32_t decimal[static 3])
+{
+    uint_fast64_t q = i / 1000000000u;
+
+    decimal[0] = i % 1000000000u;
+    decimal[1] = q % 1000000000u;
+    decimal[2] = q / 1000000000u;
+
+    for (size_t k = 3; k; --k)
+        if (decimal[k - 1])
+            return k;
+    return 0;
+}
+
+static size_t gigadigits_(size_t bits)
+{
+    return (bits * 30103 + 899999) / 900000;
+}
+
+static size_t decldexp_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t shift)
+{
+    uint_least32_t even[3];
+    size_t xn = decmul_(product, v, n, even, decset64_((uint_fast64_t)1 << (shift & 63), even));
+
+    uint_least32_t y[gigadigits_(shift & -64) + 2];
+    size_t yn = 2;
+
+    y[0] = 294967296;
+    y[1] = 4;
+
+    for (size_t power = shift >> 6; power; power >>= 1) {
+        uint_least32_t x[yn];
+
+        for (size_t i = 0; i < yn; ++i)
+            x[i] = y[i];
+
+        yn = decmul_(y, x, yn, x, yn);
+
+        if (power & 1) {
+            uint_least32_t x[xn];
+
+            for (size_t i = 0; i < xn; ++i)
+                x[i] = product[i];
+
+            xn = decmul_(product, x, xn, y, yn);
+        }
+    }
+    return xn;
+}
+
+static int decfrexp_(int64_t magnitude, uint_least32_t decimal[static 2])
+{
+    int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
+    int shift = __builtin_ctzll(significand);
+    uint_fast64_t odd = significand >> shift;
+
+    decimal[0] = odd % 1000000000u;
+    decimal[1] = odd / 1000000000u;
+
+    return (int)(magnitude >> 52) + shift - 1075;
+}
+
 static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
 {
     const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
@@ -345,6 +439,126 @@ static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lowe
         TRY(pad_(' ', padding, stream));
 
     return length + padding;
+}
+
+static int writeg_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
+{
+    char buffer[9];
+
+    while (length--) {
+        uint_least32_t piece = x[length];
+
+        for (int j = 8; j >= 0; --j) {
+            buffer[j] = piece % 10 + '0';
+            piece /= 10;
+        }
+        TRY(write_(buffer, 9, stream));
+    }
+    return 0;
+}
+
+static int fixed_(struct Spec spec, FILE stream[static 1], int format, double arg)
+{
+    int lower = format & 0x20;
+    int sign = signchar_(signbit(arg), spec.flags);
+    int precision = spec.precision < 0 ? 6 : spec.precision;
+    _Bool pointed = precision || spec.flags & FLAG('#');
+
+    if (isinf(arg))
+        return nonfinite_(spec, stream, lower, sign, "INF");
+
+    if (isnan(arg))
+        return nonfinite_(spec, stream, lower, sign, "NAN");
+
+    double x = fabs(arg);
+    int64_t magnitude = reinterpret(int64_t, x);
+
+    if (x < 0x1p64) {
+        uint_fast64_t i = x;
+        double frac = x - i;
+
+        char buffer[DECIMAL_DIGITS(uint_fast64_t)];
+        char* end = buffer + sizeof(buffer);
+        char* begin = decimal_(i, end);
+
+        int length = !!sign + (end - begin) + pointed + precision;
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(writefrac_(frac, precision, stream));
+            TRY(pad_(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && put_(sign, stream));
+            TRY(pad_('0', padding, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(writefrac_(frac, precision, stream));
+        }
+        else {
+            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(sign, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(writefrac_(frac, precision, stream));
+        }
+        return length + padding;
+    }
+    else {
+        uint_least32_t bigdec[gigadigits_((magnitude >> 52) - 1022) + 1];
+        uint_least32_t odd[2];
+        int shift = decfrexp_(magnitude, odd);
+        size_t gdigits = decldexp_(bigdec, odd, 1 + !!odd[1], shift);
+
+        char buffer[9];
+        char* end = buffer + 9;
+        char* begin = decimal_(bigdec[gdigits - 1], end);
+
+        int length = !!sign + (end - begin) + 9 * (gdigits - 1) + pointed + precision;
+        int padding = (spec.width > length) * (spec.width - length);
+
+        if (spec.flags & FLAG('-')) {
+            TRY(sign && put_(sign, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(pad_('0', precision, stream));
+            TRY(pad_(' ', padding, stream));
+        }
+        else if (spec.flags & FLAG('0')) {
+            TRY(sign && put_(sign, stream));
+            TRY(pad_('0', padding, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(pad_('0', precision, stream));
+        }
+        else {
+            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(sign, stream));
+            TRY(write_(begin, end - begin, stream));
+            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(pointed && put_('.', stream));
+            TRY(pad_('0', precision, stream));
+        }
+        return length + padding;
+    }
+}
+
+static int convertf_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+{
+    if (spec.length == ('L' << 2 | 1)) {
+        switch (LDBL_MANT_DIG) {
+            case 53:
+                return fixed_(spec, stream, format, va_arg(*list, long double));
+            default:
+                return -2;
+        }
+    }
+    return fixed_(spec, stream, format, va_arg(*list, double));
 }
 
 static int hexfloat_(struct Spec spec, FILE stream[static 1], int format, double arg)
@@ -739,6 +953,9 @@ static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int f
         case 'x':
         case 'X':
             return convertx_(spec, stream, format, popu_(spec.length, list));
+        case 'f':
+        case 'F':
+            return convertf_(spec, stream, format, list);
         case 'a':
         case 'A':
             return converta_(spec, stream, format, list);
