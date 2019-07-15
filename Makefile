@@ -1,10 +1,10 @@
-CPPFLAGS = -MMD -MP -MQ $@
-CFLAGS = -pipe -O3 -Wall -flto
 WACC = clang --target=wasm32-unknown-unknown-wasm
+CPPFLAGS = -I include -MMD -MP -MQ $@
+CFLAGS = -pipe -O3 -Wall -flto
+LDFLAGS = -nostdlib -Wl,--allow-undefined
 LDLIBS = -lm
 
 metallic.a: CC = $(WACC)
-metallic.a: CPPFLAGS += -I include
 metallic.a: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
@@ -32,16 +32,11 @@ bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.exe-)
 %.exe-: %.exe
 	$<
 
-%.out: CC = $(WACC)
-%.out: CPPFLAGS += -I include -iquote .
-%.out: LDFLAGS += -nostdlib -Wl,--allow-undefined
 %.out: %.c metallic.a
-	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(WACC) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
 
-%.exe: CPPFLAGS += -iquote test/native -iquote .
-%.exe: CFLAGS += -march=native
 %.exe: %.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) -o $@ $< $(LDLIBS)
+	$(CC) -iquote test/native -iquote . $(CFLAGS) -march=native -o $@ $< $(LDLIBS)
 
 clean:
 	$(RM) *.a */*/*.[deo]* */*/*/*.[deo]* */*/*/*/*.[deo]*
