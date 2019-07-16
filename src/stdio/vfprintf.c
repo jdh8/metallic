@@ -86,20 +86,6 @@ static int pad_(uint8_t c, size_t length, FILE stream[static 1])
     return 0;
 }
 
-static int writefrac_(double x, size_t prec, FILE stream[restrict static 1])
-{
-    for (size_t i = 0; i < prec; ++i) {
-        double y = 10 * x;
-
-        if (putc_('0' + (unsigned)y, stream) < 0)
-            return -1;
-
-        x = y - trunc(y);
-    }
-
-    return 0;
-}
-
 static char* octal_(uintmax_t x, char* s)
 {
     for (; x; x >>= 3)
@@ -441,7 +427,21 @@ static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lowe
     return length + padding;
 }
 
-static int writeg_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
+static int writefrac_(double x, size_t prec, FILE stream[restrict static 1])
+{
+    for (size_t i = 0; i < prec; ++i) {
+        double y = 10 * x;
+
+        if (putc_('0' + (unsigned)y, stream) < 0)
+            return -1;
+
+        x = y - trunc(y);
+    }
+
+    return 0;
+}
+
+static int writegiga_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
 {
     char buffer[9];
 
@@ -523,7 +523,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
         if (spec.flags & FLAG('-')) {
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(writegiga_(bigdec, gdigits - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
             TRY(pad_(' ', padding, stream));
@@ -532,7 +532,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(sign && put_(sign, stream));
             TRY(pad_('0', padding, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(writegiga_(bigdec, gdigits - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
         }
@@ -540,7 +540,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(pad_(' ', padding, stream));
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writeg_(bigdec, gdigits - 1, stream));
+            TRY(writegiga_(bigdec, gdigits - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
         }
