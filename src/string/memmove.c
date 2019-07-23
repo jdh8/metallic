@@ -5,7 +5,7 @@
 
 #define REVERSE_COPY(T) (T* destination, const T* source, size_t count) \
 {                                                                       \
-    while (--count != -1)                                               \
+    while (count--)                                                     \
         destination[count] = source[count];                             \
                                                                         \
     return destination;                                                 \
