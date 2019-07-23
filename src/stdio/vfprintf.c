@@ -354,10 +354,15 @@ static size_t decset64_(uint_fast64_t i, uint_least32_t decimal[static 3])
     decimal[1] = q % 1000000000u;
     decimal[2] = q / 1000000000u;
 
-    for (size_t k = 3; k; --k)
-        if (decimal[k - 1])
-            return k;
-    return 0;
+    return decimal[2] ? 3 : decimal[1] ? 2 : !!decimal[0];
+}
+
+static size_t decset59_(uint_fast64_t i, uint_least32_t decimal[static 2])
+{
+    decimal[0] = i % 1000000000u;
+    decimal[1] = i / 1000000000u;
+
+    return decimal[1] ? 2 : !!decimal[0];
 }
 
 static size_t gigadigits_(size_t bits)
@@ -396,16 +401,12 @@ static size_t decldexp_(uint_least32_t* restrict product, const uint_least32_t* 
     return xn;
 }
 
-static int decfrexp_(int64_t magnitude, uint_least32_t decimal[static 2])
+static int64_t oddfrexp_(int64_t magnitude, int exp[static 1])
 {
     int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
     int shift = __builtin_ctzll(significand);
-    uint_fast64_t odd = significand >> shift;
-
-    decimal[0] = odd % 1000000000u;
-    decimal[1] = odd / 1000000000u;
-
-    return (int)(magnitude >> 52) + shift - 1075;
+    *exp = (int)(magnitude >> 52) + shift - 1075;
+    return significand >> shift;
 }
 
 static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
@@ -510,8 +511,9 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
     else {
         uint_least32_t bigdec[gigadigits_((magnitude >> 52) - 1022) + 1];
         uint_least32_t odd[2];
-        int shift = decfrexp_(magnitude, odd);
-        size_t gdigits = decldexp_(bigdec, odd, 1 + !!odd[1], shift);
+        int shift;
+        size_t size = decset59_(oddfrexp_(magnitude, &shift), odd);
+        size_t gdigits = decldexp_(bigdec, odd, size, shift);
 
         char buffer[9];
         char* end = buffer + 9;
