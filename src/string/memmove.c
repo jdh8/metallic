@@ -1,3 +1,4 @@
+#include "aliased.h"
 #include "copy.h"
 #include <stddef.h>
 #include <stdint.h>
@@ -10,10 +11,10 @@
     return destination;                                                 \
 }
 
-static void* reverse_copy0_ REVERSE_COPY(uint8_t)
-static void* reverse_copy1_ REVERSE_COPY(uint16_t)
-static void* reverse_copy2_ REVERSE_COPY(uint32_t)
-static void* reverse_copy3_ REVERSE_COPY(uint64_t)
+static void* reverse_copy0_ REVERSE_COPY(ALIASED uint8_t)
+static void* reverse_copy1_ REVERSE_COPY(ALIASED uint16_t)
+static void* reverse_copy2_ REVERSE_COPY(ALIASED uint32_t)
+static void* reverse_copy3_ REVERSE_COPY(ALIASED uint64_t)
 
 static void* reverse_copy_(void* destination, const void* source, size_t size)
 {

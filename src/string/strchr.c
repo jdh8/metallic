@@ -1,3 +1,4 @@
+#include "aliased.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -17,7 +18,7 @@ char* strchr(const char source[static 1], int character)
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
     uint64_t mask = 0x0101010101010101u * c;
 
-    for (const uint64_t* vector = (const uint64_t*)input; ; input = (const unsigned char*)++vector) {
+    for (const uint64_t ALIASED* vector = (const uint64_t*)input; ; input = (const unsigned char*)++vector) {
         uint64_t word = *vector ^ mask;
 
         if (((word + magic) ^ ~word) & ~magic || ((*vector + magic) ^ ~*vector) & ~magic) {

@@ -1,3 +1,4 @@
+#include "aliased.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -9,10 +10,10 @@
     return destination;                                         \
 }
 
-static void* copy0_ COPY(uint8_t)
-static void* copy1_ COPY(uint16_t)
-static void* copy2_ COPY(uint32_t)
-static void* copy3_ COPY(uint64_t)
+static void* copy0_ COPY(ALIASED uint8_t)
+static void* copy1_ COPY(ALIASED uint16_t)
+static void* copy2_ COPY(ALIASED uint32_t)
+static void* copy3_ COPY(ALIASED uint64_t)
 
 static void* copy_(void* destination, const void* source, size_t size)
 {

@@ -1,3 +1,4 @@
+#include "aliased.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -10,10 +11,12 @@ void* memset(void* destination, int character, size_t length)
     while ((uintptr_t)output % sizeof(uint64_t) && length--)
         *output++ = c;
 
-    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
-        *(uint64_t*)output = vector;
-        output += sizeof(uint64_t);
-    }
+    uint64_t ALIASED* alias = (uint64_t*)output;
+
+    for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t))
+        *alias++ = vector;
+
+    output = (unsigned char*)alias;
 
     while (length--)
         *output++ = c;

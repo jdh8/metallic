@@ -1,3 +1,4 @@
+#include "aliased.h"
 #include <stddef.h>
 #include <stdint.h>
 
@@ -10,7 +11,7 @@ void* memchr(const void* source, int character, size_t length)
         if (*input == c)
             return (unsigned char*)input;
 
-    const uint64_t* vector = (const uint64_t*)input;
+    const uint64_t ALIASED* vector = (const uint64_t*)input;
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
     uint64_t mask = 0x0101010101010101u * c;
 
