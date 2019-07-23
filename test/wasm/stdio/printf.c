@@ -10,4 +10,8 @@ static void test(int status)
 int main(void)
 {
     test(printf("%d", 345));
+    test(printf("%f", 9.8765415));
+    test(printf("%f", 9.8765425));
+    test(printf("%.0f", 0.5));
+    test(printf("%.0f", 3.5));
 }

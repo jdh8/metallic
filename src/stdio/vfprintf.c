@@ -428,18 +428,35 @@ static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lowe
     return length + padding;
 }
 
-static int writefrac_(double x, size_t prec, FILE stream[restrict static 1])
+static uint_fast64_t decmodf_(double x, int prec, char* buffer)
 {
-    for (size_t i = 0; i < prec; ++i) {
-        double y = 10 * x;
+    if (!prec)
+        return rint(x);
 
-        if (putc_('0' + (unsigned)y, stream) < 0)
-            return -1;
+    uint_fast64_t i = x;
+    uint_fast64_t frac = 0x1p60 * (x - i);
 
-        x = y - trunc(y);
+    for (int k = 0; k < prec - 1; ++k) {
+        frac *= 10;
+        buffer[k] = '0' + (unsigned)(frac >> 60);
+        frac &= 0x0FFFFFFFFFFFFFFF;
     }
 
-    return 0;
+    buffer[prec - 1] = '0' + (unsigned) rint(frac * 0xap-60);
+
+    for (int k = prec - 1; k > 0; --k) {
+        if (buffer[k] > '9') {
+            buffer[k] -= 10;
+            ++buffer[k - 1];
+        }
+    }
+
+    if (*buffer > '9') {
+        *buffer -= 10;
+        return i + 1;
+    }
+
+    return i;
 }
 
 static int writegiga_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
@@ -474,13 +491,19 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
     double x = fabs(arg);
     int64_t magnitude = reinterpret(int64_t, x);
 
-    if (x < 0x1p64) {
-        uint_fast64_t i = x;
-        double frac = x - i;
+    if (magnitude < 0x3F70000000000000) {
+        return -2;
+    }
+    else if (magnitude < 0x43F0000000000000) {
+        char buffer[precision];
+        uint_fast64_t i = decmodf_(x, precision, buffer);
 
-        char buffer[DECIMAL_DIGITS(uint_fast64_t)];
-        char* end = buffer + sizeof(buffer);
+        char ibuffer[DECIMAL_DIGITS(uint_fast64_t)];
+        char* end = ibuffer + sizeof(ibuffer);
         char* begin = decimal_(i, end);
+
+        if (!i)
+            *--begin = '0';
 
         int length = !!sign + (end - begin) + pointed + precision;
         int padding = (spec.width > length) * (spec.width - length);
@@ -489,7 +512,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
             TRY(pointed && put_('.', stream));
-            TRY(writefrac_(frac, precision, stream));
+            TRY(write_(buffer, precision, stream));
             TRY(pad_(' ', padding, stream));
         }
         else if (spec.flags & FLAG('0')) {
@@ -497,23 +520,23 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(pad_('0', padding, stream));
             TRY(write_(begin, end - begin, stream));
             TRY(pointed && put_('.', stream));
-            TRY(writefrac_(frac, precision, stream));
+            TRY(write_(buffer, precision, stream));
         }
         else {
             TRY(pad_(' ', padding, stream));
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
             TRY(pointed && put_('.', stream));
-            TRY(writefrac_(frac, precision, stream));
+            TRY(write_(buffer, precision, stream));
         }
         return length + padding;
     }
     else {
         uint_least32_t bigdec[gigadigits_((magnitude >> 52) - 1022) + 1];
-        uint_least32_t odd[2];
+        uint_least32_t odddec[2];
         int shift;
-        size_t size = decset59_(oddfrexp_(magnitude, &shift), odd);
-        size_t gdigits = decldexp_(bigdec, odd, size, shift);
+        size_t size = decset59_(oddfrexp_(magnitude, &shift), odddec);
+        size_t gdigits = decldexp_(bigdec, odddec, size, shift);
 
         char buffer[9];
         char* end = buffer + 9;
