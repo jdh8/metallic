@@ -203,7 +203,7 @@ struct Spec
 
 #define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
 
-static int converti_(struct Spec spec, FILE stream[static 1], intmax_t arg)
+static int convert_i_(struct Spec spec, FILE stream[static 1], intmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(intmax_t)];
     char* end = buffer + sizeof(buffer);
@@ -236,7 +236,7 @@ static int converti_(struct Spec spec, FILE stream[static 1], intmax_t arg)
     return length + padding;
 }
 
-static int convertu_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int convert_u_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(uintmax_t)];
     char* end = buffer + sizeof(buffer);
@@ -265,7 +265,7 @@ static int convertu_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     return length + padding;
 }
 
-static int converto_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int convert_o_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
 {
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 2) / 3];
     char* end = buffer + sizeof(buffer);
@@ -294,7 +294,7 @@ static int converto_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     return length + padding;
 }
 
-static int convertx_(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
+static int convert_x_(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
 {
     const char cache[] = { '0', format };
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 3) >> 2];
@@ -328,87 +328,6 @@ static int convertx_(struct Spec spec, FILE stream[static 1], int format, uintma
     return length + padding;
 }
 
-static size_t decmul_(uint_least32_t* restrict product,
-    const uint_least32_t* restrict x, size_t xn,
-    const uint_least32_t* restrict y, size_t yn)
-{
-    for (size_t k = 0; k < xn + yn; ++k)
-        product[k] = 0;
-
-    for (size_t i = 0; i < xn; ++i) {
-        for (size_t j = 0; j < yn; ++j) {
-            size_t k = i + j;
-            uint_fast64_t z = (uint_fast64_t)x[i] * y[j] + product[k];
-            product[k] = z % 1000000000u;
-            product[k + 1] += z / 1000000000u;
-        }
-    }
-    return xn + yn - !product[xn + yn - 1];
-}
-
-static size_t decset64_(uint_fast64_t i, uint_least32_t decimal[static 3])
-{
-    uint_fast64_t q = i / 1000000000u;
-
-    decimal[0] = i % 1000000000u;
-    decimal[1] = q % 1000000000u;
-    decimal[2] = q / 1000000000u;
-
-    return decimal[2] ? 3 : decimal[1] ? 2 : !!decimal[0];
-}
-
-static size_t decset59_(uint_fast64_t i, uint_least32_t decimal[static 2])
-{
-    decimal[0] = i % 1000000000u;
-    decimal[1] = i / 1000000000u;
-
-    return decimal[1] ? 2 : !!decimal[0];
-}
-
-static size_t gigadigits_(size_t bits)
-{
-    return (bits * 30103 + 899999) / 900000;
-}
-
-static size_t decldexp_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t shift)
-{
-    uint_least32_t even[3];
-    size_t xn = decmul_(product, v, n, even, decset64_((uint_fast64_t)1 << (shift & 63), even));
-
-    uint_least32_t y[gigadigits_(shift & -64) + 2];
-    size_t yn = 2;
-
-    y[0] = 294967296;
-    y[1] = 4;
-
-    for (size_t power = shift >> 6; power; power >>= 1) {
-        uint_least32_t x[yn];
-
-        for (size_t i = 0; i < yn; ++i)
-            x[i] = y[i];
-
-        yn = decmul_(y, x, yn, x, yn);
-
-        if (power & 1) {
-            uint_least32_t x[xn];
-
-            for (size_t i = 0; i < xn; ++i)
-                x[i] = product[i];
-
-            xn = decmul_(product, x, xn, y, yn);
-        }
-    }
-    return xn;
-}
-
-static int64_t oddfrexp_(int64_t magnitude, int exp[static 1])
-{
-    int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
-    int shift = __builtin_ctzll(significand);
-    *exp = (int)(magnitude >> 52) + shift - 1075;
-    return significand >> shift;
-}
-
 static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
 {
     const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
@@ -428,7 +347,88 @@ static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lowe
     return length + padding;
 }
 
-static uint_fast64_t decmodf_(double x, int prec, char* buffer)
+static int64_t ifrexp_(int64_t magnitude, int exp[static 1])
+{
+    int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
+    int shift = __builtin_ctzll(significand);
+    *exp = (int)(magnitude >> 52) + shift - 1075;
+    return significand >> shift;
+}
+
+static size_t limbs_set_u64_(uint_fast64_t i, uint_least32_t decimal[static 3])
+{
+    uint_fast64_t q = i / 1000000000u;
+
+    decimal[0] = i % 1000000000u;
+    decimal[1] = q % 1000000000u;
+    decimal[2] = q / 1000000000u;
+
+    return decimal[2] ? 3 : decimal[1] ? 2 : !!decimal[0];
+}
+
+static size_t limbs_set_u18d_(uint_fast64_t i, uint_least32_t decimal[static 2])
+{
+    decimal[0] = i % 1000000000u;
+    decimal[1] = i / 1000000000u;
+
+    return decimal[1] ? 2 : !!decimal[0];
+}
+
+static size_t bits_to_limbs_(size_t bits)
+{
+    return (bits * 30103 + 899999) / 900000;
+}
+
+static size_t limbs_mul_(uint_least32_t* restrict product,
+    const uint_least32_t* restrict x, size_t xn,
+    const uint_least32_t* restrict y, size_t yn)
+{
+    for (size_t k = 0; k < xn + yn; ++k)
+        product[k] = 0;
+
+    for (size_t i = 0; i < xn; ++i) {
+        for (size_t j = 0; j < yn; ++j) {
+            size_t k = i + j;
+            uint_fast64_t z = (uint_fast64_t)x[i] * y[j] + product[k];
+            product[k] = z % 1000000000u;
+            product[k + 1] += z / 1000000000u;
+        }
+    }
+    return xn + yn - !product[xn + yn - 1];
+}
+
+static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t shift)
+{
+    uint_least32_t even[3];
+    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_((uint_fast64_t)1 << (shift & 63), even));
+
+    uint_least32_t y[bits_to_limbs_(shift & -64) + 2];
+    size_t yn = 2;
+
+    y[0] = 294967296;
+    y[1] = 4;
+
+    for (size_t power = shift >> 6; power; power >>= 1) {
+        uint_least32_t x[yn];
+
+        for (size_t i = 0; i < yn; ++i)
+            x[i] = y[i];
+
+        yn = limbs_mul_(y, x, yn, x, yn);
+
+        if (power & 1) {
+            uint_least32_t x[xn];
+
+            for (size_t i = 0; i < xn; ++i)
+                x[i] = product[i];
+
+            xn = limbs_mul_(product, x, xn, y, yn);
+        }
+    }
+    return xn;
+}
+
+static uint_fast64_t limbs_modf_(double x, int prec, char* buffer)
 {
     if (!prec)
         return rint(x);
@@ -459,7 +459,7 @@ static uint_fast64_t decmodf_(double x, int prec, char* buffer)
     return i;
 }
 
-static int writegiga_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
+static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
 {
     char buffer[9];
 
@@ -496,7 +496,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
     }
     else if (magnitude < 0x43F0000000000000) {
         char buffer[precision];
-        uint_fast64_t i = decmodf_(x, precision, buffer);
+        uint_fast64_t i = limbs_modf_(x, precision, buffer);
 
         char ibuffer[DECIMAL_DIGITS(uint_fast64_t)];
         char* end = ibuffer + sizeof(ibuffer);
@@ -532,23 +532,23 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
         return length + padding;
     }
     else {
-        uint_least32_t bigdec[gigadigits_((magnitude >> 52) - 1022) + 1];
-        uint_least32_t odddec[2];
+        uint_least32_t big[bits_to_limbs_((magnitude >> 52) - 1022) + 1];
+        uint_least32_t odd[2];
         int shift;
-        size_t size = decset59_(oddfrexp_(magnitude, &shift), odddec);
-        size_t gdigits = decldexp_(bigdec, odddec, size, shift);
+        size_t size = limbs_set_u18d_(ifrexp_(magnitude, &shift), odd);
+        size_t limbs = limbs_ldexp_(big, odd, size, shift);
 
         char buffer[9];
         char* end = buffer + 9;
-        char* begin = decimal_(bigdec[gdigits - 1], end);
+        char* begin = decimal_(big[limbs - 1], end);
 
-        int length = !!sign + (end - begin) + 9 * (gdigits - 1) + pointed + precision;
+        int length = !!sign + (end - begin) + 9 * (limbs - 1) + pointed + precision;
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writegiga_(bigdec, gdigits - 1, stream));
+            TRY(limbs_write_(big, limbs - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
             TRY(pad_(' ', padding, stream));
@@ -557,7 +557,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(sign && put_(sign, stream));
             TRY(pad_('0', padding, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writegiga_(bigdec, gdigits - 1, stream));
+            TRY(limbs_write_(big, limbs - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
         }
@@ -565,7 +565,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
             TRY(pad_(' ', padding, stream));
             TRY(sign && put_(sign, stream));
             TRY(write_(begin, end - begin, stream));
-            TRY(writegiga_(bigdec, gdigits - 1, stream));
+            TRY(limbs_write_(big, limbs - 1, stream));
             TRY(pointed && put_('.', stream));
             TRY(pad_('0', precision, stream));
         }
@@ -573,7 +573,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int format, double ar
     }
 }
 
-static int convertf_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+static int convert_f_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
@@ -853,7 +853,7 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int format, long 
 #endif
 }
 
-static int converta_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+static int convert_a_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
@@ -868,7 +868,7 @@ static int converta_(struct Spec spec, FILE stream[static 1], int format, va_lis
     return hexfloat_(spec, stream, format, va_arg(*list, double));
 }
 
-static int convertc_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int convert_c_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     if (spec.length >> 2 == 'l') {
         mbstate_t state = { 0 };
@@ -886,7 +886,7 @@ static int convertc_(struct Spec spec, FILE stream[static 1], va_list list[stati
     return 1;
 }
 
-static int converts_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int convert_s_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
 {
     size_t precision = spec.precision < 0 ? -1 : spec.precision;
 
@@ -919,7 +919,7 @@ static int converts_(struct Spec spec, FILE stream[static 1], va_list list[stati
     return length;
 }
 
-static int convertp_(FILE stream[static 1], void* arg)
+static int convert_p_(FILE stream[static 1], void* arg)
 {
     if (!arg) {
         TRY(write_("NULL", 4, stream));
@@ -937,7 +937,7 @@ static int convertp_(FILE stream[static 1], void* arg)
     return length + 2;
 }
 
-static int storen_(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
+static int store_n_(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
 {
     switch (spec.length) {
         case 0:
@@ -970,28 +970,28 @@ static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int f
     switch (format) {
         case 'd':
         case 'i':
-            return converti_(spec, stream, pop_(spec.length, list));
+            return convert_i_(spec, stream, pop_(spec.length, list));
         case 'o':
-            return converto_(spec, stream, popu_(spec.length, list));
+            return convert_o_(spec, stream, popu_(spec.length, list));
         case 'u':
-            return convertu_(spec, stream, popu_(spec.length, list));
+            return convert_u_(spec, stream, popu_(spec.length, list));
         case 'x':
         case 'X':
-            return convertx_(spec, stream, format, popu_(spec.length, list));
+            return convert_x_(spec, stream, format, popu_(spec.length, list));
         case 'f':
         case 'F':
-            return convertf_(spec, stream, format, list);
+            return convert_f_(spec, stream, format, list);
         case 'a':
         case 'A':
-            return converta_(spec, stream, format, list);
+            return convert_a_(spec, stream, format, list);
         case 'c':
-            return convertc_(spec, stream, list);
+            return convert_c_(spec, stream, list);
         case 's':
-            return converts_(spec, stream, list);
+            return convert_s_(spec, stream, list);
         case 'p':
-            return convertp_(stream, va_arg(*list, void*));
+            return convert_p_(stream, va_arg(*list, void*));
         case 'n':
-            return storen_(spec, count, stream, list);
+            return store_n_(spec, count, stream, list);
     }
     return -2;
 }
