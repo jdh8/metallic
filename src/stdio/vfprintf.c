@@ -153,7 +153,7 @@ static unsigned length_(const char s[static 1])
     return 0;
 }
 
-static intmax_t pop_(unsigned length, va_list list[static 1])
+static intmax_t pop_signed_(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -173,7 +173,7 @@ static intmax_t pop_(unsigned length, va_list list[static 1])
     return va_arg(*list, ptrdiff_t);
 }
 
-static uintmax_t popu_(unsigned length, va_list list[static 1])
+static uintmax_t pop_unsigned_(unsigned length, va_list list[static 1])
 {
     switch (length) {
         case 0:
@@ -970,14 +970,14 @@ static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int f
     switch (format) {
         case 'd':
         case 'i':
-            return convert_i_(spec, stream, pop_(spec.length, list));
+            return convert_i_(spec, stream, pop_signed_(spec.length, list));
         case 'o':
-            return convert_o_(spec, stream, popu_(spec.length, list));
+            return convert_o_(spec, stream, pop_unsigned_(spec.length, list));
         case 'u':
-            return convert_u_(spec, stream, popu_(spec.length, list));
+            return convert_u_(spec, stream, pop_unsigned_(spec.length, list));
         case 'x':
         case 'X':
-            return convert_x_(spec, stream, format, popu_(spec.length, list));
+            return convert_x_(spec, stream, format, pop_unsigned_(spec.length, list));
         case 'f':
         case 'F':
             return convert_f_(spec, stream, format, list);
