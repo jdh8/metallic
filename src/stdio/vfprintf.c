@@ -475,120 +475,125 @@ static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[rest
     return 0;
 }
 
-static int fixed_(struct Spec spec, FILE stream[static 1], int format, double arg)
+static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
 {
-    int lower = format & 0x20;
-    int sign = signchar_(signbit(arg), spec.flags);
-    int precision = spec.precision < 0 ? 6 : spec.precision;
-    _Bool pointed = precision || spec.flags & FLAG('#');
+    _Bool pointed = spec.precision || spec.flags & FLAG('#');
+    char buffer[spec.precision];
+    uint_fast64_t truncated = limbs_modf_(magnitude, spec.precision, buffer);
 
-    if (isinf(arg))
-        return nonfinite_(spec, stream, lower, sign, "INF");
+    char ibuffer[DECIMAL_DIGITS(uint_fast64_t)];
+    char* end = ibuffer + sizeof(ibuffer);
+    char* begin = decimal_(truncated, end);
 
-    if (isnan(arg))
-        return nonfinite_(spec, stream, lower, sign, "NAN");
+    if (!truncated)
+        *--begin = '0';
 
-    double x = fabs(arg);
-    int64_t magnitude = reinterpret(int64_t, x);
+    int length = !!sign + (end - begin) + pointed + spec.precision;
+    int padding = (spec.width > length) * (spec.width - length);
 
-    if (magnitude < 0x3F70000000000000) {
-        return -2;
+    if (spec.flags & FLAG('-')) {
+        TRY(sign && put_(sign, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(write_(buffer, spec.precision, stream));
+        TRY(pad_(' ', padding, stream));
     }
-    else if (magnitude < 0x43F0000000000000) {
-        char buffer[precision];
-        uint_fast64_t i = limbs_modf_(x, precision, buffer);
-
-        char ibuffer[DECIMAL_DIGITS(uint_fast64_t)];
-        char* end = ibuffer + sizeof(ibuffer);
-        char* begin = decimal_(i, end);
-
-        if (!i)
-            *--begin = '0';
-
-        int length = !!sign + (end - begin) + pointed + precision;
-        int padding = (spec.width > length) * (spec.width - length);
-
-        if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(write_(buffer, precision, stream));
-            TRY(pad_(' ', padding, stream));
-        }
-        else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(write_(buffer, precision, stream));
-        }
-        else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(write_(buffer, precision, stream));
-        }
-        return length + padding;
+    else if (spec.flags & FLAG('0')) {
+        TRY(sign && put_(sign, stream));
+        TRY(pad_('0', padding, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(write_(buffer, spec.precision, stream));
     }
     else {
-        uint_least32_t big[bits_to_limbs_((magnitude >> 52) - 1022) + 1];
-        uint_least32_t odd[2];
-        int shift;
-        size_t size = limbs_set_u18d_(ifrexp_(magnitude, &shift), odd);
-        size_t limbs = limbs_ldexp_(big, odd, size, shift);
-
-        char buffer[9];
-        char* end = buffer + 9;
-        char* begin = decimal_(big[limbs - 1], end);
-
-        int length = !!sign + (end - begin) + 9 * (limbs - 1) + pointed + precision;
-        int padding = (spec.width > length) * (spec.width - length);
-
-        if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(limbs_write_(big, limbs - 1, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(pad_('0', precision, stream));
-            TRY(pad_(' ', padding, stream));
-        }
-        else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(limbs_write_(big, limbs - 1, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(pad_('0', precision, stream));
-        }
-        else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(begin, end - begin, stream));
-            TRY(limbs_write_(big, limbs - 1, stream));
-            TRY(pointed && put_('.', stream));
-            TRY(pad_('0', precision, stream));
-        }
-        return length + padding;
+        TRY(pad_(' ', padding, stream));
+        TRY(sign && put_(sign, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(write_(buffer, spec.precision, stream));
     }
+    return length + padding;
 }
 
-static int convert_f_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+static int fixed_bigint_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+{
+    _Bool pointed = spec.precision || spec.flags & FLAG('#');
+    int64_t bits = reinterpret(int64_t, magnitude);
+
+    uint_least32_t big[bits_to_limbs_((bits >> 52) - 1022) + 1];
+    uint_least32_t odd[2];
+    int shift;
+    size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
+    size_t limbs = limbs_ldexp_(big, odd, size, shift);
+
+    char buffer[9];
+    char* end = buffer + 9;
+    char* begin = decimal_(big[limbs - 1], end);
+
+    int length = !!sign + (end - begin) + 9 * (limbs - 1) + pointed + spec.precision;
+    int padding = (spec.width > length) * (spec.width - length);
+
+    if (spec.flags & FLAG('-')) {
+        TRY(sign && put_(sign, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(limbs_write_(big, limbs - 1, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(pad_('0', spec.precision, stream));
+        TRY(pad_(' ', padding, stream));
+    }
+    else if (spec.flags & FLAG('0')) {
+        TRY(sign && put_(sign, stream));
+        TRY(pad_('0', padding, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(limbs_write_(big, limbs - 1, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(pad_('0', spec.precision, stream));
+    }
+    else {
+        TRY(pad_(' ', padding, stream));
+        TRY(sign && put_(sign, stream));
+        TRY(write_(begin, end - begin, stream));
+        TRY(limbs_write_(big, limbs - 1, stream));
+        TRY(pointed && put_('.', stream));
+        TRY(pad_('0', spec.precision, stream));
+    }
+    return length + padding;
+}
+
+static int fixed_(struct Spec spec, FILE stream[static 1], int lower, double arg)
+{
+    const int64_t inf = 0x7FF0000000000000;
+    int sign = signchar_(signbit(arg), spec.flags);
+    double magnitude = fabs(arg);
+    int64_t bits = reinterpret(int64_t, magnitude);
+
+    if (bits < 0x3F70000000000000)
+        return -2;
+
+    if (bits < 0x43F0000000000000)
+        return fixed_moderate_(spec, stream, sign, magnitude);
+
+    if (bits < inf)
+        return fixed_bigint_(spec, stream, sign, magnitude);
+
+    return nonfinite_(spec, stream, lower, sign, bits == inf ? "INF" : "NAN");
+}
+
+static int convert_f_(struct Spec spec, FILE stream[static 1], int lower, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
-                return fixed_(spec, stream, format, va_arg(*list, long double));
+                return fixed_(spec, stream, lower, va_arg(*list, long double));
             default:
                 return -2;
         }
     }
-    return fixed_(spec, stream, format, va_arg(*list, double));
+    return fixed_(spec, stream, lower, va_arg(*list, double));
 }
 
-static int hexfloat_(struct Spec spec, FILE stream[static 1], int format, double arg)
+static int hexfloat_(struct Spec spec, FILE stream[static 1], int lower, double arg)
 {
-    int lower = format & 0x20;
     int sign = signchar_(signbit(arg), spec.flags);
 
     if (isinf(arg))
@@ -716,9 +721,8 @@ static int hexfloat_(struct Spec spec, FILE stream[static 1], int format, double
     }
 }
 
-static int hexfloatq_(struct Spec spec, FILE stream[static 1], int format, long double arg)
+static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long double arg)
 {
-    int lower = format & 0x20;
     int sign = signchar_(signbit(arg), spec.flags);
 
     if (isinf(arg))
@@ -853,19 +857,19 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int format, long 
 #endif
 }
 
-static int convert_a_(struct Spec spec, FILE stream[static 1], int format, va_list list[static 1])
+static int convert_a_(struct Spec spec, FILE stream[static 1], int lower, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
-                return hexfloat_(spec, stream, format, va_arg(*list, long double));
+                return hexfloat_(spec, stream, lower, va_arg(*list, long double));
             case 113:
-                return hexfloatq_(spec, stream, format, va_arg(*list, long double));
+                return hexfloatq_(spec, stream, lower, va_arg(*list, long double));
             default:
                 return -2;
         }
     }
-    return hexfloat_(spec, stream, format, va_arg(*list, double));
+    return hexfloat_(spec, stream, lower, va_arg(*list, double));
 }
 
 static int convert_c_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
@@ -965,8 +969,18 @@ static int store_n_(struct Spec spec, size_t count, FILE stream[static 1], va_li
     return 0;
 }
 
+static struct Spec floatspec_(struct Spec spec)
+{
+    if (spec.precision < 0)
+        spec.precision = 6;
+
+    return spec;
+}
+
 static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int format, va_list list[static 1])
 {
+    int lower = format & 0x20;
+
     switch (format) {
         case 'd':
         case 'i':
@@ -980,10 +994,10 @@ static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int f
             return convert_x_(spec, stream, format, pop_unsigned_(spec.length, list));
         case 'f':
         case 'F':
-            return convert_f_(spec, stream, format, list);
+            return convert_f_(floatspec_(spec), stream, lower, list);
         case 'a':
         case 'A':
-            return convert_a_(spec, stream, format, list);
+            return convert_a_(spec, stream, lower, list);
         case 'c':
             return convert_c_(spec, stream, list);
         case 's':
