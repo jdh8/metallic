@@ -1,6 +1,7 @@
 #include "FILE.h"
 #include "putc.h"
 #include "../math/reinterpret.h"
+#include "../string/aliased.h"
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -18,7 +19,7 @@ static size_t strnlen_(const char begin[static 1], size_t length)
         if (!*end)
             return end - begin;
 
-    const uint64_t* vector = (const uint64_t*)end;
+    const uint64_t ALIASED* vector = (const uint64_t*)end;
     const uint64_t magic = 0x7EFEFEFEFEFEFEFF;
 
     for (; length >= sizeof(uint64_t); length -= sizeof(uint64_t)) {
