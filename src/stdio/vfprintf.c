@@ -355,9 +355,9 @@ static int64_t ifrexp_(int64_t magnitude, int exp[static 1])
     return significand >> shift;
 }
 
-static size_t limbs_set_u64_(uint_fast64_t i, uint_least32_t decimal[static 3])
+static size_t limbs_set_u64_(uint64_t i, uint_least32_t decimal[static 3])
 {
-    uint_fast64_t q = i / 1000000000u;
+    uint64_t q = i / 1000000000u;
 
     decimal[0] = i % 1000000000u;
     decimal[1] = q % 1000000000u;
@@ -366,7 +366,7 @@ static size_t limbs_set_u64_(uint_fast64_t i, uint_least32_t decimal[static 3])
     return decimal[2] ? 3 : decimal[1] ? 2 : !!decimal[0];
 }
 
-static size_t limbs_set_u18d_(uint_fast64_t i, uint_least32_t decimal[static 2])
+static size_t limbs_set_u18d_(uint64_t i, uint_least32_t decimal[static 2])
 {
     decimal[0] = i % 1000000000u;
     decimal[1] = i / 1000000000u;
@@ -389,7 +389,7 @@ static size_t limbs_mul_(uint_least32_t* restrict product,
     for (size_t i = 0; i < xn; ++i) {
         for (size_t j = 0; j < yn; ++j) {
             size_t k = i + j;
-            uint_fast64_t z = (uint_fast64_t)x[i] * y[j] + product[k];
+            uint64_t z = (uint64_t)x[i] * y[j] + product[k];
             product[k] = z % 1000000000u;
             product[k + 1] += z / 1000000000u;
         }
@@ -400,7 +400,7 @@ static size_t limbs_mul_(uint_least32_t* restrict product,
 static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t shift)
 {
     uint_least32_t even[3];
-    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_((uint_fast64_t)1 << (shift & 63), even));
+    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_((uint64_t)1 << (shift & 63), even));
 
     uint_least32_t y[bits_to_limbs_(shift & -64) + 2];
     size_t yn = 2;
@@ -428,13 +428,13 @@ static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_
     return xn;
 }
 
-static uint_fast64_t limbs_modf_(double x, int prec, char* buffer)
+static uint64_t limbs_modf_(double x, int prec, char* buffer)
 {
     if (!prec)
         return rint(x);
 
-    uint_fast64_t i = x;
-    uint_fast64_t frac = 0x1p60 * (x - i);
+    uint64_t i = x;
+    uint64_t frac = 0x1p60 * (x - i);
 
     for (int k = 0; k < prec - 1; ++k) {
         frac *= 10;
@@ -479,9 +479,9 @@ static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, do
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     char buffer[spec.precision];
-    uint_fast64_t truncated = limbs_modf_(magnitude, spec.precision, buffer);
+    uint64_t truncated = limbs_modf_(magnitude, spec.precision, buffer);
 
-    char ibuffer[DECIMAL_DIGITS(uint_fast64_t)];
+    char ibuffer[DECIMAL_DIGITS(uint64_t)];
     char* end = ibuffer + sizeof(ibuffer);
     char* begin = decimal_(truncated, end);
 
