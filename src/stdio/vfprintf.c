@@ -375,11 +375,6 @@ static size_t limbs_set_u18d_(uint64_t i, uint_least32_t decimal[static 2])
     return decimal[1] ? 2 : !!decimal[0];
 }
 
-static size_t bits_to_limbs_(size_t bits)
-{
-    return (bits * 30103 + 899999) / 900000;
-}
-
 static size_t limbs_mul_(uint_least32_t* restrict product,
     const uint_least32_t* restrict x, size_t xn,
     const uint_least32_t* restrict y, size_t yn)
@@ -398,6 +393,11 @@ static size_t limbs_mul_(uint_least32_t* restrict product,
     return xn + yn - !product[xn + yn - 1];
 }
 
+static size_t bits_to_limbs_(size_t bits)
+{
+    return (bits * 30103 + 899999) / 900000;
+}
+
 static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t shift)
 {
     uint_least32_t even[3];
@@ -410,6 +410,55 @@ static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_
     y[1] = 4;
 
     for (size_t power = shift >> 6; power; power >>= 1) {
+        uint_least32_t x[yn];
+
+        for (size_t i = 0; i < yn; ++i)
+            x[i] = y[i];
+
+        yn = limbs_mul_(y, x, yn, x, yn);
+
+        if (power & 1) {
+            uint_least32_t x[xn];
+
+            for (size_t i = 0; i < xn; ++i)
+                x[i] = product[i];
+
+            xn = limbs_mul_(product, x, xn, y, yn);
+        }
+    }
+    return xn;
+}
+
+uint64_t exp5u64_(size_t power)
+{
+    uint64_t result = 1;
+    uint64_t base = 5;
+
+    for (; power; power >>= 1) {
+        if (power & 1)
+            result *= base;
+        base *= base;
+    }
+    return result;
+}
+
+static size_t fives_to_limbs_(size_t bits)
+{
+    return (bits * 699 + 8999) / 9000;
+}
+
+static size_t limbs_scal5n_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t power)
+{
+    uint_least32_t even[3];
+    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_(exp5u64_(power % 28), even));
+
+    uint_least32_t y[fives_to_limbs_(power) + 2];
+    size_t yn = 2;
+
+    y[0] = 103515625;
+    y[1] = 6;
+
+    for (power /= 28; power; power >>= 1) {
         uint_least32_t x[yn];
 
         for (size_t i = 0; i < yn; ++i)
