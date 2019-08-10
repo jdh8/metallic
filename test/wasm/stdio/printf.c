@@ -14,4 +14,5 @@ int main(void)
     test(printf("%f", 9.8765425));
     test(printf("%.0f", 0.5));
     test(printf("%.0f", 3.5));
+    test(printf("%f", 0x777p-90));
 }

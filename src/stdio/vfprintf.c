@@ -525,6 +525,27 @@ static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[rest
     return 0;
 }
 
+static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+{
+    _Bool pointed = spec.precision || spec.flags & FLAG('#');
+    int length = !!sign + 1 + pointed + spec.precision;
+    int padding = (spec.width > length) * (spec.width - length);
+
+    int64_t bits = reinterpret(int64_t, magnitude);
+    uint_least32_t big[fives_to_limbs_(1022 - (bits >> 52)) + 1];
+    uint_least32_t odd[2];
+    int shift;
+    size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
+    size_t limbs = limbs_scal5n_(big, odd, size, -shift);
+
+    fprintf(stderr, "[DEBUG] shift: %i\n", shift);
+    fprintf(stderr, "[DEBUG] size: %zu\n", size);
+    fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
+
+    TRY(limbs_write_(big, limbs, stream));
+    return length + padding;
+}
+
 static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
@@ -618,7 +639,7 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int lower, double arg
     int64_t bits = reinterpret(int64_t, magnitude);
 
     if (bits < 0x3F70000000000000)
-        return -2;
+        return fixed_small_(spec, stream, sign, magnitude);
 
     if (bits < 0x43F0000000000000)
         return fixed_moderate_(spec, stream, sign, magnitude);
