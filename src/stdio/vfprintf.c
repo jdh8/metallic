@@ -528,11 +528,11 @@ static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[rest
 static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
-    char buffer[spec.precision];
-    uint64_t truncated = limbs_modf_(magnitude, spec.precision, buffer);
+    char frac[spec.precision];
+    uint64_t truncated = limbs_modf_(magnitude, spec.precision, frac);
 
-    char ibuffer[DECIMAL_DIGITS(uint64_t)];
-    char* end = ibuffer + sizeof(ibuffer);
+    char integ[DECIMAL_DIGITS(uint64_t)];
+    char* end = integ + sizeof(integ);
     char* begin = decimal_(truncated, end);
 
     if (!truncated)
@@ -545,7 +545,7 @@ static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, do
         TRY(sign && put_(sign, stream));
         TRY(write_(begin, end - begin, stream));
         TRY(pointed && put_('.', stream));
-        TRY(write_(buffer, spec.precision, stream));
+        TRY(write_(frac, spec.precision, stream));
         TRY(pad_(' ', padding, stream));
     }
     else if (spec.flags & FLAG('0')) {
@@ -553,14 +553,14 @@ static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, do
         TRY(pad_('0', padding, stream));
         TRY(write_(begin, end - begin, stream));
         TRY(pointed && put_('.', stream));
-        TRY(write_(buffer, spec.precision, stream));
+        TRY(write_(frac, spec.precision, stream));
     }
     else {
         TRY(pad_(' ', padding, stream));
         TRY(sign && put_(sign, stream));
         TRY(write_(begin, end - begin, stream));
         TRY(pointed && put_('.', stream));
-        TRY(write_(buffer, spec.precision, stream));
+        TRY(write_(frac, spec.precision, stream));
     }
     return length + padding;
 }
