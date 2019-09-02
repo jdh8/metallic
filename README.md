@@ -30,11 +30,3 @@ wheel.
 * [dlmalloc][dlm] - Doug Lea's malloc with other memory management routines
 
 [dlm]: http://g.oswego.edu/dl/html/malloc.html
-
-Schedule
---------
-I am busy for Taiwanese Medical Licensing Examination now.  Active development
-will resume from Q3 2019.
-
-* **Beta**: 2019&ndash;2020
-* **Release**: 2020&ndash;2021
