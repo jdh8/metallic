@@ -16,17 +16,12 @@ faithfully rounded results (error < 1 ulp) in reasonable time.
 
 Dependencies
 ------------
-### System requirements ###
-Most environments with GCC-compatible compilers (e.g. GCC and clang) meet these
-requirements.
+### Compiler requirements ###
+Currently only clang meet these requirements.
 
+* WebAssembly backend
 * GCC-compatible builtins
 * ILP32 or LP64 data model
 
-### Other people's code ###
-These masterpieces are incorporated in this project to avoid reinventing the
-wheel.
-
-* [dlmalloc][dlm] - Doug Lea's malloc with other memory management routines
-
-[dlm]: http://g.oswego.edu/dl/html/malloc.html
+### Internal dependency ###
+* dlmalloc - Doug Lea's malloc with other memory management routines
