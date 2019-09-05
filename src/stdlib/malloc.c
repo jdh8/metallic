@@ -13,8 +13,6 @@ void* sbrk(intptr_t);
 
 #define malloc_getpagesize 65536
 
-#define memalign aligned_alloc
-
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
   Doug Lea and released to the public domain, as explained at
@@ -6295,3 +6293,8 @@ History:
          structure of old version,  but most details differ.)
 
 */
+
+#define VERBATIM(x) #x
+#define STRINGIFY(x) VERBATIM(x)
+
+void* aligned_alloc(size_t, size_t) __attribute__((__alias__(STRINGIFY(dlmemalign))));
