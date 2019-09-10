@@ -26,7 +26,7 @@ test/native: $(TESTS.native:.c=.exe)
 
 bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.exe-)
 
-%.out-: test/wasm/index.mjs %.out
+%.out-: node/index.mjs %.out
 	node --experimental-modules $^
 
 %.exe-: %.exe
