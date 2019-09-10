@@ -1,3 +1,2 @@
 export let buffer;
-
-export const set = x => buffer = x;
+export default x => buffer = x;
