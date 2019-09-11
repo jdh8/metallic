@@ -25,3 +25,6 @@ Currently only clang meet these requirements.
 
 ### Internal dependency ###
 * dlmalloc - Doug Lea's malloc with other memory management routines
+
+### External dependency for `node` driver ###
+* fs-ext - to implement `fseek`

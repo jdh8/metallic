@@ -1,46 +1,45 @@
-WACC = clang --target=wasm32-unknown-unknown-wasm
-CPPFLAGS = -I include -MMD -MP -MQ $@
-CFLAGS = -pipe -O3 -Wall -flto
-LDFLAGS = -nostdlib -Wl,--allow-undefined
-LDLIBS = -lm
+CC.wasm := clang --target=wasm32-unknown-unknown-wasm
+CPPFLAGS += -I include -MMD -MP -MQ $@
+CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
+LDFLAGS := -nostdlib -Wl,--allow-undefined $(LDFLAGS)
+LDLIBS := -lm
 
-metallic.a: CC = $(WACC)
+all: metallic.a node/index.mjs
+
+.PHONY: node/index.mjs check.wasm check.native clean
+
+metallic.a: CC := $(CC.wasm)
 metallic.a: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
-TESTS.wasm = $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
-TESTS.native = $(wildcard test/native/*/*.c test/native/*/*/*.c)
-BENCHMARKS = $(wildcard bench/*/*.c)
+node/index.mjs:
+	npm install --prefix node
 
-check: check/wasm check/native
+private SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
+private SOURCES.check.native := $(wildcard test/native/*/*.c test/native/*/*/*.c)
+private SOURCES.bench := $(wildcard bench/*/*.c)
 
-check/wasm: $(TESTS.wasm:.c=.out-)
+check: check.wasm check.native
 
-check/native: $(TESTS.native:.c=.exe-)
-
-test: test/wasm test/native
-
-test/wasm: $(TESTS.wasm:.c=.out)
-
-test/native: $(TESTS.native:.c=.exe)
-
-bench: $(BENCHMARKS:.c=.exe) $(BENCHMARKS:.c=.exe-)
+check.wasm: $(SOURCES.check.wasm:.c=.out) $(SOURCES.check.wasm:.c=.out-)
 
 %.out-: node/index.mjs %.out
-	node --experimental-modules $^
+	NODE_PATH=node node --experimental-modules $^
+
+%.out: %.c metallic.a
+	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
+
+bench: $(SOURCES.bench:.c=.exe) $(SOURCES.bench:.c=.exe-)
 
 %.exe-: %.exe
 	$<
-
-%.out: %.c metallic.a
-	$(WACC) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.exe: %.c
 	$(CC) -iquote test/native -iquote . $(CFLAGS) -march=native -o $@ $< $(LDLIBS)
 
 clean:
 	$(RM) *.a */*/*.[deo]* */*/*/*.[deo]* */*/*/*/*.[deo]*
-
-.PHONY: check check/wasm check/native clean
 
 -include */*/*.d */*/*/*.d */*/*/*/*.d

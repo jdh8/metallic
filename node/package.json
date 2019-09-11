@@ -1,0 +1,11 @@
+{
+    "description": "Driver for metallic, a libc for WebAssembly",
+    "repository": "https://github.com/jdh8/metallic",
+    "license": "MIT",
+    "scripts": {
+        "start": "node --experimental-modules index.mjs"
+    },
+    "dependencies": {
+        "fs-ext": "^1.0.0"
+    }
+}
