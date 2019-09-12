@@ -8,12 +8,12 @@ size_t __stdio_read(void* restrict buffer, size_t size, FILE stream[restrict sta
 {
     long count = __read(stream->fd, buffer, size);
 
-    if (count < 0) {
-        stream->state |= errbit_;
-        errno = -count;
-        return 0;
+    if (count >= 0) {
+        stream->state |= (count < size) * eofbit_;
+        return count;
     }
 
-    stream->state |= (count < size) * eofbit_;
-    return count;
+    stream->state |= errbit_;
+    errno = -count;
+    return 0;
 }

@@ -6,14 +6,14 @@ long __write(int, const void*, size_t);
 
 size_t __stdio_write(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
 {
-    long status = __write(stream->fd, buffer, size);
-    size_t count = status < 0 ? 0 : status;
+    long count = __write(stream->fd, buffer, size);
 
-    if (count < size)
-        stream->state |= errbit_;
+    if (count >= 0) {
+        stream->state |= (count < size) * errbit_;
+        return count;
+    }
 
-    if (status < 0)
-        errno = -status;
-
-    return count;
+    stream->state |= errbit_;
+    errno = -count;
+    return 0;
 }
