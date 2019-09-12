@@ -2,9 +2,9 @@ import errno from "../internal/errno.json";
 import timespec from "../internal/timespec.mjs";
 import perf from "perf_hooks";
 
-export const __clock_settime = id => id ? -errno.EINVAL : -errno.EPERM;
+export const __clock_settime = (memory, id) => id ? -errno.EINVAL : -errno.EPERM;
 
-export const __clock_gettime = (id, pointer) =>
+export const __clock_gettime = (memory, id, pointer) =>
 {
 	const realtime = () => 1000000n * BigInt(Date.now());
 	const monotonic = () => process.hrtime.bigint();
@@ -15,10 +15,10 @@ export const __clock_gettime = (id, pointer) =>
 	if (i >= clocks.length)
 		return -errno.EINVAL;
 
-	timespec(pointer, clocks[i]());
+	timespec(memory.buffer, pointer, clocks[i]());
 };
 
-export const __clock_getres = (id, pointer) =>
+export const __clock_getres = (memory, id, pointer) =>
 {
 	const resolutions = [1000000n, 1n, 1n];
 	const i = id >>> 0;
@@ -26,5 +26,5 @@ export const __clock_getres = (id, pointer) =>
 	if (i >= resolutions.length)
 		return -errno.EINVAL;
 
-	timespec(pointer, resolutions[i]);
+	timespec(memory.buffer, pointer, resolutions[i]);
 };

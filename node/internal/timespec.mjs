@@ -1,6 +1,4 @@
-import { buffer } from "../memory.mjs";
-
-export default (pointer, nanos) =>
+export default (buffer, pointer, nanos) =>
 {
 	const view = new DataView(buffer, pointer, 16);
 

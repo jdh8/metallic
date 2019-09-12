@@ -1,7 +1,17 @@
-import * as env from "./env.mjs";
-import load from "./memory.mjs";
+import * as library from "./library.mjs";
 import fs from "fs";
 
-const { exports } = new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync(process.argv[2])), { env });
-load(exports.memory.buffer);
-exports._start();
+const exec = code =>
+{
+	const env = Object.create(null);
+	let memory;
+
+	for (const key in library)
+		env[key] = (...x) => library[key](memory, ...x);
+
+	const { exports } = new WebAssembly.Instance(new WebAssembly.Module(code), { env });
+	memory = exports.memory;
+	exports._start();
+};
+
+exec(fs.readFileSync(process.argv[2]));
