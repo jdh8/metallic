@@ -11,15 +11,14 @@ static int modeflags_(const char mode[static 1])
             goto writing;
         case 'a':
             modifier = O_CREAT | O_APPEND;
-            /* fallthrough */
         writing:
             access = O_WRONLY;
         case 'r':
             ++mode;
     }
 
-    for (int flag; (flag = *mode); ++mode) {
-        switch (flag) {
+    for (; *mode; ++mode) {
+        switch (*mode) {
             case '+':
                 access = O_RDWR;
                 break;
