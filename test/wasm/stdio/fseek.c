@@ -23,10 +23,8 @@ static long standard(const char path[static 1])
     return position;
 }
 
-int main(void)
+int main(int argc, char* argv[static 2])
 {
-    const char path[] = "metallic.a";
-
-    assert(posix(path) == standard(path));
+    assert(posix(argv[0]) == standard(argv[0]));
     assert(!errno);
 }
