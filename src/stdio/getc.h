@@ -6,8 +6,10 @@
 
 static int getc_(FILE stream[static 1])
 {
-    unsigned char c;
+    if (stream->avail)
+        return stream->cache[sizeof(stream->cache) - stream->avail--];
 
+    unsigned char c;
     return stream->read(&c, 1, stream) ? c : EOF;
 }
 

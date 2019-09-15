@@ -1,3 +1,4 @@
+#include "flush.h"
 #include "FILE.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,6 +9,8 @@ int __close(int);
 
 int fclose(FILE stream[static 1])
 {
+    flush_(stream);
+
     int status = __close(stream->fd);
     free(stream);
 
