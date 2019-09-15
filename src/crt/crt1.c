@@ -1,4 +1,5 @@
 #include <stddef.h>
+#include <stdint.h>
 
 void __wasm_call_ctors(void);
 
@@ -25,7 +26,7 @@ static size_t strlen_(char s[static 1])
 
 int main(int, char**);
 
-int _start(void)
+static int libc_start_main_(void)
 {
     int argc = __argc();
     char* argv[argc + 1];
@@ -39,7 +40,15 @@ int _start(void)
 
     argv[argc] = (void*)0;
 
+    return main(argc, argv);
+}
+
+extern uintptr_t __metallic_brk;
+
+int _start(void)
+{
+    __metallic_brk = ((uintptr_t)__builtin_frame_address(0) & 0xFF) + 1;
     __wasm_call_ctors();
 
-    return main(argc, argv);
+    return libc_start_main_();
 }

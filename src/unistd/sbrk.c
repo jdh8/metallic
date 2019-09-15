@@ -1,26 +1,20 @@
 #include <stdint.h>
 
-static const uintptr_t pagesize = 64 * 1024;
+uintptr_t __metallic_brk;
 
-void* sbrk(intptr_t increment)
+void* __sbrk(intptr_t increment)
 {
-    static uintptr_t top = 0;
-    uintptr_t previous = top;
+    const uintptr_t pagesize = 64 * 1024;
+    uintptr_t previous = __metallic_brk;
     uintptr_t capacity = pagesize * __builtin_wasm_memory_size(0);
 
-    if (top + increment > capacity) {
-        uintptr_t excess = top + increment - capacity;
+    if (__metallic_brk + increment > capacity) {
+        uintptr_t excess = __metallic_brk + increment - capacity;
         uintptr_t pages = (pagesize - 1 + excess) / pagesize;
 
         if (__builtin_wasm_memory_grow(0, pages) == -1)
             return (void*)-1;
     }
-    top += increment;
+    __metallic_brk += increment;
     return (void*)previous;
-}
-
-__attribute__((constructor))
-static void initialize_(void)
-{
-    sbrk(pagesize * __builtin_wasm_memory_size(0));
 }

@@ -1,13 +1,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
-void* sbrk(intptr_t);
+void* __sbrk(intptr_t);
 
 #define ABORT __builtin_trap()
 #define HAVE_MMAP 0
 #define LACKS_TIME_H
 #define LACKS_UNISTD_H
 #define LACKS_SYS_TYPES_H
+#define MORECORE(x) __sbrk(x)
 #define NO_MALLOC_STATS 1
 #define USE_LOCKS 0
 
