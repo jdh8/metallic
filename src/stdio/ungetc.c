@@ -4,7 +4,8 @@
 int ungetc(int c, FILE stream[static 1])
 {
     if (stream->avail < sizeof(stream->cache) && c != EOF) {
-        stream->cache[sizeof(stream->cache) - stream->avail - 1] = c;
+        ++stream->avail;
+        stream->cache[sizeof(stream->cache) - stream->avail] = c;
         stream->state &= ~eofbit_;
         return c;
     }
