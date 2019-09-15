@@ -3,12 +3,10 @@
 #include <limits.h>
 #include <stdio.h>
 
-typedef long long off_t;
-
 long __lseek(int, long, int);
 int __llseek(int, long, unsigned long, off_t[static 1], int);
 
-long __stdio_seek(FILE stream[static 1], long offset, int origin)
+off_t __stdio_seek(FILE stream[static 1], off_t offset, int origin)
 {
 #if LONG_MAX == 0x7FFFFFFF
     off_t position;

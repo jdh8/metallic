@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <limits.h>
 
+typedef long long off_t;
 typedef struct __FILE FILE;
 
 struct __FILE
@@ -18,7 +19,7 @@ struct __FILE
 
     size_t (*read)(void*, size_t, FILE*);
     size_t (*write)(const void*, size_t, FILE*);
-    long (*seek)(FILE*, long, int);
+    off_t (*seek)(FILE*, off_t, int);
 
     int fd;
 };
