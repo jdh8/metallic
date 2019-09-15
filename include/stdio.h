@@ -7,6 +7,11 @@ typedef struct __FILE FILE;
 typedef struct __fpos_t fpos_t;
 typedef __SIZE_TYPE__ size_t;
 
+struct __fpos_t
+{
+    long long _offset;
+};
+
 #ifdef __cplusplus
 extern "C" {
 #endif

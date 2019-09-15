@@ -1,7 +1,6 @@
 #include "FILE.h"
 #include <errno.h>
 #include <limits.h>
-#include <stdio.h>
 
 long __lseek(int, long, int);
 int __llseek(int, long, unsigned long, off_t[static 1], int);
@@ -14,19 +13,19 @@ off_t __stdio_seek(FILE stream[static 1], off_t offset, int origin)
 
     if (status < 0) {
         errno = -status;
-        return EOF;
+        return -1;
     }
 
     if (position >> 31) {
         errno = EOVERFLOW;
-        return EOF;
+        return -1;
     }
 #else
     off_t position = __lseek(stream->fd, offset, origin);
 
     if (position < 0) {
         errno = -position;
-        return EOF;
+        return -1;
     }
 #endif
 
