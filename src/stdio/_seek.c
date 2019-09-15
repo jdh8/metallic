@@ -32,6 +32,7 @@ long __stdio_seek(FILE stream[static 1], long offset, int origin)
     }
 #endif
 
+    stream->state &= ~eofbit_;
     return position;
 }
 
