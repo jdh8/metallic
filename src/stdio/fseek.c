@@ -6,6 +6,8 @@ int __fseeko(FILE stream[static 1], off_t offset, int origin)
     if (origin == SEEK_CUR)
         offset -= stream->avail;
 
+    stream->avail = 0;
+
     return flush_(stream) || stream->seek(stream, offset, origin) == -1;
 }
 

@@ -3,8 +3,6 @@
 
 static int flush_(FILE stream[static 1])
 {
-    stream->avail = 0;
-
     if (stream->base) {
         stream->write((void*)0, 0, stream);
 
