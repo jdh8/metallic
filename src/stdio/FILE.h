@@ -20,6 +20,7 @@ struct __FILE
     size_t (*read)(void*, size_t, FILE*);
     size_t (*write)(const void*, size_t, FILE*);
     off_t (*seek)(FILE*, off_t, int);
+    int (*close)(FILE*);
 
     int fd;
 };

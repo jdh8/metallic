@@ -5,17 +5,15 @@
 
 extern _Thread_local int errno;
 
-int __close(int);
-
 int fclose(FILE stream[static 1])
 {
     flush_(stream);
 
-    int status = __close(stream->fd);
+    int status = stream->close(stream);
     free(stream);
 
     if (status >= 0)
-        return status;
+        return 0;
 
     errno = -status;
     return EOF;
