@@ -22,7 +22,6 @@ FILE* freopen(const char path[restrict static 1], const char mode[restrict stati
             *stream = FILE_(fd);
             return stream;
         }
-
         errno = -fd;
     }
     else {
@@ -31,9 +30,10 @@ FILE* freopen(const char path[restrict static 1], const char mode[restrict stati
 
         int status = __fcntl(stream->fd, F_SETFL, flags & ~(O_CREAT | O_EXCL | O_CLOEXEC));
 
-        if (status >= 0)
+        if (status >= 0) {
+            *stream = FILE_(stream->fd);
             return stream;
-
+        }
         errno = -status;
         stream->close(stream);
     }
