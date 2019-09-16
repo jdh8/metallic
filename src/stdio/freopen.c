@@ -2,6 +2,7 @@
 #include "modeflags.h"
 #include "FILE_.h"
 #include <fcntl.h>
+#include <stdlib.h>
 
 extern _Thread_local int errno;
 
@@ -34,7 +35,9 @@ FILE* freopen(const char path[restrict static 1], const char mode[restrict stati
             return stream;
 
         errno = -status;
+        stream->close(stream);
     }
 
+    free(stream);
     return (void*)0;
 }
