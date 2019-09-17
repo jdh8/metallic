@@ -19,7 +19,7 @@ FILE* freopen(const char path[restrict static 1], const char mode[restrict stati
         int fd = __open(path, flags, 0666);
 
         if (fd >= 0) {
-            *stream = FILE_(fd);
+            *stream = FILE_(fd, .state = flags & O_APPEND ? appbit_ : 0);
             return stream;
         }
         errno = -fd;

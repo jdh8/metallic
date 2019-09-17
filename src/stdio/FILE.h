@@ -29,6 +29,7 @@ enum
 {
     eofbit_ = 0x10,
     errbit_ = 0x20,
+    appbit_ = 0x80,
 };
 
 #endif
