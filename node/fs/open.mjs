@@ -16,7 +16,7 @@ export const __access = wrap(prepare(fs.accessSync));
 export const __truncate = wrap(prepare(fs.truncateSync));
 export const __ftruncate = wrap(uncurry(fs.ftruncateSync));
 export const __chdir = wrap((memory, path) => process.chdir(new TextDecoder().decode(cstring(memory.buffer, path))));
-export const __fchdir = () => -errno.ENOSYS;
+export const __fchdir = syscalls.fchdir;
 export const __chmod = wrap(prepare(fs.chmodSync));
 export const __fchmod = wrap(uncurry(fs.fchmodSync));
 export const __chown = wrap(prepare(fs.chownSync));
