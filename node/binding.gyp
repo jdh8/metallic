@@ -3,7 +3,7 @@
         {
             "target_name": "syscalls", 
             "sources": [
-                "fs/posix_fallocate.c",
+                "fs/fallocate.c",
                 "fs/seek.c",
                 "syscalls.c"
             ]

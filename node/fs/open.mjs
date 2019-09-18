@@ -23,7 +23,7 @@ export const __chown = wrap(prepare(fs.chownSync));
 export const __fchown = wrap(uncurry(fs.fchownSync));
 export const __lchown = wrap(prepare(fs.lchownSync));
 
-export const __posix_fallocate32 = syscalls.posix_fallocate32
+export const __fallocate32 = syscalls.fallocate32
 || wrap((memory, fd, offset_high, offset_low, length_high, length_low) =>
 {
 	const offset = offset_high * 2**32 + offset_low;

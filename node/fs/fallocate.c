@@ -5,7 +5,7 @@
 #ifndef _WIN32
 #include <fcntl.h>
 
-napi_value metallic_posix_fallocate32(napi_env env, napi_callback_info args)
+napi_value metallic_fallocate32(napi_env env, napi_callback_info args)
 {
     const size_t arity = 6;
     size_t argc = arity;
