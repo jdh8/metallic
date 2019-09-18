@@ -5,7 +5,7 @@
             "sources": [
                 "fs/posix_fallocate.c",
                 "fs/seek.c",
-                "library.c"
+                "syscalls.c"
             ]
         }
     ]
