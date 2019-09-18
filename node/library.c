@@ -14,7 +14,7 @@ napi_value metallic_llseek(napi_env, napi_callback_info);
 
 static napi_value constructor(napi_env env, napi_value exports)
 {
-    napi_set_named_property(env, exports, "llseek", Function(env, metallic_lseek));
+    napi_set_named_property(env, exports, "lseek", Function(env, metallic_lseek));
     napi_set_named_property(env, exports, "llseek", Function(env, metallic_llseek));
 
     return exports;
