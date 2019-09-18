@@ -23,7 +23,7 @@ napi_value metallic_lseek(napi_env env, napi_callback_info args)
     napi_get_cb_info(env, args, &argc, argv, (void*)0, (void*)0);
 
     napi_value result = 0;
-    int64_t position = SEEK(ToInt32(env, argv[1]), ToBigInt64(env, argv[2]), ToInt32(env, argv[3]));
+    off_t position = SEEK(ToInt32(env, argv[1]), ToBigInt64(env, argv[2]), ToInt32(env, argv[3]));
 
     napi_create_bigint_int64(env, position == -1 ? -errno : position, &result);
 
@@ -40,11 +40,11 @@ napi_value metallic_llseek(napi_env env, napi_callback_info args)
 
     napi_value status = 0;
     int fd = ToInt32(env, argv[1]);
-    int64_t offset = (int64_t)ToInt32(env, argv[2]) << 32 | ToUint32(env, argv[3]);
+    off_t offset = (int64_t)ToInt32(env, argv[2]) << 32 | ToUint32(env, argv[3]);
     int64_t* result = DataView(ArrayBuffer(env, argv[0]), ToInt32(env, argv[4]));
     int origin = ToInt32(env, argv[5]);
 
-    int64_t position = SEEK(fd, offset, origin);
+    off_t position = SEEK(fd, offset, origin);
 
     if (position >= 0) {
         napi_create_int32(env, 0, &status);
