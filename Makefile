@@ -4,16 +4,19 @@ CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
 LDFLAGS := -nostdlib -Wl,--allow-undefined $(LDFLAGS)
 LDLIBS := -lm
 
-all: metallic.a node/index.mjs
+all: metallic.a node/build/Release/syscalls.node
 
-.PHONY: node/index.mjs check.wasm check.native clean
+.PHONY: node/build/Release/syscalls.node check.wasm check.native clean
 
 metallic.a: CC := $(CC.wasm)
 metallic.a: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
 	llvm-link -o $@ $^
 
-node/index.mjs:
-	npm install --prefix node
+node/build/Release/syscalls.node: node/build/Makefile
+	$(MAKE) -C node/build
+
+node/build/Makefile: node/binding.gyp
+	node-gyp -C node --thin=yes configure
 
 private SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
 private SOURCES.check.native := $(wildcard test/native/*/*.c test/native/*/*/*.c)
