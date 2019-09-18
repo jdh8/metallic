@@ -9,11 +9,19 @@ static napi_value Function(napi_env env, napi_callback callback)
     return result;
 }
 
+#ifndef _WIN32
+napi_value metallic_posix_fallocate32(napi_env, napi_callback_info);
+#endif
+
 napi_value metallic_lseek(napi_env, napi_callback_info);
 napi_value metallic_llseek(napi_env, napi_callback_info);
 
 static napi_value constructor(napi_env env, napi_value exports)
 {
+#ifndef _WIN32
+    napi_set_named_property(env, exports, "posix_fallocate32", Function(env, metallic_posix_fallocate32));
+#endif
+
     napi_set_named_property(env, exports, "lseek", Function(env, metallic_lseek));
     napi_set_named_property(env, exports, "llseek", Function(env, metallic_llseek));
 

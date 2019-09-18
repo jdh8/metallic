@@ -1,6 +1,8 @@
 #include "../conversion/ToInt32.h"
 #include "../conversion/ToUint32.h"
 #include <node_api.h>
+
+#ifndef _WIN32
 #include <fcntl.h>
 
 napi_value metallic_posix_fallocate32(napi_env env, napi_callback_info args)
@@ -20,3 +22,4 @@ napi_value metallic_posix_fallocate32(napi_env env, napi_callback_info args)
 
     return result;
 }
+#endif
