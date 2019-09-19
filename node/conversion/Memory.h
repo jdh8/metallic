@@ -1,9 +1,9 @@
-#ifndef METALLIC_NODE_ARRAYBUFFER_H
-#define METALLIC_NODE_ARRAYBUFFER_H
+#ifndef METALLIC_NODE_MEMORY_H
+#define METALLIC_NODE_MEMORY_H
 
 #include <node_api.h>
 
-static void* ArrayBuffer(napi_env env, napi_value memory)
+static void* Memory(napi_env env, napi_value memory)
 {
     napi_value buffer = 0;
     void* result = 0;

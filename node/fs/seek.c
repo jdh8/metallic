@@ -1,5 +1,5 @@
 #define NAPI_EXPERIMENTAL
-#include "../conversion/ArrayBuffer.h"
+#include "../conversion/Memory.h"
 #include "../conversion/ToBigInt64.h"
 #include "../conversion/ToInt32.h"
 #include "../conversion/ToUint32.h"
@@ -41,7 +41,7 @@ napi_value metallic_llseek(napi_env env, napi_callback_info args)
     napi_value status = 0;
     int fd = ToInt32(env, argv[1]);
     off_t offset = (int64_t)ToInt32(env, argv[2]) << 32 | ToUint32(env, argv[3]);
-    int64_t* result = DataView(ArrayBuffer(env, argv[0]), ToInt32(env, argv[4]));
+    int64_t* result = DataView(Memory(env, argv[0]), ToInt32(env, argv[4]));
     int origin = ToInt32(env, argv[5]);
 
     off_t position = SEEK(fd, offset, origin);
