@@ -1,7 +1,7 @@
 #define NAPI_EXPERIMENTAL
-#include "../conversion/Integer.h"
 #include "../conversion/Memory.h"
 #include "../conversion/ToInt32.h"
+#include "../conversion/ToInteger.h"
 #include <node_api.h>
 
 #ifndef _WIN32
@@ -52,7 +52,7 @@ napi_value metallic_fcntl(napi_env env, napi_callback_info args)
     void* buffer = Memory(env, argv[0]);
     int fd = ToInt32(env, argv[1]);
     int cmd = ToInt32(env, argv[2]);
-    long arg = Integer(env, argv[3]);
+    long arg = ToInteger(env, argv[3]);
     int status = fcntl_(buffer, fd, cmd, arg);
 
     napi_create_int32(env, status == -1 ? errno : status, &result);
