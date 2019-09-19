@@ -9,7 +9,7 @@ static void* Memory(napi_env env, napi_value memory)
     void* result = 0;
 
     napi_get_named_property(env, memory, "buffer", &buffer);
-    napi_get_arraybuffer_info(env, buffer, &result, (void*)0);
+    napi_get_arraybuffer_info(env, buffer, &result, NULL);
 
     return result;
 }

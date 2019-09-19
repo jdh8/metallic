@@ -14,7 +14,7 @@ static int64_t Integer(napi_env env, napi_value value)
 
     if (napi_get_value_int64(env, value, &result) == napi_number_expected)
         if (napi_get_value_bigint_int64(env, value, &result, &lossless) == napi_bigint_expected)
-            napi_throw_type_error(env, (void*)0, "Number or BigInt is expected for Integer");
+            napi_throw_type_error(env, NULL, "Number or BigInt is expected for Integer");
 
     return result;
 }
