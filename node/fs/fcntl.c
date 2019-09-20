@@ -1,4 +1,3 @@
-#define NAPI_EXPERIMENTAL
 #include "../conversion/Memory.h"
 #include "../conversion/ToInt32.h"
 #include "../conversion/ToInteger.h"
