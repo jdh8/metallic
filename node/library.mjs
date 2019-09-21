@@ -4,4 +4,5 @@ export * from "./fs/open.mjs";
 export * from "./fs/stat.mjs";
 export * from "./fs/fcntl.mjs";
 export * from "./fs/namei.mjs";
+export * from "./fs/readdir.mjs";
 export * from "./kernel/posix-timers.mjs";
