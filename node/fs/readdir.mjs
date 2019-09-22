@@ -26,19 +26,19 @@ const extract = (buffer, pointer) => new Uint32Array(buffer, pointer, 1)[0];
 export const __opendir = wrap((memory, pointer, path) =>
 {
 	const view = new Uint32Array(memory.buffer, pointer, 1);
-	const index = memory.dirs.push(new DIR(cstring(memory.buffer, path))) - 1;
+	const index = memory.dictionary.push(new DIR(cstring(memory.buffer, path))) - 1;
 
 	view[0] = index;
 });
 
 export const __closedir = (memory, directory) =>
 {
-	delete memory.dirs[extract(memory.buffer, directory)];
+	delete memory.dictionary[extract(memory.buffer, directory)];
 };
 
 export const __readdir = wrap((memory, directory, entry) =>
 {
-	const iteration = memory.dirs[extract(memory.buffer, directory)].iterator.next();
+	const iteration = memory.dictionary[extract(memory.buffer, directory)].iterator.next();
 
 	if (!iteration.done) {
 		const result = new Uint8Array(memory.buffer, entry);
@@ -48,4 +48,4 @@ export const __readdir = wrap((memory, directory, entry) =>
 	}
 });
 
-export const __rewinddir = wrap((memory, directory) => memory.dirs[extract(memory.buffer, directory)].rewind());
+export const __rewinddir = wrap((memory, directory) => memory.dictionary[extract(memory.buffer, directory)].rewind());

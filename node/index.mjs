@@ -11,7 +11,9 @@ const exec = code =>
 
 	const { exports } = new WebAssembly.Instance(new WebAssembly.Module(code), { env });
 	memory = exports.memory;
-	exports._start();
+	memory.dictionary = [];
+
+	return exports._start();
 };
 
 exec(fs.readFileSync(process.argv[2]));
