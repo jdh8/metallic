@@ -1,44 +1,29 @@
 import cstring from "../internal/cstring.mjs";
-import errno from "../internal/errno.json";
 import wrap from "../internal/wrap.mjs";
 import fs from "fs";
 
-class DIR
+const DIR = path =>
 {
-	constructor(path)
-	{
-		this.path = path;
-		this.list = fs.readdirSync(path, "buffer");
-		this.iterator = this.list.values();
-	}
-
-	rewind()
-	{
-		try { this.list = fs.readdirSync(this.path, "buffer"); }
-		catch (ignored) {}
-
-		this.iterator = this.list.values();
-	}
+	const list = fs.readdirSync(path, "buffer");
+	const iterator = list.values();
+	return { path, list, iterator };
 };
-
-const extract = (buffer, pointer) => new Uint32Array(buffer, pointer, 1)[0];
 
 export const __opendir = wrap((memory, pointer, path) =>
 {
-	const view = new Uint32Array(memory.buffer, pointer, 1);
-	const index = memory.dictionary.push(new DIR(cstring(memory.buffer, path))) - 1;
+	const view = new Uint32Array(memory.buffer, pointer);
 
-	view[0] = index;
+	view[0] = memory.dictionary.push(DIR(cstring(memory.buffer, path))) - 1;
 });
 
 export const __closedir = (memory, directory) =>
 {
-	delete memory.dictionary[extract(memory.buffer, directory)];
+	delete memory.dictionary[new Uint32Array(memory.buffer, directory)[0]];
 };
 
-export const __readdir = wrap((memory, directory, entry) =>
+export const __readdir = (memory, directory, entry) =>
 {
-	const iteration = memory.dictionary[extract(memory.buffer, directory)].iterator.next();
+	const iteration = memory.dictionary[new Uint32Array(memory.buffer, directory)[0]].iterator.next();
 
 	if (!iteration.done) {
 		const result = new Uint8Array(memory.buffer, entry);
@@ -46,6 +31,13 @@ export const __readdir = wrap((memory, directory, entry) =>
 		result[iteration.value.length] = 0;
 		return 1;
 	}
-});
+};
 
-export const __rewinddir = wrap((memory, directory) => memory.dictionary[extract(memory.buffer, directory)].rewind());
+export const __rewinddir = (memory, directory) =>
+{
+	const index = new Uint32Array(memory.buffer, directory)[0];
+	const alias = memory.dictionary[index];
+
+	try { memory.dictionary[index] = DIR(alias.path) }
+	catch (e) { alias.iterator = alias.list.values() }
+};
