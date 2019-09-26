@@ -452,7 +452,7 @@ static size_t limbs_scal5n_(uint_least32_t* restrict product, const uint_least32
     uint_least32_t even[3];
     size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_(exp5u64_(power % 28), even));
 
-    uint_least32_t y[fives_to_limbs_(power) + 2];
+    uint_least32_t y[fives_to_limbs_(power)];
     size_t yn = 2;
 
     y[0] = 103515625;
@@ -532,14 +532,16 @@ static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, doubl
     int padding = (spec.width > length) * (spec.width - length);
 
     int64_t bits = reinterpret(int64_t, magnitude);
-    uint_least32_t big[fives_to_limbs_(1022 - (bits >> 52)) + 1];
     uint_least32_t odd[2];
     int shift;
     size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
+
+    uint_least32_t big[fives_to_limbs_(-shift) + 3];
     size_t limbs = limbs_scal5n_(big, odd, size, -shift);
 
+    fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
     fprintf(stderr, "[DEBUG] shift: %i\n", shift);
-    fprintf(stderr, "[DEBUG] size: %zu\n", size);
+    fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
     fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
 
     TRY(limbs_write_(big, limbs, stream));
