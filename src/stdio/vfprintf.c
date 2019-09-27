@@ -429,7 +429,7 @@ static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_
     return xn;
 }
 
-uint64_t exp5u64_(size_t power)
+static uint64_t exp5u64_(size_t power)
 {
     uint64_t result = 1;
     uint64_t base = 5;
