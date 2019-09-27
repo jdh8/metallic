@@ -478,6 +478,66 @@ static size_t limbs_scal5n_(uint_least32_t* restrict product, const uint_least32
     return xn;
 }
 
+static double limbs_getfrac_(const uint_least32_t* x, ptrdiff_t index)
+{
+    if (index > 0) {
+        uint_least32_t highest = x[index - 1];
+
+        if (highest < 500000000)
+            return 0;
+
+        if (highest == 500000000) {
+            for (ptrdiff_t i = index - 2; i >= 0; --i)
+                if (x[i])
+                    return 1;
+            return 0.5;
+        }
+        return 1;
+    }
+    return 0;
+}
+
+static uint_fast32_t exp10u32_(unsigned power)
+{
+    uint_fast32_t result = 1;
+    uint_fast32_t base = 10;
+
+    for (; power; power >>= 1) {
+        if (power & 1)
+            result *= base;
+        base *= base;
+    }
+    return result;
+}
+
+static uint_fast32_t limb_placed_rint_(double x, unsigned place)
+{
+    uint_fast32_t factor = exp10u32_(place);
+
+    return (uint_fast32_t)rint(x / factor) * factor;
+}
+
+static size_t limbs_placed_rint_(uint_least32_t* x, size_t xn, int place)
+{
+    if (place <= 0)
+        return xn;
+
+    if (place <= 9 * xn) {
+        unsigned index = place / 9u;
+        unsigned shift = place % 9u;
+
+        x[index] = limb_placed_rint_(x[index] + limbs_getfrac_(x, index), shift);
+
+        for (; index < xn && x[index] >= 1000000000; ++index) {
+            x[index] -= 1000000000;
+            x[index + 1]++;
+        }
+        return xn + (index == xn);
+    }
+
+    return 0;
+}
+
 static uint64_t limbs_modf_(double x, int prec, char* buffer)
 {
     if (!prec)
@@ -536,8 +596,8 @@ static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, doubl
     int shift;
     size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
 
-    uint_least32_t big[fives_to_limbs_(-shift) + 3];
-    size_t limbs = limbs_scal5n_(big, odd, size, -shift);
+    uint_least32_t big[fives_to_limbs_(-shift) + 2];
+    size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, odd, size, -shift), -shift - spec.precision);
 
     fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
     fprintf(stderr, "[DEBUG] shift: %i\n", shift);
