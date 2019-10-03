@@ -18,9 +18,9 @@ node/build/Release/syscalls.node: node/build/Makefile
 node/build/Makefile: node/binding.gyp
 	node-gyp -C node --thin=yes configure
 
-private SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
-private SOURCES.check.native := $(wildcard test/native/*/*.c test/native/*/*/*.c)
-private SOURCES.bench := $(wildcard bench/*/*.c)
+SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
+SOURCES.check.native := $(wildcard test/native/*/*.c test/native/*/*/*.c)
+SOURCES.bench := $(wildcard bench/*/*.c)
 
 check: check.wasm check.native
 
