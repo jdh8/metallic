@@ -585,27 +585,34 @@ static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[rest
     return 0;
 }
 
-static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+static int common_fixed_small_(struct Spec spec, FILE stream[static 1], int sign,
+    const uint_least32_t* base, size_t size, int exp)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     int length = !!sign + 1 + pointed + spec.precision;
     int padding = (spec.width > length) * (spec.width - length);
 
+    uint_least32_t big[fives_to_limbs_(-exp) + 2];
+    size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), -exp - spec.precision);
+
+    fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
+    fprintf(stderr, "[DEBUG] exp: %i\n", exp);
+    fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
+    fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
+
+    TRY(limbs_write_(big, limbs, stream));
+
+    return length + padding;
+}
+
+static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+{
     int64_t bits = reinterpret(int64_t, magnitude);
     uint_least32_t odd[2];
     int shift;
     size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
 
-    uint_least32_t big[fives_to_limbs_(-shift) + 2];
-    size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, odd, size, -shift), -shift - spec.precision);
-
-    fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
-    fprintf(stderr, "[DEBUG] shift: %i\n", shift);
-    fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
-    fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
-
-    TRY(limbs_write_(big, limbs, stream));
-    return length + padding;
+    return common_fixed_small_(spec, stream, sign, odd, size, shift);
 }
 
 static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
