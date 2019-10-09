@@ -5,6 +5,7 @@ import fs from "fs";
 
 const call = (stat, file, buffer, pointer) =>
 {
+	const either = (left, right = left) => right;
 	const view = new DataView(buffer, pointer, 64);
 	const bigints = stat(file, { bigint: true });
 	const numbers = stat(file);
@@ -20,9 +21,9 @@ const call = (stat, file, buffer, pointer) =>
 	view.setInt32(48, numbers.blksize, true);
 	view.setBigInt64(56, bigints.blocks, true);
 
-	timespec(buffer, pointer + 64, BigInt(Math.round(1e6 * numbers.atimeMs)));
-	timespec(buffer, pointer + 80, BigInt(Math.round(1e6 * numbers.mtimeMs)));
-	timespec(buffer, pointer + 96, BigInt(Math.round(1e6 * numbers.ctimeMs)));
+	timespec(buffer, pointer + 64, either(BigInt(Math.round(1e6 * numbers.atimeMs), bigints.atimeNs)));
+	timespec(buffer, pointer + 80, either(BigInt(Math.round(1e6 * numbers.mtimeMs), bigints.mtimeNs)));
+	timespec(buffer, pointer + 96, either(BigInt(Math.round(1e6 * numbers.ctimeMs), bigints.ctimeNs)));
 };
 
 export const __stat = wrap((memory, path, pointer) => call(fs.statSync, cstring(memory.buffer, path), memory.buffer, pointer));
