@@ -1,7 +1,7 @@
 #include "unordtf2.h"
 #include "../../math/reinterpret.h"
 
-int __cmptf2(long double x, long double y)
+static int cmptf2_(long double x, long double y, int unordered)
 {
     __int128 a = reinterpret(__int128, x);
     __int128 b = reinterpret(__int128, y);
@@ -11,7 +11,22 @@ int __cmptf2(long double x, long double y)
         return 0;
 
     if (unordtf2_(a, b))
-        return 1;
+        return unordered;
 
     return ((a > b) - (a < b) + sign) ^ sign;
 }
+
+int __cmptf2(long double x, long double y)
+{
+    return cmptf2_(x, y, 1);
+}
+
+int __letf2(long double, long double) __attribute__((__alias__("__cmptf2")));
+int __lttf2(long double, long double) __attribute__((__alias__("__cmptf2")));
+
+int __getf2(long double x, long double y)
+{
+    return cmptf2_(x, y, -1);
+}
+
+int __gttf2(long double, long double) __attribute__((__alias__("__getf2")));
