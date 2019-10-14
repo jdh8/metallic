@@ -1,4 +1,5 @@
 #include "src/math/reinterpret.h"
+#include <math.h>
 #include <stdint.h>
 #include <assert.h>
 
