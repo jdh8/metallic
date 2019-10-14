@@ -2,9 +2,11 @@
 #include <stdint.h>
 #include <assert.h>
 
+uint64_t __fixunstfdi(long double);
+
 static _Bool run(uint64_t a)
 {
-    return a == truncl(a);
+    return a == __fixunstfdi(a);
 }
 
 int main(void)
