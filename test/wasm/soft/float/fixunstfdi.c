@@ -3,18 +3,12 @@
 #include <stdint.h>
 #include <assert.h>
 
-static _Bool run(uint64_t a)
-{
-    return a == truncl(a);
-}
-
 int main(void)
 {
-    const uint64_t delta = 0x0008D46BA87B5A22;
+    const __int128 delta = (__int128)0x17E93193 << 64 | 0xC0605887B0E6B634;
 
-    for (uint64_t i = 0x3FFFFFFFFFFFFFFF; i < 0x4340000000000000; i += delta)
-        assert(run(reinterpret(double, i)));
-
-    for (uint64_t i = 0; i <= UINT64_MAX / delta; ++i)
-        assert(run(i * delta));
+    for (__int128 i = reinterpret(__int128, 0.9L); i < reinterpret(__int128, 0x1p64L); i += delta) {
+        long double x = reinterpret(long double, i);
+        assert((uint64_t)x == truncl(x));
+    }
 }
