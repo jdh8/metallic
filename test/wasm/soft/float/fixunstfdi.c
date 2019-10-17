@@ -1,12 +1,11 @@
 #include "src/math/reinterpret.h"
+#include <math.h>
 #include <stdint.h>
 #include <assert.h>
 
-uint64_t __fixunstfdi(long double);
-
 static _Bool run(uint64_t a)
 {
-    return a == __fixunstfdi(a);
+    return a == truncl(a);
 }
 
 int main(void)
