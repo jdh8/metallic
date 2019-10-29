@@ -3,11 +3,6 @@
 #include "../../math/reinterpret.h"
 #include <stdint.h>
 
-static unsigned __int128 rndn_(unsigned __int128 i, uint64_t frac)
-{
-    return i + ((i & 1) | frac) > 0x8000000000000000;
-}
-
 static unsigned __int128 compose_(int exp, unsigned __int128 significand)
 {
     if (exp >= 0x7FFF)
@@ -18,20 +13,13 @@ static unsigned __int128 compose_(int exp, unsigned __int128 significand)
         return ((unsigned __int128)exp << 112 | tail >> 16) + (((tail & 0xFFFF) | (tail >> 15 & 1)) > 0x8000);
     }
 
-    uint64_t high = significand >> 64;
-    uint64_t low = significand;
-
-    if (exp > -48) {
-        int shift = 16 - exp;
-        return rndn_((unsigned __int128)(high >> shift) << 64 | (high << (64 - shift) | low >> shift), low << (64 - shift));
+    if (exp >= -112) {
+        unsigned __int128 q = significand >> 16 >> -exp;
+        unsigned __int128 r = significand << (112 + exp);
+        return q + ((r >> 64 | (q & 1 || r & UINT64_MAX)) > 0x8000000000000000);
     }
 
-    if (exp > -112) {
-        int shift = -48 - exp;
-        return rndn_(low << shift, high << (64 - shift) | low >> shift | !!(low << (64 - shift)));
-    }
-
-    return exp == -112 && (high | !!low) > 0x8000000000000000;
+    return 0;
 }
 
 static unsigned __int128 kernel_(__int128 a, __int128 b)
