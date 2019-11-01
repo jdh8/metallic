@@ -1,7 +1,38 @@
 #include "../../math/reinterpret.h"
+#include <stdint.h>
 
-static __int128 add_(__int128 a, __int128 b);
-static __int128 sub_(__int128 a, __int128 b);
+static unsigned __int128 compose_sum_(unsigned __int128 significand, unsigned shift)
+{
+    if (shift < 0x7FFE)
+        return significand + ((unsigned __int128)shift << 112);
+
+    return (unsigned __int128)0x7FFF << 112;
+}
+
+static unsigned __int128 add_(unsigned __int128 a, unsigned __int128 b)
+{
+    const unsigned __int128 implied = (unsigned __int128)1 << 112;
+
+    if (a < implied)
+        return a + b;
+
+    unsigned shift = (a >> 112) - (b >> 112 | !(b >> 112));
+
+    if (shift >= 114)
+        return a;
+
+    unsigned __int128 aa = (a & (implied - 1)) | implied;
+    unsigned __int128 bb = (b & (implied - 1)) | (unsigned __int128)!!(b >> 112) << 112;
+    unsigned __int128 i = aa + (bb >> shift);
+    unsigned __int128 frac = bb << (128 - shift);
+
+    if (i < implied << 1)
+        return compose_sum_(i + ((frac >> 64 | (i & 1 || frac & UINT64_MAX)) > 0x8000000000000000), (a >> 112) - 1);
+
+    return compose_sum_((i >> 1) + (i & 1 && (i & 2 || frac)), a >> 112);
+}
+
+static unsigned __int128 sub_(unsigned __int128 a, unsigned __int128 b);
 
 static unsigned __int128 sorted_(unsigned __int128 a, unsigned __int128 b)
 {
