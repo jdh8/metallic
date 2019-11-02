@@ -44,9 +44,13 @@ static unsigned __int128 sub_(unsigned __int128 a, unsigned __int128 b)
 
     unsigned __int128 aa = a << 15 | (unsigned __int128)1 << 127;
     unsigned __int128 bb = b << 15 | (unsigned __int128)!!(b >> 112) << 127;
-    long double rounded = aa - (bb >> shift | !!(bb << (128 - shift)));
+    unsigned __int128 i = aa - (bb >> shift | !!(bb << (128 - shift)));
+    __int128 bits = reinterpret(__int128, (long double)i) + (((__int128)(a >> 112) - 0x407E) << 112);
 
-    return reinterpret(unsigned __int128, rounded) + (((a >> 112) - 0x407E) << 112);
+    if (bits >= (__int128)1 << 112)
+        return bits;
+
+    return a >> 112 < 16 ? i >> (16 - (a >> 112)) : i << ((a >> 112) - 16);
 }
 
 static unsigned __int128 sorted_(unsigned __int128 a, unsigned __int128 b)
