@@ -32,7 +32,22 @@ static unsigned __int128 add_(unsigned __int128 a, unsigned __int128 b)
     return compose_sum_((i >> 1) + (i & 1 && (i & 2 || frac)), a >> 112);
 }
 
-static unsigned __int128 sub_(unsigned __int128 a, unsigned __int128 b);
+static unsigned __int128 sub_(unsigned __int128 a, unsigned __int128 b)
+{
+    if (a < (unsigned __int128)2 << 112)
+        return a - b;
+
+    unsigned shift = (a >> 112) - (b >> 112 | !(b >> 112));
+
+    if (shift >= 114)
+        return a;
+
+    unsigned __int128 aa = a << 15 | (unsigned __int128)1 << 127;
+    unsigned __int128 bb = b << 15 | (unsigned __int128)!!(b >> 112) << 127;
+    long double rounded = aa - (bb >> shift | !!(bb << (128 - shift)));
+
+    return reinterpret(unsigned __int128, rounded) + (((a >> 112) - 0x407E) << 112);
+}
 
 static unsigned __int128 sorted_(unsigned __int128 a, unsigned __int128 b)
 {
