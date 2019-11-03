@@ -1,5 +1,4 @@
 #include "../../math/reinterpret.h"
-#include <stdint.h>
 
 static unsigned __int128 compose_sum_(unsigned __int128 significand, unsigned shift)
 {
@@ -27,7 +26,7 @@ static unsigned __int128 add_(unsigned __int128 a, unsigned __int128 b)
     unsigned __int128 frac = bb << (128 - shift);
 
     if (i < implied << 1)
-        return compose_sum_(i + ((frac >> 64 | (i & 1 || frac & UINT64_MAX)) > 0x8000000000000000), (a >> 112) - 1);
+        return compose_sum_(i + ((frac >> 64 | (i & 1 || frac & 0xFFFFFFFFFFFFFFFF)) > 0x8000000000000000), (a >> 112) - 1);
 
     return compose_sum_((i >> 1) + (i & 1 && (i & 2 || frac)), a >> 112);
 }
