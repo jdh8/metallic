@@ -84,3 +84,8 @@ long double __addtf3(long double x, long double y)
 
     return reinterpret(long double, (a & ~sign) < (b & ~sign) ? sorted_(b, a) : sorted_(a, b));
 }
+
+long double __subtf3(long double x, long double y)
+{
+    return __addtf3(x, -y);
+}
