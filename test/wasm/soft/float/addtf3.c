@@ -1,5 +1,6 @@
 #include "src/math/reinterpret.h"
 #include <math.h>
+#include <float.h>
 #include <assert.h>
 
 long double __addtf3(long double, long double);
@@ -18,6 +19,12 @@ int main(void)
 
     assert(run(INFINITY, INFINITY));
     assert(run(INFINITY, -0x1.23456789abcdefp+3849L));
+
+    assert(run(1, 0.5L * LDBL_EPSILON));
+    assert(run(1, 1.5L * LDBL_EPSILON));
+
+    assert(run(0.5L, 0.5L + 0.5L * LDBL_EPSILON));
+    assert(run(0.5L, 0.5L + 1.5L * LDBL_EPSILON));
 
     assert(run(0x1.9930120p16382L,  0x1.9930901p16382L));
     assert(run(0x1.9930120p16382L, -0x1.9930901p16382L));
