@@ -1,22 +1,21 @@
 #include "src/math/reinterpret.h"
+#include <math.h>
 #include <assert.h>
 
 long double __addtf3(long double, long double);
 
-static _Bool equivalent(long double x, long double y)
-{
-    if (x != x)
-        return y != y;
-
-    return reinterpret(unsigned __int128, x) == reinterpret(unsigned __int128, y);
-}
-
 static _Bool run(long double x, long double y)
 {
-    return equivalent(x + y, __addtf3(x, y));
+    return reinterpret(unsigned __int128, x + y) == reinterpret(unsigned __int128, __addtf3(x, y));
 }
 
-#define TEST(x, y) do { \
-    _Static_assert(__builtin_constant_p((long double)(x) + (long double)(y)), "This test requires compile-time constants"); \
-    assert(run(x, y)); \
-} while (0)
+int main(void)
+{
+    assert(isnan(__addtf3(NAN, NAN)));
+    assert(isnan(__addtf3(NAN, INFINITY)));
+    assert(isnan(__addtf3(NAN, 0x1.23456789abcdefp+3L)));
+    assert(isnan(__addtf3(INFINITY, -INFINITY)));
+
+    assert(run(INFINITY, INFINITY));
+    assert(run(INFINITY, -0x1.23456789abcdefp+3849L));
+}
