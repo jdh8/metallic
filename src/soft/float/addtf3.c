@@ -26,9 +26,9 @@ static unsigned __int128 add_(unsigned __int128 a, unsigned __int128 b)
     unsigned __int128 frac = bb << (128 - shift);
 
     if (i < implied << 1)
-        return compose_sum_(i + ((frac >> 64 | (i & 1 || frac & 0xFFFFFFFFFFFFFFFF)) > 0x8000000000000000), (a >> 112) - 1);
+        return compose_sum_(i + ((frac >> 64 | (i & 1) | !!(frac & 0xFFFFFFFFFFFFFFFF)) > 0x8000000000000000), (a >> 112) - 1);
 
-    return compose_sum_((i >> 1) + (i & 1 && (i & 2 || frac)), a >> 112);
+    return compose_sum_((i >> 1) + (i & ((i >> 1 & 1) | !!frac)), a >> 112);
 }
 
 static unsigned __int128 sub_(unsigned __int128 a, unsigned __int128 b)
