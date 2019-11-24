@@ -15,7 +15,7 @@ static unsigned __int128 kernel_(__int128 a, __int128 b)
 
     _Bool carry = z[1] >> 127;
 
-    return compose_product_((a >> 112) + (b >> 112) - 0x3FFF + carry, (z[1] | !!z[0]) << carry);
+    return compose_product_((a >> 112) + (b >> 112) - 0x3FFF + carry, (z[1] | !!z[0]) << !carry);
 }
 
 static unsigned __int128 magnitude_(unsigned __int128 a, unsigned __int128 b)
