@@ -13,18 +13,14 @@ static uint64_t iterate_(uint64_t estimate, uint64_t denominator)
 
 static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
-    uint64_t estimate = 0x1p127 / (b >> 64);
-    estimate = iterate_(estimate, b >> 64);
-    estimate = iterate_(estimate, b >> 64);
-    --estimate;
-
-    unsigned __int128 correction = -(umuldi_(estimate, b >> 64) + ((estimate * b) >> 64));
-    unsigned __int128 reciprocal = (umuldi_(estimate, correction >> 64) << 1) + (umuldi_(estimate, correction) >> 63) - 2;
+    uint64_t estimate = iterate_((uint64_t)(0x1p120 / (b >> 64)) << 7, b >> 64) - 1;
+    unsigned __int128 correction = -(umuldi_(estimate, b >> 64) + (umuldi_(estimate, b) >> 64));
+    unsigned __int128 reciprocal = umuldi_(estimate, correction >> 64) + (umuldi_(estimate, correction) >> 64) - 2;
     unsigned __int128 q[2];
 
     umulti_(q, a, reciprocal);
 
-    return q[1] | !!q[0];
+    return q[1] << 1 | 1;
 }
 
 static unsigned __int128 kernel_(__int128 a, __int128 b)
@@ -33,7 +29,7 @@ static unsigned __int128 kernel_(__int128 a, __int128 b)
     unsigned __int128 quotient = fixdiv_(a << 15 | msb, b << 15 | msb);
     _Bool carry = quotient >> 127;
 
-    return compose_product_((a >> 112) - (b >> 112) + 0x3FFF + carry, quotient << !carry);
+    return compose_product_((a >> 112) - (b >> 112) + 0x3FFE + carry, quotient << !carry);
 }
 
 static unsigned __int128 magnitude_(unsigned __int128 a, unsigned __int128 b)
