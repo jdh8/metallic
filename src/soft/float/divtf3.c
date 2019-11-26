@@ -21,7 +21,7 @@ static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 
     umulti_(q, a, fixmul_(estimate, -fixmul_(estimate, b)));
 
-    return q[1] << 1 | !!q[0];
+    return q[1] << 1;
 }
 
 static unsigned __int128 kernel_(__int128 a, __int128 b)
