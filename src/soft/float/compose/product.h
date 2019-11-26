@@ -5,7 +5,7 @@ static unsigned __int128 compose_product_(int exp, unsigned __int128 significand
 
     if (exp > 0) {
         unsigned __int128 tail = significand << 1;
-        return ((unsigned __int128)exp << 112 | tail >> 16) + (((tail & 0xFFFF) | (tail >> 15 & 1)) > 0x8000);
+        return ((unsigned __int128)exp << 112 | tail >> 16) + (((tail & 0xFFFF) | (tail >> 16 & 1)) > 0x8000);
     }
 
     if (exp >= -112) {

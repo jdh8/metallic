@@ -15,16 +15,23 @@ int main(void)
     assert(isnan(__multf3(NAN, NAN)));
     assert(isnan(__multf3(NAN, INFINITY)));
     assert(isnan(__multf3(NAN, 0x1.23456789abcdefp+3L)));
+    assert(isnan(__multf3(INFINITY, 0.0L)));
+    assert(isnan(__multf3(INFINITY, -0.0L)));
 
     assert(run(INFINITY, -INFINITY));
     assert(run(INFINITY, INFINITY));
     assert(run(INFINITY, -0x1.23456789abcdefp+3849L));
 
-    assert(run(1, 0.5L * LDBL_EPSILON));
-    assert(run(1, 1.5L * LDBL_EPSILON));
+    assert(run( 3, 0x0.aaaaaaaaaaaaaaaaaaaaaaaaaaabp112L));
+    assert(run(-3, 0x0.aaaaaaaaaaaaaaaaaaaaaaaaaaabp112L));
 
-    assert(run(0.5L, 0.5L + 0.5L * LDBL_EPSILON));
-    assert(run(0.5L, 0.5L + 1.5L * LDBL_EPSILON));
+    assert(run( 5, 0x0.6666666666666666666666666667p112L));
+    assert(run(-5, 0x0.6666666666666666666666666667p112L));
+
+    assert(run(1.05L, 0.8L));
+    assert(run(1.05L, 0.9L));
+    assert(run(1.05L, 1.0L));
+    assert(run(1.05L, 1.1L));
 
     assert(run(0x1.9930120p16382L,  0x1.9930901p16382L));
     assert(run(0x1.9930120p16382L, -0x1.9930901p16382L));
