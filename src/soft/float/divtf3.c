@@ -6,21 +6,22 @@
 
 static uint64_t iterate_(uint64_t estimate, uint64_t denominator)
 {
-    uint64_t correction = umuldi_(estimate, denominator) >> 64;
+    return umuldi_(estimate, -(uint64_t)(umuldi_(estimate, denominator) >> 64)) >> 63;
+}
 
-    return umuldi_(estimate, -correction) >> 63;
+static unsigned __int128 fixmul_(uint64_t a, unsigned __int128 b)
+{
+    return umuldi_(a, b >> 64) + (umuldi_(a, b) >> 64);
 }
 
 static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
-    uint64_t estimate = iterate_((uint64_t)(0x1p120 / (b >> 64)) << 7, b >> 64) - 1;
-    unsigned __int128 correction = -(umuldi_(estimate, b >> 64) + (umuldi_(estimate, b) >> 64));
-    unsigned __int128 reciprocal = umuldi_(estimate, correction >> 64) + (umuldi_(estimate, correction) >> 64) - 2;
+    uint64_t estimate = iterate_((uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7, b >> 64) - 1;
     unsigned __int128 q[2];
 
-    umulti_(q, a, reciprocal);
+    umulti_(q, a, fixmul_(estimate, -fixmul_(estimate, b)));
 
-    return q[1] << 1 | 1;
+    return q[1] << 1 | !!q[0];
 }
 
 static unsigned __int128 kernel_(__int128 a, __int128 b)
