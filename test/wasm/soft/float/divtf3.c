@@ -21,8 +21,11 @@ int main(void)
 
     assert(run(INFINITY, -0x1.23456789abcdefp+3849L));
 
-//  assert(run(0x2.8p-111L, 0x1p16383L));
-//  assert(run(0x3.8p-111L, 0x1p16383L));
+    assert(run(0x2.8p-111L, 0x1p16383L));
+    assert(run(0x3.8p-111L, 0x1p16383L));
+
+    assert(run(0x2.828p-111L, 0x1.01p16383L));
+    assert(run(0x3.838p-111L, 0x1.01p16383L));
 
     assert(run(1.05L, 0.8L));
     assert(run(1.05L, 0.9L));
