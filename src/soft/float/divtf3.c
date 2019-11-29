@@ -17,10 +17,9 @@ static unsigned __int128 fixmul_(uint64_t a, unsigned __int128 b)
 static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
     uint64_t estimate = iterate_((uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7, b >> 64) - 1;
-    unsigned __int128 reciprocal = fixmul_(estimate, -fixmul_(estimate, b)) - 2;
     unsigned __int128 product[2];
 
-    umulti_(product, a, reciprocal);
+    umulti_(product, a, fixmul_(estimate, -fixmul_(estimate, b)) - 2);
 
     unsigned __int128 q = product[1] >> 2;
 
