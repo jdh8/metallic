@@ -4,11 +4,6 @@
 #include "../../math/reinterpret.h"
 #include <stdint.h>
 
-static uint64_t iterate_(uint64_t estimate, uint64_t denominator)
-{
-    return umuldi_(estimate, -(uint64_t)(umuldi_(estimate, denominator) >> 64)) >> 63;
-}
-
 static unsigned __int128 fixmul_(uint64_t a, unsigned __int128 b)
 {
     return umuldi_(a, b >> 64) + (umuldi_(a, b) >> 64);
@@ -16,7 +11,8 @@ static unsigned __int128 fixmul_(uint64_t a, unsigned __int128 b)
 
 static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
-    uint64_t estimate = iterate_((uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7, b >> 64) - 1;
+    uint64_t initial = (uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7;
+    uint64_t estimate = (umuldi_(initial, -(uint64_t)(umuldi_(initial, b >> 64) >> 64)) >> 63) - 1;
     unsigned __int128 product[2];
 
     umulti_(product, a, fixmul_(estimate, -fixmul_(estimate, b)) - 2);
