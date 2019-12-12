@@ -9,9 +9,7 @@ static _Bool identical(long double x, long double y)
 
 static _Bool run(unsigned __int128 i)
 {
-    long double x = reinterpret(long double, i);
-    long double y = sqrtl(x);
-
+    long double y = sqrtl(reinterpret(long double, i));
     unsigned __int128 j = reinterpret(unsigned __int128, y);
 
     long double prev = reinterpret(long double, j - 1);
