@@ -13,7 +13,6 @@ static size_t write_(const void* restrict buffer, size_t size, FILE stream[restr
 int vsprintf(char* s, const char format[restrict static 1], va_list list) 
 {
     FILE stream = {
-        .base = (unsigned char*)s,
         .ptr = (unsigned char*)s,
         .write = write_,
     };
