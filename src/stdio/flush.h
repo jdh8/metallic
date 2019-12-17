@@ -4,7 +4,7 @@
 static int flush_(FILE stream[static 1])
 {
     if (stream->base) {
-        stream->write((void*)0, 0, stream);
+        stream->write(stream, (void*)0, 0);
 
         if (stream->state & errbit_)
             return EOF;

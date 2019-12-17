@@ -8,7 +8,7 @@ static size_t wrapper_(unsigned char* restrict buffer, size_t size, FILE stream[
 
     memcpy(buffer, stream->cache + sizeof(stream->cache) - stream->avail, hit);
     stream->avail -= hit;
-    return hit + (missed ? stream->read(buffer + hit, missed, stream) : 0);
+    return hit + (missed ? stream->read(stream, buffer + hit, missed) : 0);
 }
 
 size_t fread(void* restrict buffer, size_t size, size_t count, FILE stream[restrict static 1])

@@ -65,24 +65,24 @@ static int signchar_(_Bool sign, uint_least32_t flags)
 
 #define TRY(x) do if (x) return -1; while (0)
 
-static int put_(int c, FILE stream[static 1])
+static int put_(FILE stream[static 1], int c)
 {
-    return putc_(c, stream) == EOF;
+    return putc_(stream, c) == EOF;
 }
 
-static int write_(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
+static int write_(FILE stream[restrict static 1], const void* restrict buffer, size_t size)
 {
-    return stream->write(buffer, size, stream) != size;
+    return stream->write(stream, buffer, size) != size;
 }
 
-static int pad_(uint8_t c, size_t length, FILE stream[static 1])
+static int pad_(FILE stream[static 1], uint8_t c, size_t length)
 {
     uint64_t vector = c * 0x0101010101010101u;
 
     for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
-        TRY(write_(&vector, sizeof(uint64_t), stream));
+        TRY(write_(stream, &vector, sizeof(uint64_t)));
 
-    TRY(write_(&vector, length % sizeof(uint64_t), stream));
+    TRY(write_(stream, &vector, length % sizeof(uint64_t)));
 
     return 0;
 }
@@ -204,7 +204,7 @@ struct Spec
 
 #define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
 
-static int convert_i_(struct Spec spec, FILE stream[static 1], intmax_t arg)
+static int convert_i_(FILE stream[static 1], struct Spec spec, intmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(intmax_t)];
     char* end = buffer + sizeof(buffer);
@@ -218,26 +218,26 @@ static int convert_i_(struct Spec spec, FILE stream[static 1], intmax_t arg)
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(sign && put_(sign, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(sign && put_(sign, stream));
-        TRY(pad_('0', zeros + padding, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(pad_(stream, '0', zeros + padding));
+        TRY(write_(stream, begin, digits));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(sign && put_(sign, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(sign && put_(stream, sign));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
     }
     return length + padding;
 }
 
-static int convert_u_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int convert_u_(FILE stream[static 1], struct Spec spec, uintmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(uintmax_t)];
     char* end = buffer + sizeof(buffer);
@@ -250,23 +250,23 @@ static int convert_u_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(pad_('0', zeros + padding, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, '0', zeros + padding));
+        TRY(write_(stream, begin, digits));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
     }
     return length + padding;
 }
 
-static int convert_o_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
+static int convert_o_(FILE stream[static 1], struct Spec spec, uintmax_t arg)
 {
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 2) / 3];
     char* end = buffer + sizeof(buffer);
@@ -279,23 +279,23 @@ static int convert_o_(struct Spec spec, FILE stream[static 1], uintmax_t arg)
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(pad_('0', zeros + padding, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, '0', zeros + padding));
+        TRY(write_(stream, begin, digits));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
     }
     return length + padding;
 }
 
-static int convert_x_(struct Spec spec, FILE stream[static 1], int format, uintmax_t arg)
+static int convert_x_(FILE stream[static 1], struct Spec spec, int format, uintmax_t arg)
 {
     const char cache[] = { '0', format };
     char buffer[(sizeof(uintmax_t) * CHAR_BIT + 3) >> 2];
@@ -310,26 +310,26 @@ static int convert_x_(struct Spec spec, FILE stream[static 1], int format, uintm
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(write_(cache, prefix, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(write_(stream, cache, prefix));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0') && spec.precision < 0) {
-        TRY(write_(cache, prefix, stream));
-        TRY(pad_('0', zeros + padding, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(write_(stream, cache, prefix));
+        TRY(pad_(stream, '0', zeros + padding));
+        TRY(write_(stream, begin, digits));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(write_(cache, prefix, stream));
-        TRY(pad_('0', zeros, stream));
-        TRY(write_(begin, digits, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(write_(stream, cache, prefix));
+        TRY(pad_(stream, '0', zeros));
+        TRY(write_(stream, begin, digits));
     }
     return length + padding;
 }
 
-static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lower, int sign, const char s[restrict static 3])
+static int nonfinite_(FILE stream[restrict static 1], struct Spec spec, int lower, int sign, const char s[restrict static 3])
 {
     const char output[] = { s[0] | lower, s[1] | lower, s[2] | lower };
     int length = 3 + !!sign;
@@ -337,13 +337,13 @@ static int nonfinite_(struct Spec spec, FILE stream[restrict static 1], int lowe
     _Bool flushleft = spec.flags & FLAG('-');
 
     if (!flushleft)
-        TRY(pad_(' ', padding, stream));
+        TRY(pad_(stream, ' ', padding));
 
-    TRY(sign && put_(sign, stream));
-    TRY(write_(output, 3, stream));
+    TRY(sign && put_(stream, sign));
+    TRY(write_(stream, output, 3));
 
     if (flushleft)
-        TRY(pad_(' ', padding, stream));
+        TRY(pad_(stream, ' ', padding));
 
     return length + padding;
 }
@@ -569,7 +569,7 @@ static uint64_t limbs_modf_(double x, int prec, char* buffer)
     return i;
 }
 
-static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[restrict static 1])
+static int limbs_write_(FILE stream[static 1], const uint_least32_t* x, size_t length)
 {
     char buffer[9];
 
@@ -580,13 +580,12 @@ static int limbs_write_(const uint_least32_t* x, size_t length, FILE stream[rest
             buffer[j] = piece % 10 + '0';
             piece /= 10;
         }
-        TRY(write_(buffer, 9, stream));
+        TRY(write_(stream, buffer, 9));
     }
     return 0;
 }
 
-static int common_fixed_small_(struct Spec spec, FILE stream[static 1], int sign,
-    const uint_least32_t* base, size_t size, int exp)
+static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign, const uint_least32_t* base, size_t size, int exp)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     int length = !!sign + 1 + pointed + spec.precision;
@@ -600,22 +599,22 @@ static int common_fixed_small_(struct Spec spec, FILE stream[static 1], int sign
     fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
     fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
 
-    TRY(limbs_write_(big, limbs, stream));
+    TRY(limbs_write_(stream, big, limbs));
 
     return length + padding;
 }
 
-static int fixed_small_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+static int fixed_small_(FILE stream[static 1], struct Spec spec, int sign, double magnitude)
 {
     int64_t bits = reinterpret(int64_t, magnitude);
     uint_least32_t odd[2];
     int shift;
     size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
 
-    return common_fixed_small_(spec, stream, sign, odd, size, shift);
+    return common_fixed_small_(stream, spec, sign, odd, size, shift);
 }
 
-static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+static int fixed_moderate_(FILE stream[static 1], struct Spec spec, int sign, double magnitude)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     char frac[spec.precision];
@@ -632,30 +631,30 @@ static int fixed_moderate_(struct Spec spec, FILE stream[static 1], int sign, do
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(sign && put_(sign, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(write_(frac, spec.precision, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(write_(stream, begin, end - begin));
+        TRY(pointed && put_(stream, '.'));
+        TRY(write_(stream, frac, spec.precision));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0')) {
-        TRY(sign && put_(sign, stream));
-        TRY(pad_('0', padding, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(write_(frac, spec.precision, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(pad_(stream, '0', padding));
+        TRY(write_(stream, begin, end - begin));
+        TRY(pointed && put_(stream, '.'));
+        TRY(write_(stream, frac, spec.precision));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(sign && put_(sign, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(write_(frac, spec.precision, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(sign && put_(stream, sign));
+        TRY(write_(stream, begin, end - begin));
+        TRY(pointed && put_(stream, '.'));
+        TRY(write_(stream, frac, spec.precision));
     }
     return length + padding;
 }
 
-static int fixed_bigint_(struct Spec spec, FILE stream[static 1], int sign, double magnitude)
+static int fixed_bigint_(FILE stream[static 1], struct Spec spec, int sign, double magnitude)
 {
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     int64_t bits = reinterpret(int64_t, magnitude);
@@ -674,33 +673,33 @@ static int fixed_bigint_(struct Spec spec, FILE stream[static 1], int sign, doub
     int padding = (spec.width > length) * (spec.width - length);
 
     if (spec.flags & FLAG('-')) {
-        TRY(sign && put_(sign, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(limbs_write_(big, limbs - 1, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(pad_('0', spec.precision, stream));
-        TRY(pad_(' ', padding, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(write_(stream, begin, end - begin));
+        TRY(limbs_write_(stream, big, limbs - 1));
+        TRY(pointed && put_(stream, '.'));
+        TRY(pad_(stream, '0', spec.precision));
+        TRY(pad_(stream, ' ', padding));
     }
     else if (spec.flags & FLAG('0')) {
-        TRY(sign && put_(sign, stream));
-        TRY(pad_('0', padding, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(limbs_write_(big, limbs - 1, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(pad_('0', spec.precision, stream));
+        TRY(sign && put_(stream, sign));
+        TRY(pad_(stream, '0', padding));
+        TRY(write_(stream, begin, end - begin));
+        TRY(limbs_write_(stream, big, limbs - 1));
+        TRY(pointed && put_(stream, '.'));
+        TRY(pad_(stream, '0', spec.precision));
     }
     else {
-        TRY(pad_(' ', padding, stream));
-        TRY(sign && put_(sign, stream));
-        TRY(write_(begin, end - begin, stream));
-        TRY(limbs_write_(big, limbs - 1, stream));
-        TRY(pointed && put_('.', stream));
-        TRY(pad_('0', spec.precision, stream));
+        TRY(pad_(stream, ' ', padding));
+        TRY(sign && put_(stream, sign));
+        TRY(write_(stream, begin, end - begin));
+        TRY(limbs_write_(stream, big, limbs - 1));
+        TRY(pointed && put_(stream, '.'));
+        TRY(pad_(stream, '0', spec.precision));
     }
     return length + padding;
 }
 
-static int fixed_(struct Spec spec, FILE stream[static 1], int lower, double arg)
+static int fixed_(FILE stream[static 1], struct Spec spec, int lower, double arg)
 {
     const int64_t inf = 0x7FF0000000000000;
     int sign = signchar_(signbit(arg), spec.flags);
@@ -708,39 +707,39 @@ static int fixed_(struct Spec spec, FILE stream[static 1], int lower, double arg
     int64_t bits = reinterpret(int64_t, magnitude);
 
     if (bits < 0x3F70000000000000)
-        return fixed_small_(spec, stream, sign, magnitude);
+        return fixed_small_(stream, spec, sign, magnitude);
 
     if (bits < 0x43F0000000000000)
-        return fixed_moderate_(spec, stream, sign, magnitude);
+        return fixed_moderate_(stream, spec, sign, magnitude);
 
     if (bits < inf)
-        return fixed_bigint_(spec, stream, sign, magnitude);
+        return fixed_bigint_(stream, spec, sign, magnitude);
 
-    return nonfinite_(spec, stream, lower, sign, bits == inf ? "INF" : "NAN");
+    return nonfinite_(stream, spec, lower, sign, bits == inf ? "INF" : "NAN");
 }
 
-static int convert_f_(struct Spec spec, FILE stream[static 1], int lower, va_list list[static 1])
+static int convert_f_(FILE stream[static 1], struct Spec spec, int lower, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
-                return fixed_(spec, stream, lower, va_arg(*list, long double));
+                return fixed_(stream, spec, lower, va_arg(*list, long double));
             default:
                 return -2;
         }
     }
-    return fixed_(spec, stream, lower, va_arg(*list, double));
+    return fixed_(stream, spec, lower, va_arg(*list, double));
 }
 
-static int hexfloat_(struct Spec spec, FILE stream[static 1], int lower, double arg)
+static int hexfloat_(FILE stream[static 1], struct Spec spec, int lower, double arg)
 {
     int sign = signchar_(signbit(arg), spec.flags);
 
     if (isinf(arg))
-        return nonfinite_(spec, stream, lower, sign, "INF");
+        return nonfinite_(stream, spec, lower, sign, "INF");
 
     if (isnan(arg))
-        return nonfinite_(spec, stream, lower, sign, "NAN");
+        return nonfinite_(stream, spec, lower, sign, "NAN");
 
     int64_t magnitude = reinterpret(int64_t, fabs(arg));
     int64_t biased = magnitude >> 52;
@@ -767,23 +766,23 @@ static int hexfloat_(struct Spec spec, FILE stream[static 1], int lower, double 
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, middle - buffer, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, middle - buffer));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(buffer + 2, middle - (buffer + 2), stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, buffer + 2, middle - (buffer + 2)));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, middle - buffer, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, middle - buffer));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
@@ -806,22 +805,22 @@ static int hexfloat_(struct Spec spec, FILE stream[static 1], int lower, double 
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
@@ -836,40 +835,40 @@ static int hexfloat_(struct Spec spec, FILE stream[static 1], int lower, double 
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 17, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 17));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(buffer + 2, 15, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, buffer + 2, 15));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 17, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 17));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
 }
 
-static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long double arg)
+static int hexfloatq_(FILE stream[static 1], struct Spec spec, int lower, long double arg)
 {
     int sign = signchar_(signbit(arg), spec.flags);
 
     if (isinf(arg))
-        return nonfinite_(spec, stream, lower, sign, "INF");
+        return nonfinite_(stream, spec, lower, sign, "INF");
 
     if (isnan(arg))
-        return nonfinite_(spec, stream, lower, sign, "NAN");
+        return nonfinite_(stream, spec, lower, sign, "NAN");
 
 #ifdef __SIZEOF_INT128__
     unsigned __int128 magnitude = reinterpret(unsigned __int128, fabsl(arg));
@@ -897,23 +896,23 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long d
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, middle - buffer, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, middle - buffer));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(buffer + 2, middle - (buffer + 2), stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, buffer + 2, middle - (buffer + 2)));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, middle - buffer, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, middle - buffer));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
@@ -939,22 +938,22 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long d
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
@@ -969,26 +968,26 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long d
         int padding = (spec.width > length) * (spec.width - length);
 
         if (spec.flags & FLAG('-')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 32, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
-            TRY(pad_(' ', padding, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 32));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
+            TRY(pad_(stream, ' ', padding));
         }
         else if (spec.flags & FLAG('0')) {
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 2, stream));
-            TRY(pad_('0', padding, stream));
-            TRY(write_(buffer + 2, 30, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 2));
+            TRY(pad_(stream, '0', padding));
+            TRY(write_(stream, buffer + 2, 30));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
         }
         else {
-            TRY(pad_(' ', padding, stream));
-            TRY(sign && put_(sign, stream));
-            TRY(write_(buffer, 32, stream));
-            TRY(pad_('0', zeros, stream));
-            TRY(write_(postfix, end - postfix, stream));
+            TRY(pad_(stream, ' ', padding));
+            TRY(sign && put_(stream, sign));
+            TRY(write_(stream, buffer, 32));
+            TRY(pad_(stream, '0', zeros));
+            TRY(write_(stream, postfix, end - postfix));
         }
         return length + padding;
     }
@@ -997,22 +996,22 @@ static int hexfloatq_(struct Spec spec, FILE stream[static 1], int lower, long d
 #endif
 }
 
-static int convert_a_(struct Spec spec, FILE stream[static 1], int lower, va_list list[static 1])
+static int convert_a_(FILE stream[static 1], struct Spec spec, int lower, va_list list[static 1])
 {
     if (spec.length == ('L' << 2 | 1)) {
         switch (LDBL_MANT_DIG) {
             case 53:
-                return hexfloat_(spec, stream, lower, va_arg(*list, long double));
+                return hexfloat_(stream, spec, lower, va_arg(*list, long double));
             case 113:
-                return hexfloatq_(spec, stream, lower, va_arg(*list, long double));
+                return hexfloatq_(stream, spec, lower, va_arg(*list, long double));
             default:
                 return -2;
         }
     }
-    return hexfloat_(spec, stream, lower, va_arg(*list, double));
+    return hexfloat_(stream, spec, lower, va_arg(*list, double));
 }
 
-static int convert_c_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int convert_c_(FILE stream[static 1], struct Spec spec, va_list list[static 1])
 {
     if (spec.length >> 2 == 'l') {
         mbstate_t state = { 0 };
@@ -1022,15 +1021,15 @@ static int convert_c_(struct Spec spec, FILE stream[static 1], va_list list[stat
         if (length == -1)
             return -3;
 
-        TRY(write_(buffer, length, stream));
+        TRY(write_(stream, buffer, length));
         return length;
     }
 
-    TRY(put_(va_arg(*list, int), stream));
+    TRY(put_(stream, va_arg(*list, int)));
     return 1;
 }
 
-static int convert_s_(struct Spec spec, FILE stream[static 1], va_list list[static 1])
+static int convert_s_(FILE stream[static 1], struct Spec spec, va_list list[static 1])
 {
     size_t precision = spec.precision < 0 ? -1 : spec.precision;
 
@@ -1048,7 +1047,7 @@ static int convert_s_(struct Spec spec, FILE stream[static 1], va_list list[stat
             if (precision < count + length)
                 break;
 
-            TRY(write_(buffer, length, stream));
+            TRY(write_(stream, buffer, length));
             count += length;
         }
 
@@ -1058,7 +1057,7 @@ static int convert_s_(struct Spec spec, FILE stream[static 1], va_list list[stat
     const char* s = va_arg(*list, char*);
     size_t length = strnlen_(s, precision);
 
-    TRY(write_(s, length, stream));
+    TRY(write_(stream, s, length));
 
     return length;
 }
@@ -1066,7 +1065,7 @@ static int convert_s_(struct Spec spec, FILE stream[static 1], va_list list[stat
 static int convert_p_(FILE stream[static 1], void* arg)
 {
     if (!arg) {
-        TRY(write_("NULL", 4, stream));
+        TRY(write_(stream, "NULL", 4));
         return 4;
     }
 
@@ -1075,13 +1074,13 @@ static int convert_p_(FILE stream[static 1], void* arg)
     char* begin = hexadecimal_((uintptr_t)arg, end, 0);
     ptrdiff_t length = end - begin;
 
-    TRY(write_("0x", 2, stream));
-    TRY(write_(begin, length, stream));
+    TRY(write_(stream, "0x", 2));
+    TRY(write_(stream, begin, length));
 
     return length + 2;
 }
 
-static int store_n_(struct Spec spec, size_t count, FILE stream[static 1], va_list list[static 1])
+static int store_n_(FILE stream[static 1], struct Spec spec, size_t count, va_list list[static 1])
 {
     switch (spec.length) {
         case 0:
@@ -1117,35 +1116,35 @@ static struct Spec floatspec_(struct Spec spec)
     return spec;
 }
 
-static int convert_(struct Spec spec, size_t count, FILE stream[static 1], int format, va_list list[static 1])
+static int convert_(FILE stream[static 1], struct Spec spec, size_t count, int format, va_list list[static 1])
 {
     int lower = format & 0x20;
 
     switch (format) {
         case 'd':
         case 'i':
-            return convert_i_(spec, stream, pop_signed_(spec.length, list));
+            return convert_i_(stream, spec, pop_signed_(spec.length, list));
         case 'o':
-            return convert_o_(spec, stream, pop_unsigned_(spec.length, list));
+            return convert_o_(stream, spec, pop_unsigned_(spec.length, list));
         case 'u':
-            return convert_u_(spec, stream, pop_unsigned_(spec.length, list));
+            return convert_u_(stream, spec, pop_unsigned_(spec.length, list));
         case 'x':
         case 'X':
-            return convert_x_(spec, stream, format, pop_unsigned_(spec.length, list));
+            return convert_x_(stream, spec, format, pop_unsigned_(spec.length, list));
         case 'f':
         case 'F':
-            return convert_f_(floatspec_(spec), stream, lower, list);
+            return convert_f_(stream, floatspec_(spec), lower, list);
         case 'a':
         case 'A':
-            return convert_a_(spec, stream, lower, list);
+            return convert_a_(stream, spec, lower, list);
         case 'c':
-            return convert_c_(spec, stream, list);
+            return convert_c_(stream, spec, list);
         case 's':
-            return convert_s_(spec, stream, list);
+            return convert_s_(stream, spec, list);
         case 'p':
             return convert_p_(stream, va_arg(*list, void*));
         case 'n':
-            return store_n_(spec, count, stream, list);
+            return store_n_(stream, spec, count, list);
     }
     return -2;
 }
@@ -1184,22 +1183,22 @@ int vfprintf(FILE stream[restrict static 1], const char format[restrict static 1
     for (const char* s = format; ; ++s) {
         switch (*s) {
             case '\0':
-                TRY(write_(format, s - format, stream));
+                TRY(write_(stream, format, s - format));
                 return s - format + count;
 
             case '%':
                 if (s[1] == '%') {
                     ++s;
-                    TRY(write_(format, s - format, stream));
+                    TRY(write_(stream, format, s - format));
                     count += s - format;
                 }
                 else {
-                    TRY(write_(format, s - format, stream));
+                    TRY(write_(stream, format, s - format));
                     count += s - format;
                     ++s;
 
                     struct Spec spec = parse_(&s, &list);
-                    int written = convert_(spec, count, stream, *s, &list);
+                    int written = convert_(stream, spec, count, *s, &list);
 
                     if (written < 0)
                         return written;

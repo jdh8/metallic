@@ -17,8 +17,8 @@ struct __FILE
     unsigned char* ptr;
     unsigned char* end;
 
-    size_t (*read)(void*, size_t, FILE*);
-    size_t (*write)(const void*, size_t, FILE*);
+    size_t (*read)(FILE*, void*, size_t);
+    size_t (*write)(FILE*, const void*, size_t);
     off_t (*seek)(FILE*, off_t, int);
     int (*close)(FILE*);
 

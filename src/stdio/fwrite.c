@@ -2,5 +2,5 @@
 
 size_t fwrite(const void* restrict buffer, size_t size, size_t count, FILE stream[restrict static 1])
 {
-    return stream->write(buffer, size * count, stream) / size;
+    return stream->write(stream, buffer, size * count) / size;
 }

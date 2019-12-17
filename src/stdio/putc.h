@@ -4,11 +4,11 @@
 #include "FILE.h"
 #include <stdio.h>
 
-static int putc_(int c, FILE stream[static 1])
+static int putc_(FILE stream[static 1], int c)
 {
     unsigned char byte = c;
     
-    return stream->write(&byte, 1, stream) == 1 ? byte : EOF;
+    return stream->write(stream, &byte, 1) == 1 ? byte : EOF;
 }
 
 #endif

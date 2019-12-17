@@ -5,5 +5,5 @@ int fputs(const char s[restrict static 1], FILE stream[restrict static 1])
 {
     size_t size = strlen(s);
 
-    return (stream->write(s, size, stream) == size) - 1;
+    return (stream->write(stream, s, size) == size) - 1;
 }

@@ -10,7 +10,7 @@ static int getc_(FILE stream[static 1])
         return stream->cache[sizeof(stream->cache) - stream->avail--];
 
     unsigned char c;
-    return stream->read(&c, 1, stream) ? c : EOF;
+    return stream->read(stream, &c, 1) ? c : EOF;
 }
 
 #endif

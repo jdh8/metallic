@@ -3,5 +3,5 @@
 
 int putchar(int c)
 {
-    return putc_(c, stdout);
+    return putc_(stdout, c);
 }

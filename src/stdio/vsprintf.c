@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string.h>
 
-static size_t write_(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
+static size_t write_(FILE stream[restrict static 1], const void* restrict buffer, size_t size)
 {
     memcpy(stream->ptr, buffer, size);
     stream->ptr += size;

@@ -3,12 +3,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-static size_t noop_(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
+static size_t noop_(FILE stream[restrict static 1], const void* restrict buffer, size_t size)
 {
     return size;
 }
 
-static size_t write_(const void* restrict buffer, size_t size, FILE stream[restrict static 1])
+static size_t write_(FILE stream[restrict static 1], const void* restrict buffer, size_t size)
 {
     size_t space = stream->end - stream->ptr;
 
