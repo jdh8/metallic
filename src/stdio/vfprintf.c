@@ -11,6 +11,10 @@
 #include <stdio.h>
 #include <wchar.h>
 
+#define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
+#define FLAG(c) (UINT32_C(1) << ((c) - ' '))
+#define TRY(x) do if (x) return -1; while (0)
+
 static size_t strnlen_(const char begin[static 1], size_t length)
 {
     const char* end = begin;
@@ -38,8 +42,6 @@ static size_t strnlen_(const char begin[static 1], size_t length)
     return end - begin;
 }
 
-#define FLAG(c) (UINT32_C(1) << ((c) - ' '))
-
 static uint_least32_t flag_(unsigned c)
 {
     const uint_least32_t flags = FLAG('-') | FLAG('+') | FLAG(' ') | FLAG('#') | FLAG('0') | FLAG('\'');
@@ -62,8 +64,6 @@ static int signchar_(_Bool sign, uint_least32_t flags)
 
     return 0;
 }
-
-#define TRY(x) do if (x) return -1; while (0)
 
 static int put_(FILE stream[static 1], int c)
 {
@@ -201,8 +201,6 @@ struct Spec
     int precision;
     unsigned length;
 };
-
-#define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
 
 static int convert_i_(FILE stream[static 1], struct Spec spec, intmax_t arg)
 {
