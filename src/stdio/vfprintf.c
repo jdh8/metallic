@@ -429,15 +429,11 @@ static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_
 
 static uint64_t exp5u64_(size_t power)
 {
-    uint64_t result = 1;
-    uint64_t base = 5;
-
-    for (; power; power >>= 1) {
-        if (power & 1)
-            result *= base;
-        base *= base;
-    }
-    return result;
+    return (power & 1 ? (uint64_t)1e01 >>  1 : 1)
+        * (power &  2 ? (uint64_t)1e02 >>  2 : 1)
+        * (power &  4 ? (uint64_t)1e04 >>  4 : 1)
+        * (power &  8 ? (uint64_t)1e08 >>  8 : 1)
+        * (power & 16 ? (uint64_t)1e16 >> 16 : 1);
 }
 
 static size_t fives_to_limbs_(size_t bits)
@@ -495,22 +491,12 @@ static double limbs_getfrac_(const uint_least32_t* x, ptrdiff_t index)
     return 0;
 }
 
-static uint_fast32_t exp10u32_(unsigned power)
-{
-    uint_fast32_t result = 1;
-    uint_fast32_t base = 10;
-
-    for (; power; power >>= 1) {
-        if (power & 1)
-            result *= base;
-        base *= base;
-    }
-    return result;
-}
-
 static uint_fast32_t limb_placed_rint_(double x, unsigned place)
 {
-    uint_fast32_t factor = exp10u32_(place);
+    uint_fast32_t factor = (place & 1 ? 10 : 1)
+        * (place & 2 ? (uint_fast32_t)1e2 : 1)
+        * (place & 4 ? (uint_fast32_t)1e4 : 1)
+        * (place & 8 ? (uint_fast32_t)1e8 : 1);
 
     return (uint_fast32_t)rint(x / factor) * factor;
 }
