@@ -26,8 +26,9 @@ check: check.wasm check.native
 
 check.wasm: $(SOURCES.check.wasm:.c=.out) $(SOURCES.check.wasm:.c=.out-)
 
+%.out-: NODE := node $(shell . node/arguments.sh)
 %.out-: node/index.mjs %.out
-	node --experimental-modules $^
+	$(NODE) $^
 
 %.out: %.c metallic.a
 	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
