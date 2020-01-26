@@ -27,7 +27,7 @@ check: check.wasm check.native
 check.wasm: $(SOURCES.check.wasm:.c=.out) $(SOURCES.check.wasm:.c=.out-)
 
 %.out-: node/index.mjs %.out
-	NODE_PATH=node node --experimental-modules $^
+	node --experimental-modules $^
 
 %.out: %.c metallic.a
 	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
