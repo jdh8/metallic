@@ -576,14 +576,17 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
     int padding = (spec.width > length) * (spec.width - length);
 
     uint_least32_t big[fives_to_limbs_(-exp) + 2];
-    size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), -exp - spec.precision);
+    unsigned place = -exp - spec.precision;
+    size_t end = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
+    size_t begin = place / 9 * !!end;
 
     fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
     fprintf(stderr, "[DEBUG] exp: %i\n", exp);
     fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
-    fprintf(stderr, "[DEBUG] limbs: %zu\n", limbs);
+    fprintf(stderr, "[DEBUG] begin: %zu\n", begin);
+    fprintf(stderr, "[DEBUG] end: %zu\n", end);
 
-    TRY(limbs_write_(stream, big, limbs));
+    TRY(limbs_write_(stream, big + begin, end - begin));
 
     return length + padding;
 }
