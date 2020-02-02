@@ -346,13 +346,22 @@ static int nonfinite_(FILE stream[restrict static 1], struct Spec spec, int lowe
     return length + padding;
 }
 
-static int64_t ifrexp_(int64_t magnitude, int exp[static 1])
+static int64_t kernel_ifrexp_(int64_t magnitude, int exp[static 1])
 {
     int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
     int shift = __builtin_ctzll(significand);
     *exp = (int)(magnitude >> 52) + shift - 1075;
 
     return significand >> shift;
+}
+
+static int64_t ifrexp_(int64_t magnitude, int exp[static 1])
+{
+    if (magnitude < 0x0010000000000000) {
+        *exp = -1074 * !!magnitude;
+        return magnitude;
+    }
+    return kernel_ifrexp_(magnitude, exp);
 }
 
 static size_t limbs_set_u64_(uint64_t i, uint_least32_t decimal[static 3])
@@ -589,7 +598,6 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
     size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
 
     //TODO 0. and padding
-    fprintf(stderr, "[DEBUG] place: %i\n", place);
 
     if (limbs) {
         unsigned index = (place >= 0) * (place / 9u);
@@ -682,7 +690,7 @@ static int fixed_bigint_(FILE stream[static 1], struct Spec spec, int sign, doub
     uint_least32_t big[bits_to_limbs_((bits >> 52) - 1022) + 1];
     uint_least32_t odd[2];
     int shift;
-    size_t size = limbs_set_u18d_(ifrexp_(bits, &shift), odd);
+    size_t size = limbs_set_u18d_(kernel_ifrexp_(bits, &shift), odd);
     size_t limbs = limbs_ldexp_(big, odd, size, shift);
 
     char buffer[9];

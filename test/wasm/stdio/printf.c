@@ -26,4 +26,5 @@ int main(void)
     test(printf("%.111f", 0x111p-111));
     test(printf("%.112f", 0x111p-111));
     test(printf("%f", 0x1p-300));
+    test(printf("%.1234f", 0x1p-1070));
 }
