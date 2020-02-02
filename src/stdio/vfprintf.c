@@ -589,6 +589,7 @@ static int limbs_write_(FILE stream[static 1], const uint_least32_t* x, size_t l
 
 static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign, const uint_least32_t* base, size_t size, int exp)
 {
+    uint_least32_t flags = spec.flags & (FLAG('-') | FLAG('0'));
     _Bool pointed = spec.precision || spec.flags & FLAG('#');
     int length = !!sign + 1 + pointed + spec.precision;
     int padding = (spec.width > length) * (spec.width - length);
@@ -597,7 +598,17 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
     int place = -exp - spec.precision;
     size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
 
-    //TODO 0. and padding
+    if (!flags)
+        TRY(pad_(stream, ' ', padding));
+
+    TRY(sign && put_(stream, sign));
+
+    if (flags == FLAG('0'))
+        TRY(pad_(stream, '0', padding + 1));
+    else
+        TRY(put_(stream, '0'));
+
+    TRY(pointed && put_(stream, '.'));
 
     if (limbs) {
         unsigned index = (place >= 0) * (place / 9u);
@@ -628,6 +639,9 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
     else {
         TRY(pad_(stream, '0', spec.precision));
     }
+
+    if (spec.flags & FLAG('-'))
+        TRY(pad_(stream, ' ', padding));
 
     return length + padding;
 }
