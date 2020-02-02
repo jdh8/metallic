@@ -351,6 +351,7 @@ static int64_t ifrexp_(int64_t magnitude, int exp[static 1])
     int64_t significand = (magnitude & 0x000FFFFFFFFFFFFF) | 0x0010000000000000;
     int shift = __builtin_ctzll(significand);
     *exp = (int)(magnitude >> 52) + shift - 1075;
+
     return significand >> shift;
 }
 
@@ -584,30 +585,37 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
     int padding = (spec.width > length) * (spec.width - length);
 
     uint_least32_t big[fives_to_limbs_(-exp) + 2];
-    unsigned place = -exp - spec.precision;
+    int place = -exp - spec.precision;
     size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
-    size_t index = place / 9;
-    unsigned cut = place % 9;
 
     //TODO 0. and padding
+    fprintf(stderr, "[DEBUG] place: %i\n", place);
 
-    char buffer[9];
-    char* end = buffer + sizeof(buffer);
+    if (limbs) {
+        unsigned index = (place >= 0) * (place / 9u);
+        unsigned cut = (place >= 0) * (place % 9u);
 
-    if (index + 1 < limbs) {
-        char* begin = decimal_(big[limbs - 1], end);
-        TRY(pad_(stream, '0', -exp - 9 * (limbs - 1) - (end - begin)));
-        TRY(write_(stream, begin, end - begin));
+        char buffer[9];
+        char* end = buffer + sizeof(buffer);
 
-        for (size_t k = limbs - 2; k > index; --k)
-            TRY(write_(stream, dump_limb_(buffer, big[k]), 9));
+        if (index + 1 < limbs) {
+            char* begin = decimal_(big[limbs - 1], end);
+            TRY(pad_(stream, '0', -exp - 9 * (limbs - 1) - (end - begin)));
+            TRY(write_(stream, begin, end - begin));
 
-        TRY(write_(stream, dump_limb_(buffer, big[index]), 9 - cut));
-    }
-    else if (limbs) {
-        char* begin = decimal_(big[index] / exp10_limb_(cut), end);
-        TRY(pad_(stream, '0', -exp - 9 * index - (end - begin + cut)));
-        TRY(write_(stream, begin, end - begin));
+            for (size_t k = limbs - 2; k > index; --k)
+                TRY(write_(stream, dump_limb_(buffer, big[k]), 9));
+
+            TRY(write_(stream, dump_limb_(buffer, big[index]), 9 - cut));
+        }
+        else {
+            char* begin = decimal_(big[index] / exp10_limb_(cut), end);
+            TRY(pad_(stream, '0', -exp - 9 * index - (end - begin + cut)));
+            TRY(write_(stream, begin, end - begin));
+        }
+
+        if (place < 0)
+            TRY(pad_(stream, '0', -place));
     }
     else {
         TRY(pad_(stream, '0', spec.precision));
