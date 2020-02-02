@@ -427,7 +427,7 @@ static size_t limbs_ldexp_(uint_least32_t* restrict product, const uint_least32_
     return xn;
 }
 
-static uint64_t exp5u64_(size_t power)
+static uint64_t exp5_u64_(size_t power)
 {
     return (power & 1 ? (uint64_t)1e01 >>  1 : 1)
         * (power &  2 ? (uint64_t)1e02 >>  2 : 1)
@@ -444,7 +444,7 @@ static size_t fives_to_limbs_(size_t bits)
 static size_t limbs_scal5n_(uint_least32_t* restrict product, const uint_least32_t* restrict v, size_t n, size_t power)
 {
     uint_least32_t even[3];
-    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_(exp5u64_(power % 28), even));
+    size_t xn = limbs_mul_(product, v, n, even, limbs_set_u64_(exp5_u64_(power % 28), even));
 
     uint_least32_t y[fives_to_limbs_(power)];
     size_t yn = 2;
@@ -491,12 +491,17 @@ static double limbs_getfrac_(const uint_least32_t* x, ptrdiff_t index)
     return 0;
 }
 
+static uint_fast32_t exp10_limb_(unsigned power)
+{
+    return (power & 1 ? (uint_fast32_t)1e1 : 1)
+        * (power & 2 ? (uint_fast32_t)1e2 : 1)
+        * (power & 4 ? (uint_fast32_t)1e4 : 1)
+        * (power & 8 ? (uint_fast32_t)1e8 : 1);
+}
+
 static uint_fast32_t limb_placed_rint_(double x, unsigned place)
 {
-    uint_fast32_t factor = (place & 1 ? 10 : 1)
-        * (place & 2 ? (uint_fast32_t)1e2 : 1)
-        * (place & 4 ? (uint_fast32_t)1e4 : 1)
-        * (place & 8 ? (uint_fast32_t)1e8 : 1);
+    uint_fast32_t factor = exp10_limb_(place);
 
     return (uint_fast32_t)rint(x / factor) * factor;
 }
@@ -553,19 +558,22 @@ static uint64_t limbs_modf_(double x, int prec, char* buffer)
     return i;
 }
 
+static const char* dump_limb_(char buffer[static 9], uint_least32_t x)
+{
+    for (int i = 8; i >= 0; --i) {
+        buffer[i] = x % 10 + '0';
+        x /= 10;
+    }
+    return buffer;
+}
+
 static int limbs_write_(FILE stream[static 1], const uint_least32_t* x, size_t length)
 {
     char buffer[9];
 
-    while (length--) {
-        uint_least32_t piece = x[length];
+    while (length--)
+        TRY(write_(stream, dump_limb_(buffer, x[length]), 9));
 
-        for (int j = 8; j >= 0; --j) {
-            buffer[j] = piece % 10 + '0';
-            piece /= 10;
-        }
-        TRY(write_(stream, buffer, 9));
-    }
     return 0;
 }
 
@@ -577,16 +585,33 @@ static int common_fixed_small_(FILE stream[static 1], struct Spec spec, int sign
 
     uint_least32_t big[fives_to_limbs_(-exp) + 2];
     unsigned place = -exp - spec.precision;
-    size_t end = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
-    size_t begin = place / 9 * !!end;
+    size_t limbs = limbs_placed_rint_(big, limbs_scal5n_(big, base, size, -exp), place);
+    size_t index = place / 9;
+    unsigned cut = place % 9;
 
-    fprintf(stderr, "[DEBUG] precision: %i\n", spec.precision);
-    fprintf(stderr, "[DEBUG] exp: %i\n", exp);
-    fprintf(stderr, "[DEBUG] capacity: %zu\n", sizeof(big) / sizeof(uint_least32_t));
-    fprintf(stderr, "[DEBUG] begin: %zu\n", begin);
-    fprintf(stderr, "[DEBUG] end: %zu\n", end);
+    //TODO 0. and padding
 
-    TRY(limbs_write_(stream, big + begin, end - begin));
+    char buffer[9];
+    char* end = buffer + sizeof(buffer);
+
+    if (index + 1 < limbs) {
+        char* begin = decimal_(big[limbs - 1], end);
+        TRY(pad_(stream, '0', -exp - 9 * (limbs - 1) - (end - begin)));
+        TRY(write_(stream, begin, end - begin));
+
+        for (size_t k = limbs - 2; k > index; --k)
+            TRY(write_(stream, dump_limb_(buffer, big[k]), 9));
+
+        TRY(write_(stream, dump_limb_(buffer, big[index]), 9 - cut));
+    }
+    else if (limbs) {
+        char* begin = decimal_(big[index] / exp10_limb_(cut), end);
+        TRY(pad_(stream, '0', -exp - 9 * index - (end - begin + cut)));
+        TRY(write_(stream, begin, end - begin));
+    }
+    else {
+        TRY(pad_(stream, '0', spec.precision));
+    }
 
     return length + padding;
 }
