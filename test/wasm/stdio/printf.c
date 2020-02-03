@@ -12,9 +12,18 @@ int main(void)
     test(printf("%d", 345));
     test(printf("%f", 9.8765415));
     test(printf("%f", 9.8765425));
+    test(printf("%8.3f", 3.14));
+    test(printf("%08.3f", 3.14));
+    test(printf("%-8.3f", 3.14));
     test(printf("%.0f", 0.5));
     test(printf("%.0f", 3.5));
+    test(printf("%#.0f", 0.5));
+    test(printf("%#.0f", 3.5));
     test(printf("%f", 1e-3));
+    test(printf("%8.3f", 1e-3));
+    test(printf("%08.3f", 1e-3));
+    test(printf("%-8.3f", 1e-3));
+    test(printf("%#.0f", 1e-3));
     test(printf("%.0f", 1e-3));
     test(printf("%.2f", 1e-3));
     test(printf("%.4f", 1e-3));
