@@ -21,34 +21,34 @@ static double scalbn_(double x, int exp)
 
 static void split_(double y[static 2], double x)
 {
-    double c = (0x1p27 + 1) * x;
-    double s = x - c;
+    double s = (0x1p27 + 1) * x;
+    double c = x - s;
 
     y[1] = s + c;
     y[0] = x - y[1];
 }
 
-static void mul_(double z[static 2], double a, double b)
+static void mul_(double y[static 2], double a, double b)
 {
-    double x[2], y[2];
+    double u[2], v[2];
 
-    split_(x, a);
-    split_(y, b);
+    split_(u, a);
+    split_(v, b);
 
-    double p = x[1] * y[1];
-    double q = x[1] * y[0] + x[0] + y[1];
+    double p = u[1] * v[1];
+    double q = u[1] * v[0] + u[0] + v[1];
 
-    z[1] = p + q;
-    z[0] = p - z[1] + q + x[0] * y[0];
+    y[1] = p + q;
+    y[0] = p - y[1] + q + u[0] * v[0];
 }
 
-static void add_(double z[static 2], double a, double b)
+static void add_(double y[static 2], double a, double b)
 {
-    z[1] = a + b;
+    y[1] = a + b;
 
-    double s = z[1] - a;
+    double s = y[1] - a;
 
-    z[0] = s - z[1] + a + (b - s);
+    y[0] = s - y[1] + a + (b - s);
 }
 
 static double add_rounded_to_odd_(double a, double b)
@@ -81,43 +81,43 @@ static double add_subnormal_(double a, double b, int scale)
     return scalbn(sum[1], scale);
 }
 
-double fma(double x, double y, double a)
+double fma(double a, double b, double c)
 {
-    if (x - x || y - y)
-        return x * y + a;
+    if (a - a || b - b)
+        return a * b + c;
 
-    if (a - a)
-        return a;
+    if (c - c)
+        return c;
 
-    if (!x || !y)
-        return x * y + a;
+    if (!a || !b)
+        return a * b + c;
 
-    if (!a)
-        return x * y;
+    if (!c)
+        return a * b;
 
-    int xe, ye, ae;
-    double xs = frexp_(x, &xe);
-    double ys = frexp_(y, &ye);
-    double as = frexp_(a, &ae);
+    int aexp, bexp, cexp;
+    double asig = frexp_(a, &aexp);
+    double bsig = frexp_(b, &bexp);
+    double csig = frexp_(c, &cexp);
 
-    int exp = xe + ye;
-    int scale = ae - exp;
+    int exp = aexp + bexp;
+    int scale = cexp - exp;
 
     if (scale > 53)
-        return a;
+        return c;
 
-    double xy[2], r[2];
+    double ab[2], s[2];
 
-    mul_(xy, xs, ys);
-    add_(r, xy[1], scale >= -106 ? scalbn_(as, exp) : copysign(reinterpret(double, (uint64_t)1), as));
+    mul_(ab, asig, bsig);
+    add_(s, ab[1], scale >= -106 ? scalbn_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig));
 
-    if (!r[1])
-        return xy[1] + as + scalbn(xy[0], exp);
+    if (!s[1])
+        return ab[1] + csig + scalbn(ab[0], exp);
 
-    double adjusted = add_rounded_to_odd_(xy[0], r[0]);
+    double adjusted = add_rounded_to_odd_(ab[0], s[0]);
 
-    if (exp + ilogb(r[1]) > -1023)
-        return scalbn(r[1] + adjusted, exp);
+    if (exp + ilogb(s[1]) > -1023)
+        return scalbn(s[1] + adjusted, exp);
 
-    return add_subnormal_(r[1], adjusted, exp);
+    return add_subnormal_(s[1], adjusted, exp);
 }
