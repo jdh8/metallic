@@ -75,7 +75,7 @@ static double add_subnormal_(double a, double b, int scale)
     uint64_t i = reinterpret(uint64_t, sum[1]);
 
     if (sum[0] && 1 - scale - (i << 1 >> 53) != (1 ^ (i & 1))) {
-        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[0])) >> 62);
+        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[0])) >> 63 << 1);
         sum[1] = reinterpret(double, j);
     }
     return scalbn(sum[1], scale);
