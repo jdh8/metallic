@@ -15,8 +15,8 @@ int feraiseexcept(int);
 int fegetexceptflag(fexcept_t*, int);
 int fesetexceptflag(const fexcept_t*, int);
 
-int fsetround(int);
-int fgetround(void);
+int fesetround(int);
+int fegetround(void);
 
 int fegetenv(fenv_t*);
 int fesetenv(const fenv_t*);
