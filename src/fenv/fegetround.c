@@ -1,4 +1,3 @@
-int fegetround(void)
-{
-    return 0;
-}
+#include <fenv.h>
+
+int fegetround(void);

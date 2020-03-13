@@ -1,4 +1,3 @@
-int fesetround(int round)
-{
-    return round;
-}
+#include <fenv.h>
+
+int fesetround(int);

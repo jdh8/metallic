@@ -1,4 +1,3 @@
-int fetestexcept(int excepts)
-{
-    return 0;
-}
+#include <fenv.h>
+
+int fetestexcept(int);

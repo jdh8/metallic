@@ -1,4 +1,3 @@
-int feclearexcept(int excepts)
-{
-    return excepts;
-}
+#include <fenv.h>
+
+int feclearexcept(int);

@@ -1,6 +1,3 @@
 #include <fenv.h>
 
-int fesetenv(const fenv_t* env)
-{
-    return 0;
-}
+int fesetenv(const fenv_t*);

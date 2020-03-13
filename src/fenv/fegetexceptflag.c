@@ -1,6 +1,3 @@
 #include <fenv.h>
 
-int fegetexceptflag(fexcept_t* flags, int excepts)
-{
-    return 0;
-}
+int fegetexceptflag(fexcept_t*, int);

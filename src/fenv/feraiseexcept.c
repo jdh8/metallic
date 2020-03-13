@@ -1,4 +1,3 @@
-int feraiseexcept(int excepts)
-{
-    return excepts;
-}
+#include <fenv.h>
+
+int feraiseexcept(int);
