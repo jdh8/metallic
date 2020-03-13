@@ -1,7 +1,11 @@
 #include "normalize.h"
 #include "../reinterpret.h"
 #include <math.h>
+#include <fenv.h>
 #include <stdint.h>
+
+#pragma STDC FENV_ACCESS ON
+#pragma STDC FP_CONTRACT ON
 
 static double frexp_(double x, int exp[static 1])
 {
@@ -83,6 +87,10 @@ static double add_subnormal_(double a, double b, int scale)
 
 double fma(double a, double b, double c)
 {
+    #ifdef FP_FAST_FMA
+        return a * b + c;
+    #endif
+
     if (a - a || b - b)
         return a * b + c;
 
@@ -102,17 +110,40 @@ double fma(double a, double b, double c)
 
     int exp = aexp + bexp;
     int scale = cexp - exp;
+    int rounding = fegetround();
 
-    if (scale > 53)
+    if (scale > 53) {
+        uint64_t i = reinterpret(uint64_t, c);
+
+        switch (rounding) {
+            #ifdef FE_TOWARDZERO
+                case FE_TOWARDZERO:
+                    return reinterpret(double, i - (signbit(a) ^ signbit(b) ^ signbit(c)));
+            #endif
+            #ifdef FE_UPWARD
+                case FE_UPWARD:
+                    return reinterpret(double, i + (signbit(a) == signbit(b)) * (1 - 2 * signbit(c)));
+            #endif
+            #ifdef FE_DOWNWARD
+                case FE_DOWNWARD:
+                    return reinterpret(double, i - (signbit(a) != signbit(b)) * (1 - 2 * signbit(c)));
+            #endif
+        }
         return c;
+    }
 
     double ab[2], s[2];
 
+    fesetround(FE_TONEAREST);
     mul_(ab, asig, bsig);
     add_(s, ab[1], scale >= -106 ? scalbn_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig));
+    fesetround(rounding);
 
     if (!s[1])
         return ab[1] + csig + scalbn(ab[0], exp);
+
+    if (rounding != FE_TONEAREST)
+        return scalbn(ab[0] + s[0] + s[1], exp);
 
     double adjusted = add_rounded_to_odd_(ab[0], s[0]);
 
