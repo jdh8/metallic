@@ -30,8 +30,9 @@ float powf(float x, float y)
 
     if (signbit(x) && rintf(y) == y) {
         x = -x;
-        sign = -(rintf(y / 2) != y / 2);
+        sign = (uint32_t)(rintf(y / 2) != y / 2) << 31;
     }
 
-    return copysignf(unsigned_(x, y), reinterpret(float, sign));
+    uint32_t magnitude = reinterpret(uint32_t, unsigned_(x, y));
+    return reinterpret(float, magnitude | sign);
 }
