@@ -28,8 +28,8 @@ static void split_(double y[static 2], double x)
     double s = (0x1p27 + 1) * x;
     double c = x - s;
 
-    y[1] = s + c;
-    y[0] = x - y[1];
+    y[0] = s + c;
+    y[1] = x - y[0];
 }
 
 static void mul_(double y[static 2], double a, double b)
@@ -39,20 +39,20 @@ static void mul_(double y[static 2], double a, double b)
     split_(u, a);
     split_(v, b);
 
-    double p = u[1] * v[1];
-    double q = u[1] * v[0] + u[0] + v[1];
+    double p = u[0] * v[0];
+    double q = u[0] * v[1] + u[1] + v[0];
 
-    y[1] = p + q;
-    y[0] = p - y[1] + q + u[0] * v[0];
+    y[0] = p + q;
+    y[1] = p - y[0] + q + u[1] * v[1];
 }
 
 static void add_(double y[static 2], double a, double b)
 {
-    y[1] = a + b;
+    y[0] = a + b;
 
-    double s = y[1] - a;
+    double s = y[0] - a;
 
-    y[0] = s - y[1] + a + (b - s);
+    y[1] = s - y[0] + a + (b - s);
 }
 
 static double add_rounded_to_odd_(double a, double b)
@@ -61,13 +61,13 @@ static double add_rounded_to_odd_(double a, double b)
 
     add_(sum, a, b);
 
-    uint64_t i = reinterpret(uint64_t, sum[1]);
+    uint64_t i = reinterpret(uint64_t, sum[0]);
 
-    if (sum[0] && !(i & 1)) {
-        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[0])) >> 62);
+    if (sum[1] && !(i & 1)) {
+        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[1])) >> 62);
         return reinterpret(double, j);
     }
-    return sum[1];
+    return sum[0];
 }
 
 static double add_subnormal_(double a, double b, int scale)
@@ -76,13 +76,13 @@ static double add_subnormal_(double a, double b, int scale)
 
     add_(sum, a, b);
 
-    uint64_t i = reinterpret(uint64_t, sum[1]);
+    uint64_t i = reinterpret(uint64_t, sum[0]);
 
-    if (sum[0] && 1 - scale - (i << 1 >> 53) != (1 ^ (i & 1))) {
-        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[0])) >> 63 << 1);
-        sum[1] = reinterpret(double, j);
+    if (sum[1] && 1 - scale - (i << 1 >> 53) != (1 ^ (i & 1))) {
+        uint64_t j = i + 1 - ((i ^ reinterpret(uint64_t, sum[1])) >> 63 << 1);
+        sum[0] = reinterpret(double, j);
     }
-    return scalbn(sum[1], scale);
+    return scalbn(sum[0], scale);
 }
 
 double fma(double a, double b, double c)
@@ -136,19 +136,19 @@ double fma(double a, double b, double c)
 
     fesetround(FE_TONEAREST);
     mul_(ab, asig, bsig);
-    add_(s, ab[1], scale >= -106 ? scalbn_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig));
+    add_(s, ab[0], scale >= -106 ? scalbn_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig));
     fesetround(rounding);
 
-    if (!s[1])
-        return ab[1] + csig + scalbn(ab[0], exp);
+    if (!s[0])
+        return ab[0] + csig + scalbn(ab[1], exp);
 
     if (rounding != FE_TONEAREST)
-        return scalbn(ab[0] + s[0] + s[1], exp);
+        return scalbn(ab[1] + s[1] + s[0], exp);
 
-    double adjusted = add_rounded_to_odd_(ab[0], s[0]);
+    double adjusted = add_rounded_to_odd_(ab[1], s[1]);
 
-    if (exp + ilogb(s[1]) > -1023)
-        return scalbn(s[1] + adjusted, exp);
+    if (exp + ilogb(s[0]) > -1023)
+        return scalbn(s[0] + adjusted, exp);
 
-    return add_subnormal_(s[1], adjusted, exp);
+    return add_subnormal_(s[0], adjusted, exp);
 }
