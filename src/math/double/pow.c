@@ -11,7 +11,12 @@ static double trunc_(double x, int bits)
     return reinterpret(double, i);
 }
 
-/* log2 of normalized representation with at most 32 significant bits in y[0] */
+/* Compute log2 of normalized representation
+ *
+ * i    - Normalized bits of x
+ * y[0] - Most significant 32 bits of log2(x), truncated
+ * y[1] - Approximate log2(x) - y[0]
+ */
 static void log2_(double y[static 2], int64_t i)
 {
     const double log2e[] = { 0x1.71547652p0, 0x1.705fc2eefa2p-33 };
