@@ -1,3 +1,4 @@
+#include "kernel/exp.h"
 #include "kernel/log.h"
 #include "normalize.h"
 #include "../reinterpret.h"
@@ -37,6 +38,8 @@ static void log2_(double y[static 2], int64_t i)
 /* Comppute 2^(a + b) where a ≥ b ≥ 0 or a ≤ b ≤ 0 */
 static double exp2_(double a, double b)
 {
+    const double ln2[] = { 0x1.62e42ffp-1, -0x1.718432a1b0e26p-35 };
+
     double s = a + b;
 
     if (s > 1024 || (s == 1024 && b > s - a))
@@ -45,9 +48,16 @@ static double exp2_(double a, double b)
     if (s < -1075 || (s == -1075 && b < s - a))
         return 0;
 
-    double e = b - (s - a);
+    double n = rint(s);
+    double t = trunc_(s - n, 32);
+    double u = t * ln2[0];
+    double v = s * ln2[1] + (a - (n + t) + b) * ln2[0];
+    int64_t i = reinterpret(int64_t, kernel_expb_(u, v) + 1) + ((int64_t)n << 52);
 
-    //TODO
+    if (s < -1020)
+        return 0x1p-1020 * reinterpret(double, i + 0x3FC0000000000000);
+
+    return reinterpret(double, i);
 }
 
 static double unsigned_(double x, double y)
@@ -87,4 +97,3 @@ double pow(double x, double y)
     uint64_t magnitude = reinterpret(uint64_t, unsigned_(x, y));
     return reinterpret(double, magnitude | sign);
 }
-
