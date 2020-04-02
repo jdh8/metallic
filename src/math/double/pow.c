@@ -1,5 +1,4 @@
 #include "kernel/exp.h"
-#include "kernel/log.h"
 #include "normalize.h"
 #include "../reinterpret.h"
 #include <math.h>
@@ -12,6 +11,32 @@ static double trunc_(double x, int bits)
     return reinterpret(double, i);
 }
 
+/* Restriction of (x -> 3 atanh(x) / x - 3 - x^2) to [-c, c], where
+ *
+ *     √2 - 1                  1 + c
+ * c = ------  the solution to ----- = √2.
+ *     √2 + 1,                 1 - c
+ */
+static double log_kernel_(double x)
+{
+    const double c[] = {
+        0.60000000000000910393,
+        0.42857142856356307074,
+        0.33333333563056661945,
+        0.27272695496468461223,
+        0.23079269122036327328,
+        0.19905203560197025739,
+        0.19611466759635016238
+    };
+
+    x *= x;
+
+    double x2 = x * x;
+    double x4 = x2 * x2;
+
+    return (c[0] + c[1] * x) * x2 + (c[2] + c[3] * x + (c[4] + c[5] * x) * x2) * x4 + c[6] * x4 * x4;
+}
+
 /* Compute log2 of normalized representation
  *
  * i    - Normalized bits of x
@@ -20,16 +45,21 @@ static double trunc_(double x, int bits)
  */
 static void log2_(double y[static 2], int64_t i)
 {
-    const double log2e[] = { 0x1.71547652p0, 0x1.705fc2eefa2p-33 };
+    const double log8e2[] = { 0x1.ec709dc4p-1, -0x1.7f00a2d80faabp-35 };
 
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
     double x = reinterpret(double, i - (exponent << 52)) - 1;
+    double w = trunc_(x + 2, 32);
     double z = x / (x + 2);
-    double h = 0.5 * x * x;
-    double a = trunc_(x - h, 32);
-    double b = x - a - h + z * (h + kernel_log_(z));
-    double u = a * log2e[0];
-    double v = (a + b) * log2e[1] + b * log2e[0];
+    double z0 = trunc_(z, 27);
+    double z1 = (x - z0 * w - z0 * (2 - w + x)) / (x + 2);
+    double r = log_kernel_(z) + z1 * (z0 + z) + z0 * z0;
+    double t = trunc_(r + 3, 26);
+    double a = z0 * t;
+    double b = z1 * t + z * (3 - t + r);
+    double s = trunc_(a + b, 32);
+    double u = s * log8e2[0];
+    double v = s * log8e2[1] + (a - s + b) * (log8e2[0] + log8e2[1]);
 
     y[0] = trunc_(u + v + exponent, 21);
     y[1] = exponent - y[0] + u + v;
