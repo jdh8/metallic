@@ -80,9 +80,10 @@ static double exp2_(double a, double b)
         return 0;
 
     double n = rint(s);
-    double t = trunc_(s - n, 32);
-    double u = t * ln2[0];
-    double v = s * ln2[1] + (a - (n + t) + b) * ln2[0];
+    double t = s - n;
+    double t0 = trunc_(t, 32);
+    double u = t0 * ln2[0];
+    double v = t * ln2[1] + (a - (n + t0) + b) * ln2[0];
     int64_t i = reinterpret(int64_t, kernel_expb_(u, v) + 1) + ((int64_t)n << 52);
 
     if (s < -1020)
