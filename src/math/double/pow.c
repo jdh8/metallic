@@ -53,10 +53,11 @@ static void log2_(double y[static 2], int64_t i)
     double z = x / (x + 2);
     double z0 = trunc_(z, 27);
     double z1 = (x - z0 * w - z0 * (2 - w + x)) / (x + 2);
-    double r = log_kernel_(z) + z1 * (z0 + z) + z0 * z0;
-    double t = trunc_(r + 3, 26);
+    double h = z0 * z0;
+    double r = log_kernel_(z) + z1 * (z0 + z);
+    double t = trunc_(h + r + 3, 26);
     double a = z0 * t;
-    double b = z1 * t + z * (3 - t + r);
+    double b = z1 * t + z * (3 - t + h + r);
     double s = trunc_(a + b, 32);
     double u = s * log8e2[0];
     double v = s * log8e2[1] + (a - s + b) * (log8e2[0] + log8e2[1]);
