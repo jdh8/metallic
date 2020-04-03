@@ -4,7 +4,7 @@
 
 static void swapped(double y, double x)
 {
-    verify2(approx(pow(x, y), powl(x, y), 1), x, y);
+    verify2(faithful(pow(x, y), powl(x, y)), x, y);
 }
 
 int main(void)
