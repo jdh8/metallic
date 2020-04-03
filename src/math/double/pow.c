@@ -106,6 +106,9 @@ static double unsigned_(double x, double y)
     if (signbit(x))
         return NAN;
 
+    if (isinf(y))
+        return signbit(y) ^ (x < 1) ? 0 : HUGE_VAL;
+
     double y0 = trunc_(y, 32);
     double t[2];
 
