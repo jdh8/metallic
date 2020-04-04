@@ -14,11 +14,7 @@ static inline _Bool identical(float x, float y)
 
 static inline _Bool faithful(double x, double y)
 {
-    const uint64_t mask = 0x1FFFFFFF;
-    uint64_t a = reinterpret(uint64_t, x);
-    uint64_t b = reinterpret(uint64_t, y);
-
-    return a - b + mask <= 2 * mask;
+    return identical(x, y) || fabs(y - x) < fabsf(nexttowardf(x, y) - (float)x);
 }
 
 static inline _Bool approx(float x, float y, unsigned tolerance)
