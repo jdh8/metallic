@@ -23,8 +23,5 @@ static inline _Bool approx(double x, double y, uint64_t tolerance)
 
 static inline _Bool faithful(long double x, long double y)
 {
-    if (sizeof(long double) == sizeof(uint64_t))
-        return approx(x, y, 1);
-
     return identical(x, y) || fabsl(y - x) < fabs(nexttoward(x, y) - (double)x);
 }
