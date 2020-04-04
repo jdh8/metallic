@@ -29,7 +29,7 @@ int main(void)
 
     for (uint64_t i = sub; i < min; i += step) {
         double x = reinterpret(double, i);
-        verify(approx(exp(x), expl(x), 1), x);
+        verify(faithful(exp(x), expl(x)), x);
     }
 
     for (uint64_t i = min; i < 0xFFF0000000000000; i += step) {
