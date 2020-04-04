@@ -124,9 +124,9 @@ double pow(double x, double y)
     if (y == 0)
         return 1;
 
-    if (signbit(x) && rintf(y) == y) {
+    if (signbit(x) && rint(y) == y) {
         x = -x;
-        sign = (uint64_t)(rintf(y / 2) != y / 2) << 63;
+        sign = (uint64_t)(rint(y / 2) != y / 2) << 63;
     }
 
     uint64_t magnitude = reinterpret(uint64_t, unsigned_(x, y));
