@@ -20,7 +20,7 @@ static void test(float f(float), double g(double), float min, float max)
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(approx(f(x), g(x), 1), x);
+        verify(faithful(f(x), g(x)), x);
     }
 
     for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {

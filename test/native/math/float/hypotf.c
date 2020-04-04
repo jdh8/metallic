@@ -6,7 +6,7 @@ static void convergent(float x, float y)
 {
     float r = hypotf(x, y);
 
-    verify2(approx(r, hypot(x, y), 1), x, y);
+    verify2(faithful(r, hypot(x, y)), x, y);
     verify2(identical(r, hypotf(y, x)), x, y);
     verify2(identical(r, hypotf(-x, y)), x, y);
     verify2(identical(r, hypotf(-y, x)), x, y);

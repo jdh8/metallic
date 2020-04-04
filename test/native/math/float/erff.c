@@ -4,14 +4,7 @@
 
 int main(void)
 {
-    for (uint32_t i = 0; i < 0x00800000; i += 77) {
-        float x = reinterpret(float, i);
-        float y = erff(x);
-        verify(approx(y, erf(x), 1), x);
-        verify(identical(-y, erff(-x)), x);
-    }
-
-    for (uint32_t i = 0x00800000; i <= 0x7F800000; i += 64) {
+    for (uint32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
         float y = erff(x);
         verify(faithful(y, erf(x)), x);
