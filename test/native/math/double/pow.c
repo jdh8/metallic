@@ -2,7 +2,7 @@
 #include "binary.h"
 #include <stdio.h>
 
-static void swapped(double y, double x)
+static void general(double y, double x)
 {
     verify2(faithful(pow(x, y), powl(x, y)), x, y);
 }
@@ -19,7 +19,7 @@ int main(void)
 
     for (uint64_t j = 0; j < inf; j += step)
         for (uint64_t i = 0; i < inf; i += step)
-            mirror(swapped, reinterpret(double, j), reinterpret(double, i));
+            mirror(general, reinterpret(double, j), reinterpret(double, i));
 
     for (uint64_t i = 0; i < 0x8000000000000000; i += step) {
         double any = reinterpret(double, i);
@@ -29,13 +29,13 @@ int main(void)
 
     for (uint64_t i = 0; i < inf; i += step)
         for (int y = 0; y < 1024; ++y)
-            quadrants(swapped, y, reinterpret(double, i));
+            quadrants(general, y, reinterpret(double, i));
 
     for (uint64_t i = 0; i < inf; i += step) {
         double x = reinterpret(double, i);
-        quadrants(swapped, INFINITY, x);
-        quadrants(swapped, x, INFINITY);
+        quadrants(general, INFINITY, x);
+        quadrants(general, x, INFINITY);
     }
 
-    quadrants(swapped, INFINITY, INFINITY);
+    quadrants(general, INFINITY, INFINITY);
 }
