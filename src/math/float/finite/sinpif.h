@@ -17,15 +17,18 @@ static double kernel_sinpif_(double x)
 static double kernel_cospif_(double x)
 {
     const double c[] = {
-        0.999999972423322921,
-       -4.93478805699187024,
-        4.05757830579187565,
-       -1.30613456265256899
+        0.999999999952600437,
+       -4.93480216258948469,
+        4.05870726302836628,
+       -1.33504456440323493,
+        0.231329716053376935,
     };
 
     x *= x;
 
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
+    double xx = x * x;
+
+    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
 }
 
 static double sinpif_(float x)

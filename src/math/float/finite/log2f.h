@@ -11,5 +11,5 @@ static double log2f_(double x)
 
     x = reinterpret(double, i - (exponent << 52));
 
-    return 2 * log2e * kernel_fast_atanh_((x - 1) / (x + 1)) + exponent;
+    return 2 * log2e * kernel_atanh_((x - 1) / (x + 1)) + exponent;
 }

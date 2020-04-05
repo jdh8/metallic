@@ -7,7 +7,7 @@
  * c = ------  the solution to ----- = √2.
  *     √2 + 1,                 1 - c
  */
-static double kernel_fast_atanh_(double x)
+static double kernel_atanh_(double x)
 {
     const double c[] = {
         0.33333332822728226129,

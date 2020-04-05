@@ -1,4 +1,4 @@
-#include "kernel/atanhf.h"
+#include "kernel/atanh.h"
 #include "kernel/lanczos.h"
 #include "finite/sinpif.h"
 #include "../reinterpret.h"
@@ -14,7 +14,7 @@ static double logf_(double x)
 
     x = reinterpret(double, i - (exponent << 52));
 
-    return 2 * kernel_atanhf_((x - 1) / (x + 1)) + exponent * ln2;
+    return 2 * kernel_atanh_((x - 1) / (x + 1)) + exponent * ln2;
 }
 
 static double lcoeff_(double z)
