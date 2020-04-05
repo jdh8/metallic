@@ -20,11 +20,11 @@ static double kernel_(double x)
     return (c[5] * xx + c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x;
 }
 
-static double base_(const double y[static 2], uint64_t n)
+static double base_(double a, double b, uint64_t n)
 {
-    double yy = y[0] + y[1] + 1;
+    double y = a + b + 1;
 
-    return n > 56 ? yy : y[1] - 1 / shift_(yy, 2 * n) + y[0] + 1;
+    return n > 56 ? y : b - 1 / shift_(y, 2 * n) + a + 1;
 }
 
 double sinh(double x)
@@ -43,9 +43,9 @@ double sinh(double x)
     double n = rint(r * log2e);
     double a = r - n * ln2[0];
     double b = n * -ln2[1];
-    double y[2];
 
-    kernel_expm1_(y, a, b);
+    double e;
+    double s = kernel_expm1_(a, b, &e);
 
-    return shift_(copysign(0.5, x) * base_(y, n), n);
+    return shift_(copysign(0.5, x) * base_(s, e, n), n);
 }

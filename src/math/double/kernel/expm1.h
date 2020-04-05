@@ -1,7 +1,7 @@
 /* Restriction of expm1(a + b) to [-0.5 ln 2, 0.5 ln 2]
  * where |b| < |a|
  */
-static void kernel_expm1_(double y[static 2], double a, double b)
+static double kernel_expm1_(double a, double b, double residue[static 1])
 {
     const double c[] = {
        -3.33333333333271196132e-2,
@@ -19,6 +19,6 @@ static void kernel_expm1_(double y[static 2], double a, double b)
     double r = 1 + c[0] * z + (c[1] + c[2] * z) * zz + (c[3] + c[4] * z) * (zz * zz);
     double t = r * h - 3;
 
-    y[0] = s;
-    y[1] = s * (e - (r + t) / (6 + s * t) * z) + e + z;
+    *residue = s * (e - (r + t) / (6 + s * t) * z) + e + z;
+    return s;
 }

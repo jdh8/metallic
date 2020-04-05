@@ -36,14 +36,14 @@ double cosh(double x)
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y[2];
 
-    kernel_expm1_(y, a, b);
+    double e;
+    double s = kernel_expm1_(a, b, &e);
 
     int64_t exponent = n;
     int64_t head = 0x3FF - 2 * exponent;
-    double z = y[1] + y[0] + 1;
+    double z = e + s + 1;
     double c = reinterpret(double, (head * (head > 0)) << 52);
 
-    return shift_(c / z + y[1] + y[0] + 1, exponent - 1);
+    return shift_(c / z + e + s + 1, exponent - 1);
 }

@@ -33,11 +33,12 @@ static double log_kernel_(double x)
 
 /* Compute log2 of normalized representation
  *
- * i    - Normalized bits of x
- * y[0] - Most significant 32 bits of log2(x), truncated
- * y[1] - Approximate log2(x) - y[0]
+ * This function returns truncated most significant 32 bits of log2(x)
+ *
+ * i     - Normalized bits of x
+ * *tail - Approximate residual log2(x)
  */
-static void log2_(double y[static 2], int64_t i)
+static double log2_(int64_t i, double tail[static 1])
 {
     const double log8e2[] = { 0x1.ec709dc4p-1, -0x1.7f00a2d80faabp-35 };
 
@@ -55,9 +56,10 @@ static void log2_(double y[static 2], int64_t i)
     double s = truncate_(a + b, 32);
     double u = s * log8e2[0];
     double v = s * log8e2[1] + (a - s + b) * (log8e2[0] + log8e2[1]);
+    double y = truncate_(u + v + exponent, 21);
 
-    y[0] = truncate_(u + v + exponent, 21);
-    y[1] = exponent - y[0] + u + v;
+    *tail = exponent - y + u + v;
+    return y;
 }
 
 /* Comppute 2^(a + b) where a ≥ b ≥ 0 or a ≤ b ≤ 0 */
@@ -103,12 +105,11 @@ static double unsigned_(double x, double y)
     if (isinf(y))
         return signbit(y) ^ (x < 1) ? 0 : HUGE_VAL;
 
+    double t1;
+    double t0 = log2_(normalize_(reinterpret(int64_t, x)), &t1);
     double y0 = truncate_(y, 32);
-    double t[2];
 
-    log2_(t, normalize_(reinterpret(int64_t, x)));
-
-    return exp2_(y0 * t[0], (y - y0) * t[0] + y * t[1]);
+    return exp2_(y0 * t0, (y - y0) * t0 + y * t1);
 }
 
 double pow(double x, double y)

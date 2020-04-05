@@ -23,26 +23,26 @@ double expm1(double x)
     double n = rint(x * log2e);
     double a = x - n * ln2[0];
     double b = n * -ln2[1];
-    double y[2];
 
-    kernel_expm1_(y, a, b);
+    double e;
+    double s = kernel_expm1_(a, b, &e);
 
     int64_t exponent = n;
 
     switch (exponent) {
         case 0:
-            return y[0] + y[1];
+            return s + e;
         case -1:
-            return 0.5 * (y[0] + y[1]) - 0.5;
+            return 0.5 * (s + e) - 0.5;
         case 1:
-            return y[0] < -0.25 ? 2 * (y[0] + 0.5 + y[1]) : 2 * (y[0] + y[1]) + 1;
+            return s < -0.25 ? 2 * (s + 0.5 + e) : 2 * (s + e) + 1;
     }
 
     if ((uint64_t)exponent > 56)
-        return shift_(y[0] + y[1] + 1, exponent) - 1;
+        return shift_(s + e + 1, exponent) - 1;
 
     double small = reinterpret(double, (uint64_t)(0xBFF - exponent) << 52);
-    double base = exponent < 20 ? y[0] + y[1] + (1 + small) : y[1] + small + y[0] + 1;
+    double base = exponent < 20 ? s + e + (1 + small) : e + small + s + 1;
 
     return shift_(base, exponent);
 }
