@@ -29,9 +29,10 @@ static double kernel_cos_(double a, double b)
        -1.1359669885573144321e-11
     };
 
-    double y = a + b;
-    double x = y * y;
+    double x = a * a;
+    double h = 0.5 * x;
+    double y = 1 - h;
     double xx = x * x;
 
-    return (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx) - 0.5 * x + 1;
+    return (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx) - a * b + (1 - y - h) + y;
 }

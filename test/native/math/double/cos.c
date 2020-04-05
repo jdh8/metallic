@@ -12,7 +12,7 @@ int main(void)
     for (uint64_t i = 0; i < inf; i += step) {
         double x = reinterpret(double, i);
         double y = cos(x);
-        verify(approx(y, cosl(x), 1), x);
+        verify(faithful(y, cosl(x)), x);
         verify(identical(y, cos(-x)), x);
     }
 
