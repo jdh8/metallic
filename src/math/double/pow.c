@@ -33,12 +33,12 @@ static double log_kernel_(double x)
 
 /* Compute log2 of normalized representation
  *
- * This function returns truncated most significant 32 bits of log2(x)
+ * This function returns truncated most significant 32 bits of log2(x).
+ * Approximate residual log2(x) is written to *residue.
  *
- * i     - Normalized bits of x
- * *tail - Approximate residual log2(x)
+ * i - Normalized bits of x
  */
-static double log2_(int64_t i, double tail[static 1])
+static double log2_(int64_t i, double residue[static 1])
 {
     const double log8e2[] = { 0x1.ec709dc4p-1, -0x1.7f00a2d80faabp-35 };
 
@@ -58,7 +58,7 @@ static double log2_(int64_t i, double tail[static 1])
     double v = s * log8e2[1] + (a - s + b) * (log8e2[0] + log8e2[1]);
     double y = truncate_(u + v + exponent, 21);
 
-    *tail = exponent - y + u + v;
+    *residue = exponent - y + u + v;
     return y;
 }
 
