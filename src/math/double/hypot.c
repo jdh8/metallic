@@ -1,28 +1,22 @@
+#include "truncate.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
-
-static double trunc_(double x)
-{
-    uint64_t bits = reinterpret(uint64_t, x) & 0xFFFFFFFF00000000;
-
-    return reinterpret(double, bits);
-}
 
 static double safe_(double x, double y)
 {
     double d = x - y;
 
     if (d > y) {
-        double x1 = trunc_(x);
+        double x1 = truncate_(x, 32);
         double x2 = x - x1;
         return sqrt(y * y + x2 * (x + x1) + x1 * x1);
     }
 
     double t = 2 * x;
-    double t1 = trunc_(t);
+    double t1 = truncate_(t, 32);
     double t2 = t - t1;
-    double y1 = trunc_(y);
+    double y1 = truncate_(y, 32);
     double y2 = y - y1;
 
     return sqrt(t1 * y2 + t2 * y + d * d + t1 * y1);

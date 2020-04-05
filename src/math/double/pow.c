@@ -1,15 +1,9 @@
 #include "kernel/exp.h"
 #include "normalize.h"
+#include "truncate.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
-
-/* Truncate the least significant bits */
-static double trunc_(double x, int bits)
-{
-    uint64_t i = reinterpret(uint64_t, x) & (uint64_t)-1 << bits;
-    return reinterpret(double, i);
-}
 
 /* Restriction of (x -> 3 atanh(x) / x - 3 - x^2) to [-c, c], where
  *
@@ -49,20 +43,20 @@ static void log2_(double y[static 2], int64_t i)
 
     int64_t exponent = (i - 0x3FE6A09E667F3BCD) >> 52;
     double x = reinterpret(double, i - (exponent << 52)) - 1;
-    double w = trunc_(x + 2, 32);
+    double w = truncate_(x + 2, 32);
     double z = x / (x + 2);
-    double z0 = trunc_(z, 27);
+    double z0 = truncate_(z, 27);
     double z1 = (x - z0 * w - z0 * (2 - w + x)) / (x + 2);
     double h = z0 * z0;
     double r = log_kernel_(z) + z1 * (z0 + z);
-    double t = trunc_(h + r + 3, 26);
+    double t = truncate_(h + r + 3, 26);
     double a = z0 * t;
     double b = z1 * t + z * (3 - t + h + r);
-    double s = trunc_(a + b, 32);
+    double s = truncate_(a + b, 32);
     double u = s * log8e2[0];
     double v = s * log8e2[1] + (a - s + b) * (log8e2[0] + log8e2[1]);
 
-    y[0] = trunc_(u + v + exponent, 21);
+    y[0] = truncate_(u + v + exponent, 21);
     y[1] = exponent - y[0] + u + v;
 }
 
@@ -81,7 +75,7 @@ static double exp2_(double a, double b)
 
     double n = rint(s);
     double t = s - n;
-    double t0 = trunc_(t, 32);
+    double t0 = truncate_(t, 32);
     double u = t0 * ln2[0];
     double v = t * ln2[1] + (a - (n + t0) + b) * ln2[0];
     int64_t i = reinterpret(int64_t, kernel_expb_(u, v) + 1) + ((int64_t)n << 52);
@@ -109,7 +103,7 @@ static double unsigned_(double x, double y)
     if (isinf(y))
         return signbit(y) ^ (x < 1) ? 0 : HUGE_VAL;
 
-    double y0 = trunc_(y, 32);
+    double y0 = truncate_(y, 32);
     double t[2];
 
     log2_(t, normalize_(reinterpret(int64_t, x)));

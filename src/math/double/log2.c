@@ -1,5 +1,6 @@
 #include "kernel/log.h"
 #include "normalize.h"
+#include "truncate.h"
 #include "../reinterpret.h"
 #include <math.h>
 
@@ -12,8 +13,7 @@ static double finite_(int64_t i)
     double z = x / (x + 2);
     double h = 0.5 * x * x;
     
-    uint64_t j = reinterpret(uint64_t, x - h) & 0xFFFFFFFF00000000;
-    double a = reinterpret(double, j);
+    double a = truncate_(x - h, 32);
     double b = x - a - h + z * (h + kernel_log_(z));
 
     return (a + b) * log2e[1] + b * log2e[0] + a * log2e[0] + exponent;
