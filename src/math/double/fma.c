@@ -23,27 +23,26 @@ static double scalbn_(double x, int exp)
     return reinterpret(double, i);
 }
 
-static void split_(double y[static 2], double x)
+static double split_(double x)
 {
     double s = (0x1p27 + 1) * x;
     double c = x - s;
 
-    y[0] = s + c;
-    y[1] = x - y[0];
+    return s + c;
 }
 
 static void mul_(double y[static 2], double a, double b)
 {
-    double u[2], v[2];
+    double a0 = split_(a);
+    double a1 = a - a0;
+    double b0 = split_(b);
+    double b1 = b - b0;
 
-    split_(u, a);
-    split_(v, b);
+    double u = a0 * b0;
+    double v = a0 * b1 + a1 * b0;
 
-    double p = u[0] * v[0];
-    double q = u[0] * v[1] + u[1] + v[0];
-
-    y[0] = p + q;
-    y[1] = p - y[0] + q + u[1] * v[1];
+    y[0] = u + v;
+    y[1] = u - y[0] + v + a1 * b1;
 }
 
 static void add_(double y[static 2], double a, double b)
