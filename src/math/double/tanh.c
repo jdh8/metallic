@@ -24,7 +24,7 @@ static double kernel_(double x)
 static double divs_(double c, double a, double b)
 {
     double s = truncate_(a + b, 32);
-    double x = truncate_(c / (a + b), 27);
+    double x = truncate_(c / (a + b), 21);
 
     return x + (c - x * s - x * (a - s + b)) / (a + b);
 }
