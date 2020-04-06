@@ -1,4 +1,5 @@
 #include "normalize.h"
+#include "shift.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <fenv.h>
@@ -14,13 +15,6 @@ static double frexp_(double x, int exp[static 1])
     *exp = (i >> 52) - 1022;
 
     return copysign(reinterpret(double, (i & 0x000FFFFFFFFFFFFF) | 0x3FE0000000000000), x);
-}
-
-static double scalbn_(double x, int exp)
-{
-    int64_t i = reinterpret(int64_t, x) + ((int64_t)exp << 52);
-
-    return reinterpret(double, i);
 }
 
 static double split_(double x)
@@ -134,7 +128,7 @@ double fma(double a, double b, double c)
     double ab = mul_(asig, bsig, &r);
 
     double e;
-    double s = add_(ab, scale >= -106 ? scalbn_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig), &e);
+    double s = add_(ab, scale >= -106 ? shift_(csig, scale) : copysign(reinterpret(double, (uint64_t)1), csig), &e);
 
     fesetround(rounding);
 
