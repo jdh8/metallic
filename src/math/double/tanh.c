@@ -1,5 +1,6 @@
 #include "kernel/exp.h"
 #include "shift.h"
+#include "truncate.h"
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
@@ -20,6 +21,14 @@ static double kernel_(double x)
     return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x + c[5] * xx) * (xx * xx);
 }
 
+static double divs_(double c, double a, double b)
+{
+    double s = truncate_(a + b, 32);
+    double x = truncate_(c / (a + b), 27);
+
+    return x + (c - x * s - x * (a - s + b)) / (a + b);
+}
+
 static double half_(double x)
 {
     const double log2e = 1.44269504088896340736;
@@ -32,18 +41,19 @@ static double half_(double x)
 
     switch (reinterpret(uint64_t, n)) {
         case 0x3FF0000000000000:
-            return (2 * y + 1) / (2 * y + 3);
+            x = 2 * y + 1;
+            return divs_(x, 2, x);
         case 0x4000000000000000:
-            return (4 * y + 3) / (4 * y + 5);
+            x = 4 * y + 3;
+            return divs_(x, 2, x);
     }
-
     return 1 - 2 / (shift_(y + 1, n) + 1);
 }
 
 static double right_(double x)
 {
     if (x < 0.2554128118829953416)
-        return x / (kernel_(x * x) + 1);
+        return divs_(x, 1, kernel_(x * x));
 
     if (x < 19.061547465398495995)
         return half_(2 * x);
