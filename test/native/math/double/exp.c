@@ -20,7 +20,7 @@ int main(void)
     assert(!reinterpret(uint64_t, exp(-INFINITY)));
 
     for (double x = subnorm; x < maximum; x += 0x1.6daa98d832962p-16)
-        verify(faithful(exp(x), expl(x)), x);
+        verify(approx(exp(x), expl(x), 1), x);
 
     for (uint64_t i = max; i < 0x7FF0000000000000; i += step) {
         double x = reinterpret(double, i);
@@ -29,7 +29,7 @@ int main(void)
 
     for (uint64_t i = sub; i < min; i += step) {
         double x = reinterpret(double, i);
-        verify(faithful(exp(x), expl(x)), x);
+        verify(approx(exp(x), expl(x), 1), x);
     }
 
     for (uint64_t i = min; i < 0xFFF0000000000000; i += step) {

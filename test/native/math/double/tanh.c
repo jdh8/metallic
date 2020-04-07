@@ -13,7 +13,7 @@ int main(void)
     for (uint64_t i = 0; i < 0x7FF0000000000000; i += step) {
         double x = reinterpret(double, i);
         double y = tanh(x);
-        verify(faithful(y, tanhl(x)), x);
+        verify(approx(y, tanhl(x), 1), x);
         verify(identical(-y, tanh(-x)), x);
     }
 

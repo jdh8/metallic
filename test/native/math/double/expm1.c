@@ -5,7 +5,7 @@
 
 static void normal(double x)
 {
-    verify(faithful(expm1(x), expm1l(x)), x);
+    verify(approx(expm1(x), expm1l(x), 1), x);
 }
 
 int main(void)

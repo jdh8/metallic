@@ -13,15 +13,7 @@ static inline _Bool identical(double x, double y)
     return reinterpret(uint64_t, x) == reinterpret(uint64_t, y);
 }
 
-static inline _Bool approx(double x, double y, uint64_t tolerance)
+static inline _Bool approx(long double x, long double y, long double tolerance)
 {
-    uint64_t a = reinterpret(uint64_t, x);
-    uint64_t b = reinterpret(uint64_t, y);
-
-    return a - b + tolerance <= 2 * tolerance;
-}
-
-static inline _Bool faithful(long double x, long double y)
-{
-    return identical(x, y) || fabsl(y - x) < fabs(nexttoward(x, y) - (double)x);
+    return identical(x, y) || fabsl(y - x) < tolerance * fabs(nexttoward(x, y) - (double)x);
 }

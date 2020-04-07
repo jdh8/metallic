@@ -11,7 +11,7 @@ static void test(double f(double), long double g(long double))
 
     for (uint64_t i = 0; i < 0x7FF0000000000000; i += step) {
         double x = reinterpret(double, i);
-        verify(faithful(f(x), g(x)), x);
+        verify(approx(f(x), g(x), 1), x);
     }
 
     for (uint64_t i = 0x7FF8000000000000; i < 0x8000000000000000; i += step) {

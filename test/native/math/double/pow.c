@@ -4,7 +4,7 @@
 
 static void general(double y, double x)
 {
-    verify2(faithful(pow(x, y), powl(x, y)), x, y);
+    verify2(approx(pow(x, y), powl(x, y), 1), x, y);
 }
 
 static void unity(double y, double x)

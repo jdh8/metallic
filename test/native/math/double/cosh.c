@@ -13,7 +13,7 @@ int main(void)
     for (uint64_t i = 0; i < 0x7FF0000000000000; i += step) {
         double x = reinterpret(double, i);
         double y = cosh(x);
-        verify(faithful(y, coshl(x)), x);
+        verify(approx(y, coshl(x), 1), x);
         verify(y == cosh(-x), x);
     }
 
