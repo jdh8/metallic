@@ -6,12 +6,12 @@ int main(void)
 {
     for (uint32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
-        verify(faithful(log1pf(x), log1p(x)), x);
+        verify(approx(log1pf(x), log1p(x), 1), x);
     }
 
     for (uint32_t i = 0x80000000; i <= 0xBF800000; i += 64) {
         float x = reinterpret(float, i);
-        verify(faithful(log1pf(x), log1p(x)), x);
+        verify(approx(log1pf(x), log1p(x), 1), x);
     }
 
     for (uint32_t i = 0xBF800100; i; i += 256) {

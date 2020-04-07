@@ -11,7 +11,7 @@ static void test(float f(float), double g(double), float min, float max)
     const float step = 1.337e-5;
 
     for (float x = min; x < max; x += step)
-        verify(faithful(f(x), g(x)), x);
+        verify(approx(f(x), g(x), 1), x);
 
     for (uint32_t i = reinterpret(uint32_t, max); i < 0x7F800000; i += 777) {
         float x = reinterpret(float, i);
@@ -20,7 +20,7 @@ static void test(float f(float), double g(double), float min, float max)
 
     for (uint32_t i = reinterpret(uint32_t, min); i < 0xFF800000; i += 777) {
         float x = reinterpret(float, i);
-        verify(faithful(f(x), g(x)), x);
+        verify(approx(f(x), g(x), 1), x);
     }
 
     for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {

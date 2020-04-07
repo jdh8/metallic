@@ -12,7 +12,7 @@ int main(void)
     for (uint32_t i = 0; i < max; i += 77) {
         float x = reinterpret(float, i);
         float y = sinhf(x);
-        verify(faithful(y, sinh(x)), x);
+        verify(approx(y, sinh(x), 1), x);
         verify(identical(-y, sinhf(-x)), x);
     }
 

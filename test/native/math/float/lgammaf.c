@@ -5,6 +5,6 @@ int main(void)
 {
     for (uint32_t i = 0; i <= 0x7F800000; i += 128) {
         float x = reinterpret(float, i);
-        verify(faithful(lgammaf(x), lgamma(x)), x);
+        verify(approx(lgammaf(x), lgamma(x), 1), x);
     }
 }

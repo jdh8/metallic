@@ -4,7 +4,7 @@ static void test(float f(float), double g(double))
 {
     for (int32_t i = 0; i <= 0x7F800000; i += 64) {
         float x = reinterpret(float, i);
-        verify(faithful(f(x), g(x)), x);
+        verify(approx(f(x), g(x), 1), x);
     }
 
     for (uint32_t i = 0x7FC00000; i <= 0x7FFFFFFF; i += 81) {

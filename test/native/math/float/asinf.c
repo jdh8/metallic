@@ -7,7 +7,7 @@ int main(void)
     for (int32_t i = 0; i <= 0x3F800000; i += 64) {
         float x = reinterpret(float, i);
         float y = asinf(x);
-        verify(faithful(y, asin(x)), x);
+        verify(approx(y, asin(x), 1), x);
         verify(identical(-y, asinf(-x)), x);
     }
 

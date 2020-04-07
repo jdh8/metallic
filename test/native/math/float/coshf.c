@@ -12,7 +12,7 @@ int main(void)
 
     for (float x = 0; x < max; x += step) {
         float y = coshf(x);
-        verify(faithful(y, cosh(x)), x);
+        verify(approx(y, cosh(x), 1), x);
         verify(identical(y, coshf(-x)), x);
     }
 

@@ -13,7 +13,7 @@ static inline _Bool identical(float x, float y)
     return reinterpret(uint32_t, x) == reinterpret(uint32_t, y);
 }
 
-static inline _Bool faithful(double x, double y)
+static inline _Bool approx(double x, double y, double tolerance)
 {
-    return identical(x, y) || fabs(y - x) < fabsf(nexttowardf(x, y) - (float)x);
+    return identical(x, y) || fabs(y - x) < tolerance * fabsf(nexttowardf(x, y) - (float)x);
 }

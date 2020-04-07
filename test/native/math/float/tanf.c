@@ -7,7 +7,7 @@ int main(void)
 {
     for (int32_t i = 0; i < 0x7F800000; i += 81) {
         float x = reinterpret(float, i);
-        verify(faithful(tanf(x), tan(x)), x);
+        verify(approx(tanf(x), tan(x), 1), x);
     }
 
     for (uint32_t i = 0x7F800000; i < 0x80000000; i += 81) {

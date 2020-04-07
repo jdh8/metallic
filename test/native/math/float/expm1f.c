@@ -11,12 +11,12 @@ int main(void)
 
     for (uint32_t i = 0; i < max; i += 77) {
         float x = reinterpret(float, i);
-        verify(faithful(expm1f(x), expm1(x)), x);
+        verify(approx(expm1f(x), expm1(x), 1), x);
     }
 
     for (uint32_t i = 0x80000000; i < 0xFF800000; i += 111) {
         float x = reinterpret(float, i);
-        verify(faithful(expm1f(x), expm1(x)), x);
+        verify(approx(expm1f(x), expm1(x), 1), x);
     }
 
     for (uint32_t i = max; i < 0x7F800000; i += 777) {

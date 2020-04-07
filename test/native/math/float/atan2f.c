@@ -6,7 +6,7 @@ static void convergent(float x, float y)
 {
     float angle = atan2f(y, x);
 
-    verify2(faithful(angle, atan2(y, x)), x, y);
+    verify2(approx(angle, atan2(y, x), 1), x, y);
     verify2(identical(-angle, atan2f(-y, x)), x, y);
 }
 
