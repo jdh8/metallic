@@ -8,7 +8,7 @@ static void convergent(float x, float y)
     float _Complex z = CMPLXF(x, y);
     float _Complex tanhz = ctanhf(z);
 
-    verify2(capprox(tanhz, ctanh(z), 2, 1), x, y);
+    verify2(capprox(tanhz, ctanh(z), 1, 1), x, y);
     verify2(cidentical(conjf(tanhz), ctanhf(conjf(z))), x, y);
     verify2(cidentical(-tanhz, ctanhf(-z)), x, y);
     verify2(cidentical(-conjf(tanhz), ctanhf(-conjf(z))), x, y);

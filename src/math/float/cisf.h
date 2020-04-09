@@ -1,11 +1,28 @@
-#include "kernel/sincosf.h"
+#include "kernel/sinf.h"
 #include <complex.h>
+
+static double cos_(double x)
+{
+    const double c[] = {
+        9.9999999995260043694e-1,
+       -4.9999999615433475594e-1,
+        4.1666616739207634682e-2,
+       -1.3886619210252882086e-3,
+        2.4379929375956876394e-5
+    };
+
+    x *= x;
+
+    double xx = x * x;
+
+    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
+}
 
 static double _Complex cisf_(float t)
 {
     double r;
     unsigned q = __rem_pio2f(t, &r);
-    double x = kernel_cosf_(r);
+    double x = cos_(r);
     double y = kernel_sinf_(r);
 
     switch (q & 3) {
