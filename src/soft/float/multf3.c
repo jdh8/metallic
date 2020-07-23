@@ -1,5 +1,5 @@
 #include "compose/product.h"
-#include "../integer/kernel/umulti.h"
+#include "../integer/kernel/mulo.h"
 #include "../../math/long-double/normalizel.h"
 #include "../../math/reinterpret.h"
 
@@ -11,7 +11,7 @@ static unsigned __int128 kernel_(__int128 a, __int128 b)
     unsigned __int128 y = b << 15 | msb;
     unsigned __int128 z[2];
 
-    umulti_(z, x, y);
+    mulo_(z, x, y);
 
     _Bool carry = z[1] >> 127;
 
