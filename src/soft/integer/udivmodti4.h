@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-static uint64_t divtri_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 1])
+static uint64_t kernel_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 1])
 {
     uint64_t b1 = b >> 32;
     uint64_t b0 = b & 0xFFFFFFFF;
@@ -18,44 +18,29 @@ static uint64_t divtri_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 
     return q;
 }
 
-static uint64_t divq_normalized_(unsigned __int128 a, uint64_t b, uint64_t r[static 1])
-{
-    uint64_t q1 = divtri_(a >> 64, a >> 32, b, r);
-    uint64_t q0 = divtri_(*r, a, b, r);
-
-    return (q1 << 32) + q0;
-}
-
-static unsigned __int128 shl_(uint64_t high, uint64_t low, int shift)
-{
-    return shift
-        ? (unsigned __int128)(high << shift | low >> (64 - shift)) << 64 | low << shift
-        : (unsigned __int128)high << 64 | low;
-}
-
-static uint64_t divq_soft_(uint64_t a2, uint64_t a0, uint64_t b, uint64_t r[static 1])
-{
-    int s = __builtin_clzll(b);
-    uint64_t q = divq_normalized_(shl_(a2, a0, s), b << s, r);
-    *r >>= s;
-    return q;
-}
-
-static uint64_t divq_(uint64_t a2, uint64_t a0, uint64_t b, uint64_t r[static 1])
+static uint64_t divq_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1])
 {
 #ifdef __x86_64__
     uint64_t result;
-    __asm__("divq %[b]" : "=a"(result), "=d"(*r) : [b] "r"(b), "a"(a0), "d"(a2));
+    __asm__("divq %[b]" : "=a"(result), "=d"(*r) : [b] "r"(b), "a"(a0), "d"(a1));
     return result;
 #endif
-    return divq_soft_(a2, a0, b, r);
+
+    int s = __builtin_clzll(b);
+    unsigned __int128 an = ((unsigned __int128)a1 << 64 | a0) << (s & 63);
+    uint64_t bn = b << s;
+    uint64_t q1 = kernel_(an >> 64, an >> 32, bn, r);
+    uint64_t q0 = kernel_(*r, an, bn, r);
+
+    *r >>= s;
+    return (q1 << 32) | q0;
 }
 
 static unsigned __int128 udivmodti4_(unsigned __int128 a, unsigned __int128 b, unsigned __int128 r[static 1])
 {
-    uint64_t a2 = a >> 64;
-    uint64_t b2 = b >> 64;
+    uint64_t a1 = a >> 64;
     uint64_t a0 = a;
+    uint64_t b1 = b >> 64;
     uint64_t b0 = b;
 
     if (a < b) {
@@ -63,19 +48,18 @@ static unsigned __int128 udivmodti4_(unsigned __int128 a, unsigned __int128 b, u
         return 0;
     }
 
-    if (!b2) {
+    if (!b1) {
         uint64_t r0;
-        uint64_t q2 = a2 / b0;
-        uint64_t q0 = divq_(a2 % b0, a0, b0, &r0);
+        uint64_t q0 = divq_(a1 % b0, a0, b0, &r0);
 
         *r = r0;
-        return (unsigned __int128)q2 << 64 | q0;
+        return (unsigned __int128)(a1 / b0) << 64 | q0;
     }
 
     uint64_t q = 0;
-    int shift = __builtin_clzll(b >> 64) - __builtin_clzll(a >> 64);
+    int shift = __builtin_clzll(b1) - __builtin_clzll(a1);
 
-    for (b = shl_(b2, b0, shift); shift >= 0; --shift) {
+    for (b <<= shift & 63; shift >= 0; --shift) {
         __int128 s = (__int128)(b - a - 1) >> 127;
         q = (q << 1) | (s & 1);
         a -= b & s;
