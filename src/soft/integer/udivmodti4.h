@@ -20,7 +20,7 @@ static uint64_t kernel_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 
 
 static uint64_t divq_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1])
 {
-#ifdef __x86_64__
+#if defined(__GNUC__) && defined(__x86_64__)
     uint64_t result;
     __asm__("divq %[b]" : "=a"(result), "=d"(*r) : [b] "r"(b), "a"(a0), "d"(a1));
     return result;
