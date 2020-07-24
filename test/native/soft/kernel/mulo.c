@@ -18,11 +18,11 @@ int main(void)
     unsigned __int128 b = 0;
 
     for (long i = 0; i < 1L << 26; ++i) {
-        unsigned __int128 c[2];
-        mulo_(c, a, b);
+        unsigned __int128 high;
+        unsigned __int128 low = mulo_(a, b, &high);
 
-        assert(c[0] == a * b);
-        assert(sum2(sum1(c[0]), sum1(c[1])) == sum1((unsigned __int128)sum1(a) * sum1(b)));
+        assert(low == a * b);
+        assert(sum2(sum1(high), sum1(low)) == sum1((unsigned __int128)sum1(a) * sum1(b)));
 
         a = a + 1993 + (a >> 3);
         b = b + 2019 + (b >> 4);
