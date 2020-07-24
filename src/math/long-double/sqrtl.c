@@ -26,15 +26,15 @@ static __int128 finite_(__int128 a)
     uint64_t initial = (uint64_t)(0x1p90 / sqrt(significand >> 64)) << 5;
     uint64_t estimate = iterate_(initial, significand >> 64) - 1;
     unsigned __int128 reciprocal = expand_(estimate, significand) - 1;
-    unsigned __int128 product[2];
+    unsigned __int128 high;
 
-    mulo_(product, significand, reciprocal);
+    mulo_(significand, reciprocal, &high);
 
-    unsigned __int128 root = product[1] >> 13;
+    unsigned __int128 root = high >> 13;
 
-    mulo_(product, root << 13, (root + 1) << 13);
+    mulo_(root << 13, (root + 1) << 13, &high);
 
-    return (((a >> 112) + 0x3FFD) >> 1 << 112 | (product[1] < significand >> 4)) + root;
+    return (((a >> 112) + 0x3FFD) >> 1 << 112 | (high < significand >> 4)) + root;
 }
 
 long double sqrtl(long double x)

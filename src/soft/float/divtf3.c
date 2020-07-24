@@ -13,15 +13,14 @@ static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
     uint64_t initial = (uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7;
     uint64_t estimate = (mulq_(initial, -(uint64_t)(mulq_(initial, b >> 64) >> 64)) >> 63) - 1;
-    unsigned __int128 product[2];
+    unsigned __int128 high;
 
-    mulo_(product, a, fixmul_(estimate, -fixmul_(estimate, b)) - 2);
+    mulo_(a, fixmul_(estimate, -fixmul_(estimate, b)) - 2, &high);
 
-    unsigned __int128 q = product[1] >> 2;
+    unsigned __int128 q = high >> 2;
+    unsigned __int128 low = mulo_(q + 1, b, &high);
 
-    mulo_(product, q + 1, b);
-
-    return (q + (product[1] >= a >> 4)) << 3 | !!product[0];
+    return (q + (high >= a >> 4)) << 3 | !!low;
 }
 
 static unsigned __int128 kernel_(__int128 a, __int128 b)

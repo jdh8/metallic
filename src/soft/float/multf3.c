@@ -9,13 +9,11 @@ static unsigned __int128 kernel_(__int128 a, __int128 b)
 
     unsigned __int128 x = a << 15 | msb;
     unsigned __int128 y = b << 15 | msb;
-    unsigned __int128 z[2];
+    unsigned __int128 high;
+    unsigned __int128 low = mulo_(x, y, &high);
+    _Bool carry = high >> 127;
 
-    mulo_(z, x, y);
-
-    _Bool carry = z[1] >> 127;
-
-    return compose_product_((a >> 112) + (b >> 112) - 0x3FFF + carry, (z[1] | !!z[0]) << !carry);
+    return compose_product_((a >> 112) + (b >> 112) - 0x3FFF + carry, (high | !!low) << !carry);
 }
 
 static unsigned __int128 magnitude_(unsigned __int128 a, unsigned __int128 b)
