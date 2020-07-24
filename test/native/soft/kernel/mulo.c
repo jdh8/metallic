@@ -1,14 +1,15 @@
 #include "src/soft/integer/kernel/mulo.h"
 #include <assert.h>
 
-static uint64_t sum(unsigned __int128 a)
+static uint64_t sum2(uint64_t a, uint64_t b)
 {
-    uint32_t a0 = a;
-    uint32_t a1 = a >> 32;
-    uint32_t a2 = a >> 64;
-    uint32_t a3 = a >> 96;
+    uint64_t s = a + b;
+    return s + (s < a);
+}
 
-    return (uint64_t)a0 + a1 + a2 + a3;
+static uint64_t sum1(unsigned __int128 a)
+{
+    return sum2(a >> 64, a);
 }
 
 int main(void)
@@ -21,7 +22,7 @@ int main(void)
         mulo_(c, a, b);
 
         assert(c[0] == a * b);
-        assert((sum(c[0]) + sum(c[1])) % 0xFFFFFFFF == (sum(a) % 0xFFFFFFFF) * (sum(b) % 0xFFFFFFFF) % 0xFFFFFFFF);
+        assert(sum2(sum1(c[0]), sum1(c[1])) == sum1((unsigned __int128)sum1(a) * sum1(b)));
 
         a = a + 1993 + (a >> 3);
         b = b + 2019 + (b >> 4);
