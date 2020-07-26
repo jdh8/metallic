@@ -1,4 +1,5 @@
 #include "../reinterpret.h"
+#include "../rounding.h"
 #include <stdint.h>
 
 static double trunc_(double x)
@@ -16,14 +17,10 @@ static double trunc_(double x)
     return x;
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define TRUNC(x) __builtin_trunc(x)
-#else
-#define TRUNC(x) trunc_(x)
-#endif
-
 double trunc(double x)
 {
-    (void)trunc_;
-    return TRUNC(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_trunc(x);
+#endif
+    return trunc_(x);
 }

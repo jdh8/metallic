@@ -1,4 +1,5 @@
 #include "../reinterpret.h"
+#include "../rounding.h"
 #include <stdint.h>
 
 static float truncf_(float x)
@@ -16,14 +17,10 @@ static float truncf_(float x)
     return x;
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define TRUNCF(x) __builtin_truncf(x)
-#else
-#define TRUNCF(x) truncf_(x)
-#endif
-
 float truncf(float x)
 {
-    (void)truncf_;
-    return TRUNCF(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_truncf(x);
+#endif
+    return truncf_(x);
 }

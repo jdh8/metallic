@@ -1,3 +1,4 @@
+#include "../rounding.h"
 #include <math.h>
 
 static double rint_(double x)
@@ -13,16 +14,12 @@ static double rint_(double x)
     return x;
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define RINT(x) __builtin_rint(x)
-#else
-#define RINT(x) rint_(x)
-#endif
-
 double rint(double x)
 {
-    (void)rint_;
-    return RINT(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_rint(x);
+#endif
+    return rint_(x);
 }
 
 #ifdef __wasm__

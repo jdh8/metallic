@@ -1,4 +1,5 @@
 #include "../reinterpret.h"
+#include "../rounding.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -18,14 +19,10 @@ static float ceilf_(float x)
     return reinterpret(float, (bits + (bits >= 0) * mask) & ~mask);
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define CEILF(x) __builtin_ceilf(x)
-#else
-#define CEILF(x) ceilf_(x)
-#endif
-
 float ceilf(float x)
 {
-    (void)ceilf_;
-    return CEILF(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_ceilf(x);
+#endif
+    return ceilf_(x);
 }

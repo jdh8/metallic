@@ -1,4 +1,5 @@
 #include "../reinterpret.h"
+#include "../rounding.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -18,14 +19,10 @@ static double ceil_(double x)
     return reinterpret(double, (bits + (bits >= 0) * mask) & ~mask);
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define CEIL(x) __builtin_ceil(x)
-#else
-#define CEIL(x) ceil_(x)
-#endif
-
 double ceil(double x)
 {
-    (void)ceil_;
-    return CEIL(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_ceil(x);
+#endif
+    return ceil_(x);
 }

@@ -1,4 +1,5 @@
 #include "../reinterpret.h"
+#include "../rounding.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -18,14 +19,10 @@ static double floor_(double x)
     return reinterpret(double, (bits + (bits < 0) * mask) & ~mask);
 }
 
-#if defined(__wasm__) || defined(__AVX__) || defined(__SSE4_1__)
-#define FLOOR(x) __builtin_floor(x)
-#else
-#define FLOOR(x) floor_(x)
-#endif
-
 double floor(double x)
 {
-    (void)floor_;
-    return FLOOR(x);
+#ifdef METALLIC_FAST_ROUNDING
+    return __builtin_floor(x);
+#endif
+    return floor_(x);
 }
