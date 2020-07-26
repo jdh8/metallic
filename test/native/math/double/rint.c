@@ -1,4 +1,4 @@
-#include "src/math/double/rint.c"
+#include "src/math/double/rint.h"
 #include "unary.h"
 #include <assert.h>
 

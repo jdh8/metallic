@@ -1,4 +1,4 @@
-#include "src/math/double/floor.c"
+#include "src/math/double/floor.h"
 #include "unary.h"
 #include <math.h>
 

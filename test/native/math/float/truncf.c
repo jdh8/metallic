@@ -1,4 +1,4 @@
-#include "src/math/float/truncf.c"
+#include "src/math/float/truncf.h"
 #include "unary.h"
 #include <math.h>
 

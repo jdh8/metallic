@@ -1,4 +1,4 @@
-#include "src/math/float/ceilf.c"
+#include "src/math/float/ceilf.h"
 #include "unary.h"
 #include <assert.h>
 

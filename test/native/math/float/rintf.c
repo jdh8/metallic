@@ -1,4 +1,4 @@
-#include "src/math/float/rintf.c"
+#include "src/math/float/rintf.h"
 #include "unary.h"
 #include <assert.h>
 

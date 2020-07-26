@@ -1,4 +1,4 @@
-#include "src/math/float/floorf.c"
+#include "src/math/float/floorf.h"
 #include "unary.h"
 #include <assert.h>
 

@@ -1,4 +1,4 @@
-#include "src/math/double/trunc.c"
+#include "src/math/double/trunc.h"
 #include "unary.h"
 #include <math.h>
 

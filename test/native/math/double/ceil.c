@@ -1,4 +1,4 @@
-#include "src/math/double/ceil.c"
+#include "src/math/double/ceil.h"
 #include "unary.h"
 #include <math.h>
 
