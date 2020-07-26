@@ -1,6 +1,10 @@
 #include <stdint.h>
 
-// The 32-bit quotient is returned as uint64_t to save one WebAssembly instruction.
+/* Unsigned division of (96, 64) -> (32, 64) bits
+ *
+ * Undefined behavior may occur if the quotient overflows.  The 32-bit
+ * quotient is returned as uint64_t to potentially save a instruction.
+ */
 static uint64_t uldivmoddisi5_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 1])
 {
     uint64_t b1 = b >> 32;
@@ -19,6 +23,10 @@ static uint64_t uldivmoddisi5_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[
     return q;
 }
 
+/* Unsigned division of (128, 64) -> (64, 64) bits
+ *
+ * Undefined behavior may occur if the quotient overflows.
+ */
 static uint64_t uldivmoddi5_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1])
 {
 #ifdef __x86_64__
