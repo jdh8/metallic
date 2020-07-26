@@ -1,4 +1,4 @@
-#include "src/soft/integer/kernel/mulo.h"
+#include "src/soft/integer/umulti4.h"
 #include <assert.h>
 
 static uint64_t sum2(uint64_t a, uint64_t b)
@@ -19,7 +19,7 @@ int main(void)
 
     for (long i = 0; i < 1L << 26; ++i) {
         unsigned __int128 high;
-        unsigned __int128 low = mulo_(a, b, &high);
+        unsigned __int128 low = umulti4_(a, b, &high);
 
         assert(low == a * b);
         assert(sum2(sum1(high), sum1(low)) == sum1((unsigned __int128)sum1(a) * sum1(b)));

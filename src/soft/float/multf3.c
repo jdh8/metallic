@@ -1,5 +1,5 @@
 #include "compose/product.h"
-#include "../integer/kernel/mulo.h"
+#include "../integer/umulti4.h"
 #include "../../math/long-double/normalizel.h"
 #include "../../math/reinterpret.h"
 
@@ -10,7 +10,7 @@ static unsigned __int128 kernel_(__int128 a, __int128 b)
     unsigned __int128 x = a << 15 | msb;
     unsigned __int128 y = b << 15 | msb;
     unsigned __int128 high;
-    unsigned __int128 low = mulo_(x, y, &high);
+    unsigned __int128 low = umulti4_(x, y, &high);
     _Bool carry = high >> 127;
 
     return compose_product_((a >> 112) + (b >> 112) - 0x3FFF + carry, (high | !!low) << !carry);

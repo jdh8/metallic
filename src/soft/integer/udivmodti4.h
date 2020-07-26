@@ -1,6 +1,7 @@
 #include <stdint.h>
 
-static uint64_t kernel_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 1])
+// The 32-bit quotient is returned as uint64_t to save one WebAssembly instruction.
+static uint64_t uldivmoddisi5_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 1])
 {
     uint64_t b1 = b >> 32;
     uint64_t b0 = b & 0xFFFFFFFF;
@@ -18,7 +19,7 @@ static uint64_t kernel_(uint64_t a1, uint32_t a0, uint64_t b, uint64_t r[static 
     return q;
 }
 
-static uint64_t divq_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1])
+static uint64_t uldivmoddi5_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1])
 {
 #ifdef __x86_64__
     uint64_t result;
@@ -29,8 +30,8 @@ static uint64_t divq_(uint64_t a1, uint64_t a0, uint64_t b, uint64_t r[static 1]
     int s = __builtin_clzll(b);
     unsigned __int128 an = ((unsigned __int128)a1 << 64 | a0) << (s & 63);
     uint64_t bn = b << s;
-    uint64_t q1 = kernel_(an >> 64, an >> 32, bn, r);
-    uint64_t q0 = kernel_(*r, an, bn, r);
+    uint64_t q1 = uldivmoddisi5_(an >> 64, an >> 32, bn, r);
+    uint64_t q0 = uldivmoddisi5_(*r, an, bn, r);
 
     *r >>= s;
     return (q1 << 32) | q0;
@@ -50,7 +51,7 @@ static unsigned __int128 udivmodti4_(unsigned __int128 a, unsigned __int128 b, u
 
     if (!b1) {
         uint64_t r0;
-        uint64_t q0 = divq_(a1 % b0, a0, b0, &r0);
+        uint64_t q0 = uldivmoddi5_(a1 % b0, a0, b0, &r0);
 
         *r = r0;
         return (unsigned __int128)(a1 / b0) << 64 | q0;

@@ -1,4 +1,4 @@
-#include "../../soft/integer/kernel/mulq.h"
+#include "../../soft/integer/umulditi3.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <stdint.h>
@@ -67,7 +67,7 @@ int64_t right_(unsigned __int128 frac, double y[static 2])
     q1 = q1 << shift | q0 >> (64 - shift);
     q0 <<= shift;
 
-    unsigned __int128 r = (mulq_(p[1], q1) >> 11) + (uint64_t)(0x1p-75 * p[0] * q1 + 0x1p-75 * p[1] * q0);
+    unsigned __int128 r = (umulditi3_(p[1], q1) >> 11) + (uint64_t)(0x1p-75 * p[0] * q1 + 0x1p-75 * p[1] * q0);
 
     y[0] = r >> 64;
     y[1] = 0x1p-64 * (uint64_t)r;
@@ -105,7 +105,7 @@ int __rem_pio2(double x, double y[static 2])
     /* First 128 bits of fractional part of x/(2π) */
     unsigned __int128 product
         = ((unsigned __int128)(segment[0] * significand) << 64)
-        + mulq_(segment[1], significand)
+        + umulditi3_(segment[1], significand)
         + (segment[2] >> 32) * (significand >> 32);
 
     __int128 r = product << 2;

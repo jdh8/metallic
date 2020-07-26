@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-static unsigned __int128 mulq_(uint64_t a, uint64_t b)
+static unsigned __int128 umulditi3_(uint64_t a, uint64_t b)
 {
 #if defined(__x86_64__) || defined(__aarch64__)
     return (unsigned __int128)a * b;

@@ -1,24 +1,24 @@
 #include "compose/product.h"
-#include "../integer/kernel/mulo.h"
+#include "../integer/umulti4.h"
 #include "../../math/long-double/normalizel.h"
 #include "../../math/reinterpret.h"
 #include <stdint.h>
 
 static unsigned __int128 fixmul_(uint64_t a, unsigned __int128 b)
 {
-    return mulq_(a, b >> 64) + (mulq_(a, b) >> 64);
+    return umulditi3_(a, b >> 64) + (umulditi3_(a, b) >> 64);
 }
 
 static unsigned __int128 fixdiv_(unsigned __int128 a, unsigned __int128 b)
 {
     uint64_t initial = (uint64_t)(0x1p120 / (uint64_t)(b >> 64)) << 7;
-    uint64_t estimate = (mulq_(initial, -(uint64_t)(mulq_(initial, b >> 64) >> 64)) >> 63) - 1;
+    uint64_t estimate = (umulditi3_(initial, -(uint64_t)(umulditi3_(initial, b >> 64) >> 64)) >> 63) - 1;
     unsigned __int128 high;
 
-    mulo_(a, fixmul_(estimate, -fixmul_(estimate, b)) - 2, &high);
+    umulti4_(a, fixmul_(estimate, -fixmul_(estimate, b)) - 2, &high);
 
     unsigned __int128 q = high >> 2;
-    unsigned __int128 low = mulo_(q + 1, b, &high);
+    unsigned __int128 low = umulti4_(q + 1, b, &high);
 
     return (q + (high >= a >> 4)) << 3 | !!low;
 }
