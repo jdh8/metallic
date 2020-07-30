@@ -55,7 +55,7 @@ static void segment_(uint64_t segment[static 3], int offset)
  *
  * Right shift 11 bits to make upper half fit in `double`
  */
-int64_t right_(unsigned __int128 frac, double y[static 2])
+static int64_t right_(unsigned __int128 frac, double y[static 2])
 {
     /* Bits of π/4 */
     const uint64_t p[] = { 0xC4C6628B80DC1CD1, 0xC90FDAA22168C234 };
