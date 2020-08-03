@@ -1,8 +1,8 @@
-/* Restriction of (x -> erf(x) - x) to [-2, 2] */
+/* Error function restricted to [-2, 2] */
 static double kernel_(double x)
 {
     const double c[] = {
-        1.2837916709551257239e-01
+        1.2837916709551257239e-01,
        -3.7612638903183727743e-01,
         1.1283791670954452589e-01,
        -2.6866170645058585040e-02,
@@ -27,7 +27,7 @@ static double kernel_(double x)
     double x8 = x4 * x4;
     double x16 = x8 * x8;
 
-    return x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + (c[4] + c[5] * x2 + (c[6] + c[7] * x2) * x4) * x8
+    return x + x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + (c[4] + c[5] * x2 + (c[6] + c[7] * x2) * x4) * x8
         + (c[8] + c[9] * x2 + (c[10] + c[11] * x2) * x4 + (c[12] + c[13] * x2 + (c[14] + c[15] * x2) * x4)) * x8
         + (c[16] + c[17] * x2) * (x16 * x16));
 }
