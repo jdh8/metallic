@@ -1,5 +1,5 @@
 /* Error function restricted to [-0.84375, 0.84375] */
-static double kernel_(double x)
+static double near0_(double x)
 {
     const double c[] = {
         1.2837916709551257358e-01,
@@ -23,4 +23,42 @@ static double kernel_(double x)
     return x + x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4
         + (c[4] + c[5] * x2 + (c[6] + c[7] * x2) * x4) * x8
         + (c[8] + c[9] * x2 + (c[10] + c[11] * x2) * x4) * (x8 * x8));
+}
+
+/* Error function restricted to [0.84375, 1.25] */
+static double near1_(double x)
+{
+    const double c[] = {
+       -2.4856130825934362894e-17,
+        4.1510749742059521750e-01,
+       -4.1510749742059487983e-01,
+        1.3836916580649731812e-01,
+        6.9184582904022372690e-02,
+       -6.9184582829279800335e-02,
+        4.6123053226003033062e-03,
+        1.5154712039503498119e-02,
+       -4.7770070199119698622e-03,
+       -1.8849734210792739716e-03,
+        1.2251733972180058535e-03,
+        8.3315834868728835768e-05,
+       -1.8120800992681500844e-04
+    };
+
+    double y = x - 1;
+    double y2 = y * y;
+    double y4 = y2 * y2;
+
+    return c[0] + c[1] * y + (c[2] + c[3] * y) * y2
+        + (c[4] + c[5] * y + (c[6] + c[7] * y) * y2) * y4
+        + (c[8] + c[9] * y + (c[10] + c[11] * y) * y2 + c[12] * y4) * (y4 * y4)
+        + 0x1.af767a741088bp-1;
+}
+
+static double kernel_(double x)
+{
+    if (x < 0.84375)
+        return near0_(x);
+
+    if (x < 1.25)
+        return near1_(x);
 }
