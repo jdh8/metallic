@@ -1,5 +1,6 @@
 #include "normalize.h"
 #include "shift.h"
+#include "split.h"
 #include "../reinterpret.h"
 #include <math.h>
 #include <fenv.h>
@@ -15,14 +16,6 @@ static double frexp_(double x, int exp[static 1])
     *exp = (i >> 52) - 1022;
 
     return copysign(reinterpret(double, (i & 0x000FFFFFFFFFFFFF) | 0x3FE0000000000000), x);
-}
-
-static double split_(double x)
-{
-    double s = (0x1p27 + 1) * x;
-    double c = x - s;
-
-    return s + c;
 }
 
 static double mul_(double a, double b, double r[static 1])

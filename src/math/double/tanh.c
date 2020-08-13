@@ -1,6 +1,6 @@
 #include "kernel/exp.h"
+#include "divs.h"
 #include "shift.h"
-#include "truncate.h"
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
@@ -19,14 +19,6 @@ static double kernel_(double x)
     double xx = x * x;
 
     return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x + c[5] * xx) * (xx * xx);
-}
-
-static double divs_(double c, double a, double b)
-{
-    double s = truncate_(a + b, 32);
-    double x = truncate_(c / (a + b), 21);
-
-    return x + (c - x * s - x * (a - s + b)) / (a + b);
 }
 
 static double half_(double x)

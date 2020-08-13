@@ -1,3 +1,20 @@
+#include "kernel/exp.h"
+#include "divs.h"
+#include "shift.h"
+#include <math.h>
+
+static double exp_(double x)
+{
+    const double log2e = 1.44269504088896340736;
+    const double ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
+
+    double n = rint(x * log2e);
+    double a = x - n * ln2[0];
+    double b = n * -ln2[1];
+
+    return shift_(kernel_expb_(a, b) + 1, n);
+}
+
 /* Error function restricted to [-0.84375, 0.84375] */
 static double near0_(double x)
 {
@@ -54,11 +71,52 @@ static double near1_(double x)
         + 0x1.af767a741088bp-1;
 }
 
-static double kernel_(double x)
+/* Error function restricted to [1.25, 6] */
+static double near2_(double x)
+{
+    const double c[] = {
+       -1.2655122138960198897,
+        1.0000030089369027423,
+        0.37495735727371647179,
+        0.083642302881223721572,
+       -0.086697357373347411572,
+       -0.15089938396816415908,
+       -0.00075879148120309320867,
+       -0.51446355600993807329,
+        2.2824966898059093725,
+       -5.9434261622810122837,
+       12.413512236169773484,
+      -18.498783485788924814,
+       18.165439973029048001,
+      -11.218777879982864219,
+        3.9853699053270956810,
+       -0.62614034290621326645
+    };
+
+    double t = divs_(2, 2, x);
+    double t2 = t * t;
+    double t4 = t2 * t2;
+
+    return 1 - t * exp_((c[2] + c[3] * t) * t2 + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
+        + (c[8] + c[9] * t + (c[10] + c[11] * t) * t2 + (c[12] + c[13] * t + (c[14] + c[15] * t) * t2) * t4) * (t4 * t4)
+        + (c[0] + c[1] * t) - x * x);
+}
+
+static double right_(double x)
 {
     if (x < 0.84375)
         return near0_(x);
 
     if (x < 1.25)
         return near1_(x);
+
+    if (x < 6)
+        return near2_(x);
+
+    return 1 - 0 / x;
+}
+
+double erf(double x)
+{
+    return copysign(right_(fabs(x)), x);
 }
