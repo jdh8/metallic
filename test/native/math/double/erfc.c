@@ -5,7 +5,7 @@
 
 int main(void)
 {
-    const uint64_t step = 0x00000004F2931D55;
+    const uint64_t step = 0x00000000F2931D55;
 
     for (uint64_t i = 0; i < 0x3FEB000000000000; i += step) {
         double x = reinterpret(double, i);

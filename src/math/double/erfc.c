@@ -26,5 +26,8 @@ static double small_(double x)
     if (x < 0.25)
         return 1 - (x + x * y);
 
-    return 0.5 - x - x * y + 0.5;
+    if (x < 0.5)
+        return 0.5 - x - x * y + 0.5;
+
+    return 1 - x - x * y;
 }
