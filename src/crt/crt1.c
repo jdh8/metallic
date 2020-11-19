@@ -24,9 +24,10 @@ static size_t strlen_(char s[static 1])
             return i;
 }
 
-int main(int, char**);
+int __main_argc_argv(int, char**);
 
-static int libc_start_main_(void)
+__attribute__((__weak__))
+int main(void)
 {
     int argc = __argc();
     char* argv[argc + 1];
@@ -40,7 +41,7 @@ static int libc_start_main_(void)
 
     argv[argc] = (void*)0;
 
-    return main(argc, argv);
+    return __main_argc_argv(argc, argv);
 }
 
 extern uintptr_t __metallic_brk;
@@ -50,5 +51,5 @@ int _start(void)
     __metallic_brk = ((uintptr_t)__builtin_frame_address(0) & 0xFF) + 1;
     __wasm_call_ctors();
 
-    return libc_start_main_();
+    return main();
 }
