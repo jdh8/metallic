@@ -18,12 +18,6 @@ static float fmaf_(float a, float b, float c)
     if ((i & 0x1FFFFFFF) != 0x10000000 || s - s || s - ab == c || fegetround() != FE_TONEAREST)
         return s;
 
-    #ifdef FE_TOWARDZERO
-        uint64_t adjustment = !fesetround(FE_TOWARDZERO) && c + 0 + ab == s;
-        fesetround(FE_TONEAREST);
-    #else
-        uint64_t adjustment = 1 - ((i ^ reinterpret(uint64_t, ab - s + c)) >> 63 << 1);
-    #endif
-
+    uint64_t adjustment = 1 - ((i ^ reinterpret(uint64_t, ab - s + c)) >> 63 << 1);
     return reinterpret(double, i + adjustment);
 }
