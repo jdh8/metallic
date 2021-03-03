@@ -16,9 +16,7 @@ static double kernel_(double x)
        -2.12203166597434505056e-6
     };
 
-    double xx = x * x;
-
-    return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x + c[5] * xx) * (xx * xx);
+    return x * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
 static double half_(double x)

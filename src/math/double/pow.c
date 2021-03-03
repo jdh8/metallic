@@ -25,10 +25,7 @@ static double log_kernel_(double x)
 
     x *= x;
 
-    double x2 = x * x;
-    double x4 = x2 * x2;
-
-    return (c[0] + c[1] * x) * x2 + (c[2] + c[3] * x + (c[4] + c[5] * x) * x2) * x4 + c[6] * x4 * x4;
+    return x * x * ((((((c[6] * x + c[5]) * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
 /* Compute log2 of normalized representation

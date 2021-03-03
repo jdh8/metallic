@@ -18,6 +18,6 @@ static double kernel_atanh_(double x)
 
     double xx = x * x;
 
-    return x + x * xx * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
+    return x + x * xx * (((c[3] * xx + c[2]) * xx + c[1]) * xx + c[0]);
 }
 #endif

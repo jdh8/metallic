@@ -13,9 +13,7 @@ static double cos_(double x)
 
     x *= x;
 
-    double xx = x * x;
-
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
+    return (((c[4] * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0];
 }
 
 static double _Complex cisf_(float t)

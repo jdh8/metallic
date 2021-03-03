@@ -11,7 +11,7 @@ static double kernel_sinpif_(double x)
 
     double xx = x * x;
 
-    return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
+    return x * (((c[3] * xx + c[2]) * xx + c[1]) * xx + c[0]);
 }
 
 static double kernel_cospif_(double x)
@@ -26,9 +26,7 @@ static double kernel_cospif_(double x)
 
     x *= x;
 
-    double xx = x * x;
-
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
+    return (((c[4] * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0];
 }
 
 static double sinpif_(float x)

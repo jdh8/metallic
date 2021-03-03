@@ -11,9 +11,7 @@ static double kernel_(double x)
        -2.4838647503256150943e-4
     };
 
-    double xx = x * x;
-
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * xx + c[4] * (xx * xx);
+    return (((c[4] * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0];
 }
 
 float tanf(float x)

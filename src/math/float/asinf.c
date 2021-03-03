@@ -16,9 +16,7 @@ static double acos_(double x)
        -1.88666274731420876e-3
     };
 
-    double xx = x * x;
-
-    return sqrt(1 - x) * (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx));
+    return sqrt(1 - x) * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
 /* Arcsine restricted to [-0.5, 0.5] */
@@ -33,10 +31,9 @@ static float asin_(double x)
         4.26903047180133904e-2
     };
 
-    double x2 = x * x;
-    double x4 = x2 * x2;
+    double xx = x * x;
 
-    return x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + (c[4] + c[5] * x2) * (x4 * x4));
+    return x * (((((c[5] * xx + c[4]) * xx + c[3]) * xx + c[2]) * xx + c[1]) * xx + c[0]);
 }
 
 float asinf(float x)

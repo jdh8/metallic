@@ -1,5 +1,8 @@
-/* Restriction of (x -> (√x * coth(√x / 2) - 2) / x) to [0, (0.5 ln 2)^2] */
-static double kernel_expa_(double x)
+/* Restriction of expm1(a + b) to [0, 0.5 ln 2]
+ *
+ * Preferably, |b| < 0x1p-26 * |a|
+ */
+static double kernel_expb_(double a, double b)
 {
     const double c[] = {
         1.6666666666666661553e-1,
@@ -9,19 +12,9 @@ static double kernel_expa_(double x)
         4.1437773411068822733e-8
     };
 
-    double xx = x * x;
-
-    return c[0] * x + (c[1] + c[2] * x) * xx + (c[3] + c[4] * x) * (xx * xx);
-}
-
-/* Restriction of expm1(a + b) to [0, 0.5 ln 2]
- *
- * Preferably, |b| < 0x1p-26 * |a|
- */
-static double kernel_expb_(double a, double b)
-{
     double x = a + b;
-    double y = x - kernel_expa_(x * x);
+    double xx = x * x;
+    double y = x - xx * ((((c[4] * xx + c[3]) * xx + c[2]) * xx + c[1]) * xx + c[0]);
 
     return x * y / (2 - y) + b + a;
 }

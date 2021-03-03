@@ -12,10 +12,9 @@ static double kernel_(double x)
         4.719928166232619326e-3
     };
 
-    double x2 = x * x;
-    double x4 = x2 * x2;
+    double xx = x * x;
 
-    return x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4 + c[4] * (x4 * x4));
+    return x * ((((c[4] * xx + c[3]) * xx + c[2]) * xx + c[1]) * xx + c[0]);
 }
 
 static double complement_(double x)
@@ -34,12 +33,10 @@ static double complement_(double x)
     };
 
     double t = 2 / (2 + x);
-    double t2 = t * t;
-    double t4 = t2 * t2;
 
-    return t * expf_(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
-        + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
-        + (c[8] + c[9] * t) * (t4 * t4)
+    return t * expf_(((((((((c[9] * t + c[8])
+        * t + c[7]) * t + c[6]) * t + c[5]) * t + c[4])
+        * t + c[3]) * t + c[2]) * t + c[1]) * t + c[0]
         - x * x);
 }
 

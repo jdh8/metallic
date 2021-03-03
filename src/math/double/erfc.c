@@ -15,13 +15,10 @@ static double small_(double x)
        -8.5818517438380188677e-10
     };
 
-    double x2 = x * x;
-    double x4 = x2 * x2;
-    double x8 = x4 * x4;
+    double xx = x * x;
 
-    double y = c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4
-        + (c[4] + c[5] * x2 + (c[6] + c[7] * x2) * x4) * x8
-        + (c[8] + c[9] * x2 + (c[10] + c[11] * x2) * x4) * (x8 * x8);
+    double y = ((((((((((c[11] * xx + c[10]) * xx + c[9]) * xx + c[8]) * xx + c[7]) * xx + c[6])
+        * xx + c[5]) * xx + c[4]) * xx + c[3]) * xx + c[2]) * xx + c[1]) * xx + c[0];
 
     if (x < 0.25)
         return 1 - (x + x * y);

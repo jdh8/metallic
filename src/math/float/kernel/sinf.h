@@ -9,7 +9,7 @@ static double kernel_sinf_(double x)
 
     double xx = x * x;
 
-    return x * (c[0] + c[1] * xx + (c[2] + c[3] * xx) * (xx * xx));
+    return x * (((c[3] * xx + c[2]) * xx + c[1]) * xx + c[0]);
 }
 
 int __rem_pio2f(float x, double y[static 1]);

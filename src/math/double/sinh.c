@@ -15,9 +15,7 @@ static double kernel_(double x)
         1.61696409097928967071e-10
     };
 
-    double xx = x * x;
-
-    return (c[5] * xx + c[4] * x + c[3]) * (xx * xx) + (c[2] * x + c[1]) * xx + c[0] * x;
+    return x * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
 static double base_(double a, double b, uint64_t n)

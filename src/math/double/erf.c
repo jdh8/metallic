@@ -33,13 +33,10 @@ static double near0_(double x)
        -8.6697290255536863161e-10
     };
 
-    double x2 = x * x;
-    double x4 = x2 * x2;
-    double x8 = x4 * x4;
+    double xx = x * x;
 
-    return x + x * (c[0] + c[1] * x2 + (c[2] + c[3] * x2) * x4
-        + (c[4] + c[5] * x2 + (c[6] + c[7] * x2) * x4) * x8
-        + (c[8] + c[9] * x2 + (c[10] + c[11] * x2) * x4) * (x8 * x8));
+    return (((((((((((c[11] * xx + c[10]) * xx + c[9]) * xx + c[8]) * xx + c[7]) * xx + c[6])
+        * xx + c[5]) * xx + c[4]) * xx + c[3]) * xx + c[2]) * xx + c[1]) * xx + c[0]) * x + x;
 }
 
 /* Error function restricted to [0.84375, 1.25] */
@@ -62,13 +59,10 @@ static double near1_(double x)
     };
 
     double y = x - 1;
-    double y2 = y * y;
-    double y4 = y2 * y2;
 
-    return c[0] + c[1] * y + (c[2] + c[3] * y) * y2
-        + (c[4] + c[5] * y + (c[6] + c[7] * y) * y2) * y4
-        + (c[8] + c[9] * y + (c[10] + c[11] * y) * y2 + c[12] * y4) * (y4 * y4)
-        + 0x1.af767a741088bp-1;
+    return (((((((((((c[12] * y + c[11]) * y + c[10]) * y + c[9]) * y + c[8])
+        * y + c[7]) * y + c[6]) * y + c[5]) * y + c[4])
+        * y + c[3]) * y + c[2]) * y + c[1]) * y + c[0] + 0x1.af767a741088bp-1;
 }
 
 /* Error function restricted to [1.25, 6] */
@@ -94,12 +88,11 @@ static double near2_(double x)
     };
 
     double t = divs_(2, 2, x);
-    double t2 = t * t;
-    double t4 = t2 * t2;
 
-    return 1 - t * exp_((c[2] + c[3] * t) * t2 + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
-        + (c[8] + c[9] * t + (c[10] + c[11] * t) * t2 + (c[12] + c[13] * t + (c[14] + c[15] * t) * t2) * t4) * (t4 * t4)
-        + (c[0] + c[1] * t) - x * x);
+    return 1 - t * exp_(((((((((((((((c[15] * t + c[14]) * t + c[13]) * t + c[12])
+        * t + c[11]) * t + c[10]) * t + c[9]) * t + c[8])
+        * t + c[7]) * t + c[6]) * t + c[5]) * t + c[4])
+        * t + c[3]) * t + c[2]) * t + c[1]) * t + c[0] - x * x);
 }
 
 static double right_(double x)

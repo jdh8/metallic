@@ -18,10 +18,8 @@ static double kernel_(double x)
        -1.2628309202213843948e-3
     };
 
-    double xx = x * x;
-
-    return sqrt(1 - x) * (c[0] + c[1] * x + (c[2] + c[3] * x) * xx
-        + (c[4] + c[5] * x + (c[6] + c[7] * x) * xx) * (xx * xx));
+    return sqrt(1 - x) * (((((((c[7] * x + c[6]) * x + c[5]) * x + c[4])
+        * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
 float acosf(float x)

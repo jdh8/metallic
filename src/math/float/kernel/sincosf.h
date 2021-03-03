@@ -11,5 +11,5 @@ static double kernel_cosf_(double x)
 
     x *= x;
 
-    return c[0] + c[1] * x + (c[2] + c[3] * x) * (x * x);
+    return ((c[3] * x + c[2]) * x + c[1]) * x + c[0];
 }

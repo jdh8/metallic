@@ -13,9 +13,8 @@ static double kernel_sin_(double a, double b)
 
     double y = a + b;
     double x = y * y;
-    double xx = x * x;
 
-    return (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx)) * (x * y) + b + a;
+    return x * y * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]) + b + a;
 }
 
 static double kernel_cos_(double a, double b)
@@ -32,7 +31,6 @@ static double kernel_cos_(double a, double b)
     double x = a * a;
     double h = 0.5 * x;
     double y = 1 - h;
-    double xx = x * x;
 
-    return (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx) - a * b + (1 - y - h) + y;
+    return ((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0] - a * b + (1 - y - h) + y;
 }

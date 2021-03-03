@@ -32,7 +32,7 @@ static double kernel_lgamma1pf_(double x)
         -0.40068588160955324422
     };
 
-    return c[0] * x + (c[1] + c[2] * x) * (x * x);
+    return x * ((c[2] * x + c[1]) * x + c[0]);
 }
 
 static double kernel_lgamma2pf_(double x)
@@ -43,7 +43,7 @@ static double kernel_lgamma2pf_(double x)
         -0.067352441921785509791
     };
 
-    return c[0] * x + (c[1] + c[2] * x) * (x * x);
+    return x * ((c[2] * x + c[1]) * x + c[0]);
 }
 
 float lgammaf(float z)

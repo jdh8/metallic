@@ -18,12 +18,10 @@ static double right_(double x)
     };
 
     double t = 2 / (2 + x);
-    double t2 = t * t;
-    double t4 = t2 * t2;
 
-    return t * expf_(c[0] + c[1] * t + (c[2] + c[3] * t) * t2
-        + (c[4] + c[5] * t + (c[6] + c[7] * t) * t2) * t4
-        + (c[8] + c[9] * t + c[10] * t2) * (t4 * t4)
+    return t * expf_((((((((((c[10] * t + c[9]) * t + c[8])
+        * t + c[7]) * t + c[6]) * t + c[5]) * t + c[4])
+        * t + c[3]) * t + c[2]) * t + c[1]) * t + c[0]
         - x * x);
 }
 

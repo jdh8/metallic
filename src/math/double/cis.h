@@ -16,7 +16,7 @@ static double truncate_sin_(double a, double b, int bits, double r[static 1])
     double s = a + b;
     double x = s * s;
     double xx = x * x;
-    double t = (c[0] + c[1] * x + (c[2] + c[3] * x) * xx + (c[4] + c[5] * x) * (xx * xx)) * (x * s) + b;
+    double t = s * x * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]) + b;
     double y = truncate_(a + t, bits);
 
     *r = y - a + t;
@@ -38,7 +38,7 @@ static double truncate_cos_(double a, double b, int bits, double r[static 1])
     double h = 0.5 * x;
     double u = 1 - h;
     double xx = x * x;
-    double v = (c[0] + c[1] * x) * xx + (c[2] + c[3] * x + (c[4] + c[5] * x) * xx) * (xx * xx) - a * b + (1 - u - h);
+    double v = ((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0] - a * b + (1 - u - h);
     double y = truncate_(u + v, bits);
 
     *r = y - u + v;

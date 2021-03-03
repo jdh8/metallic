@@ -15,9 +15,7 @@ static double kernel_(double x)
         2.76326417118194562359e-7
     };
 
-    double xx = x * x;
-
-    return (c[5] * x + c[4]) * (xx * xx) + (c[3] * x + c[2]) * xx + c[1] * x + c[0];
+    return ((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0];
 }
 
 double cosh(double x)

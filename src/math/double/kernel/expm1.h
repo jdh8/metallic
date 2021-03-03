@@ -15,8 +15,7 @@ static double kernel_expm1_(double a, double b, double residue[static 1])
     double e = a - s + b;
     double h = 0.5 * s;
     double z = h * s;
-    double zz = z * z;
-    double r = 1 + c[0] * z + (c[1] + c[2] * z) * zz + (c[3] + c[4] * z) * (zz * zz);
+    double r = ((((c[4] * z + c[3]) * z + c[2]) * z + c[1]) * z + c[0]) * z + 1;
     double t = r * h - 3;
 
     *residue = s * (e - (r + t) / (6 + s * t) * z) + e + z;
