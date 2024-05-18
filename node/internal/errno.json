@@ -1,5 +1,0 @@
-{
-    "EPERM":   1,
-    "EINVAL": 22,
-    "ENOSYS": 38
-}

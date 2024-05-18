@@ -23,8 +23,5 @@ Currently only clang meet these requirements.
 * GCC-compatible builtins
 * ILP32 or LP64 data model
 
-### Environment requirements for `node` driver ###
-* node-gyp - To build a native addon for pesky syscalls
-
 ### Internal dependency ###
 * dlmalloc - Doug Lea's malloc with other memory management routines
