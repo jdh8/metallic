@@ -32,7 +32,7 @@ size_t wcrtomb(char* restrict s, wchar_t c, mbstate_t* restrict state)
         s[1] = 0x80 | (code >> 12 & 0x3F);
         s[2] = 0x80 | (code >> 6 & 0x3F);
         s[3] = 0x80 | (code & 0x3F);
-        return 3;
+        return 4;
     }
 
     errno = EILSEQ;

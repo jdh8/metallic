@@ -46,7 +46,7 @@ size_t wcscspn(const wchar_t*, const wchar_t*);
 wchar_t* wcspbrk(const wchar_t*, const wchar_t*);
 
 wchar_t* wcsstr(const wchar_t*, const wchar_t*);
-wchar_t* wcstok(wchar_t* __restrict, const wchar_t* __restrict);
+wchar_t* wcstok(wchar_t* __restrict, const wchar_t* __restrict, wchar_t** __restrict);
 
 int wcscoll(const wchar_t*, const wchar_t*);
 size_t wcsxfrm(wchar_t* __restrict, const wchar_t* __restrict, size_t);
