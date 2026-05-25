@@ -5,8 +5,16 @@ typedef int sig_atomic_t;
 
 typedef void (*__sighandler_t)(int);
 
+/* On wasm32, function pointers are table indices, so the traditional
+ * libc convention of SIG_IGN == (void*)1 collides with whatever real
+ * function happens to land at table index 1. Use the address of a
+ * real placeholder function defined in libc so the sentinel can
+ * never alias a user handler. SIG_ERR keeps the conventional -1
+ * value since signal() only returns it; it is never stored. */
+void __metallic_sig_ign(int);
+
 #define SIG_DFL ((__sighandler_t) 0)
-#define SIG_IGN ((__sighandler_t) 1)
+#define SIG_IGN (&__metallic_sig_ign)
 #define SIG_ERR ((__sighandler_t)-1)
 
 /* The six signals required by C11. The numeric values match Linux's

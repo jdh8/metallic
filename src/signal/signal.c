@@ -1,5 +1,12 @@
 #include <signal.h>
 
+/* Placeholder used as SIG_IGN. Defined here so its address can serve
+ * as a sentinel distinct from any user-supplied handler — on wasm32
+ * a magic integer like (void*)1 would alias whatever real function
+ * lands at function-table index 1. Must remain extern (non-static)
+ * so SIG_IGN in <signal.h> can take its address. */
+void __metallic_sig_ign(int sig) { (void)sig; }
+
 /* Largest signal number we track. 32 covers the six C11 signals
  * (SIGABRT=6, SIGFPE=8, SIGILL=4, SIGINT=2, SIGSEGV=11, SIGTERM=15),
  * SIGUSR1=10, and gives headroom for any common Linux signum a
