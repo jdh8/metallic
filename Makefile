@@ -3,13 +3,21 @@ CPPFLAGS += -I include -MMD -MP -MQ $@
 CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
 LDFLAGS := -nostdlib -Wl,--allow-undefined $(LDFLAGS)
 LDLIBS := -lm
+WASMRUN ?= wasmtime
 
-all: metallic.a
+all: metallic.a wasi.a
 
-.PHONY: check.wasm check.native clean
+.PHONY: check.wasm check.native clean all
+
+WASI_SOURCES := $(wildcard src/wasi/*.c)
+CORE_SOURCES := $(filter-out $(WASI_SOURCES), $(wildcard src/*/*.c src/*/*/*.c))
 
 metallic.a: CC := $(CC.wasm)
-metallic.a: $(patsubst %.c, %.o, $(wildcard src/*/*.c src/*/*/*.c))
+metallic.a: $(CORE_SOURCES:.c=.o)
+	llvm-link -o $@ $^
+
+wasi.a: CC := $(CC.wasm)
+wasi.a: $(WASI_SOURCES:.c=.o)
 	llvm-link -o $@ $^
 
 SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
@@ -18,10 +26,13 @@ SOURCES.bench := $(wildcard bench/*/*.c)
 
 check: check.wasm check.native
 
-check.wasm: $(SOURCES.check.wasm:.c=.out)
+check.wasm: $(SOURCES.check.wasm:.c=.run)
 
-%.out: %.c metallic.a
+%.out: %.c metallic.a wasi.a
 	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
+
+%.run: %.out
+	$(WASMRUN) $<
 
 check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 
