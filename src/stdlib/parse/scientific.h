@@ -1,5 +1,6 @@
 #include "../../math/double/shift.h"
 #include "../../math/reinterpret.h"
+#include "bigint.h"
 #include "decimal.h"
 #include "pow5.h"
 #include <math.h>
@@ -104,7 +105,18 @@ static double decimal_to_double_(const decimal_t* d)
     }
     sticky = sticky || sticky_lo;
 
-    if (round_bit && (sticky || (result_mant & 1)))
+    _Bool round_up;
+    if (round_bit && d->truncated) {
+        /* Halfway-ambiguous: bigint settles it by comparing the exact
+         * decimal D against the halfway H = (2 result_mant + 1) * 2^(shift +
+         * binexp - 1). */
+        int cmp = bigint_cmp_halfway_(d, 2 * result_mant + 1, shift + binexp - 1);
+        round_up = cmp > 0 || (cmp == 0 && (result_mant & 1));
+    } else {
+        round_up = round_bit && (sticky || (result_mant & 1));
+    }
+
+    if (round_up)
         ++result_mant;
 
     if (result_mant >> 53) {
