@@ -1,19 +1,34 @@
-/* Precision-limited stub.
- *
- * long double on this target is IEEE 754 binary128 (sizeof == 16), so
- * a fully precise ldexpl would mirror src/math/double/scalbn.h with
- * 128-bit integer reinterpret. For M5a we cast through double; scaling
- * a double by an integer power of two is exact except for overflow,
- * underflow, and subnormal flush — all of which behave identically
- * once the result is widened back to long double, since long double
- * has strictly more range and precision than double.
- *
- * Programs needing the extra range/precision of binary128 should not
- * rely on this until M5b promotes it to a real implementation.
- */
-double scalbn(double, int);
+#include "normalizel.h"
+#include "../reinterpret.h"
+#include <math.h>
+#include <stdint.h>
 
-long double ldexpl(long double x, int n)
+/* Binary128 scalbn / ldexp.  Mirrors src/math/double/scalbn.h at u128
+ * width: reinterpret the sign-free bits as __int128, normalize so the
+ * implicit-1 always lives at bit 112, add `exp` to the (possibly
+ * negative-after-normalization) biased exponent, then reassemble.
+ * Subnormal results are produced by a multiplication with 0x1p-113L --
+ * the soft-float multf3 handles the underflow rounding. */
+long double ldexpl(long double x, int exp)
 {
-    return (long double)scalbn((double)x, n);
+    const unsigned __int128 sign_mask = (unsigned __int128)1 << 127;
+    const unsigned __int128 inf = (unsigned __int128)0x7FFF << 112;
+
+    unsigned __int128 abs = reinterpret(unsigned __int128, x) & ~sign_mask;
+
+    if (abs == 0 || abs >= inf)
+        return x;
+
+    __int128 i = normalizel_((__int128)abs);
+    int64_t biased = (int64_t)exp + (int64_t)(i >> 112);
+
+    if (biased >= 0x7FFF || biased < -113)
+        return x * (exp < 0 ? 0.0L : HUGE_VALL);
+
+    unsigned __int128 mantissa = (unsigned __int128)i & (((unsigned __int128)1 << 112) - 1);
+
+    if (biased > 0)
+        return copysignl(reinterpret(long double, mantissa | ((unsigned __int128)biased << 112)), x);
+
+    return copysignl(0x1p-113L, x) * reinterpret(long double, mantissa | ((unsigned __int128)(biased + 113) << 112));
 }
