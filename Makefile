@@ -32,7 +32,7 @@ check.wasm: $(SOURCES.check.wasm:.c=.run)
 	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.run: %.out
-	$(WASMRUN) $<
+	$(WASMRUN) --dir=$(dir $<)::. $<
 
 check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 
