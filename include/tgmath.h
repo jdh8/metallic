@@ -12,7 +12,8 @@
     long double _Complex: c##function##l, \
     default: _Generic(1.0 * (x),          \
         double: function,                 \
-        double _Complex: c##function      \
+        double _Complex: c##function,     \
+        default: function                 \
 ))
 #define fabs(x) _Generic(x,      \
     float: fabsf,                \
@@ -21,7 +22,8 @@
     long double _Complex: cabsl, \
     default: _Generic(1.0 * (x), \
         double: fabs,            \
-        double _Complex: cabs    \
+        double _Complex: cabs,   \
+        default: fabs            \
 ))(x)
 #define _TGMATH_COMPLEX(x, function) _Generic(fabs(x), \
     float: function##f,                                \
