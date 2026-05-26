@@ -6,7 +6,7 @@ __int128 __ashrti3(__int128 x, int shift)
     uint64_t low = x;
 
     if (shift & 64)
-        return high >> shift;
+        return high >> (shift & 63);
     else if (shift)
         return (__int128)(high >> shift) << 64 | (high << (64 - shift) | low >> shift);
     else
