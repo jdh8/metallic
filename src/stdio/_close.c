@@ -1,8 +1,9 @@
 #include "FILE.h"
-
-int __close(int);
+#include "../wasi/wasi.h"
+#include "../wasi/errno.h"
 
 int __stdio_close(FILE stream[restrict static 1])
 {
-    return __close(stream->fd);
+    __wasi_errno_t e = __wasi_fd_close((__wasi_fd_t)stream->fd);
+    return e ? wasi_seterrno(e) : 0;
 }
