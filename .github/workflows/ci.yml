@@ -29,7 +29,7 @@ jobs:
         run: |
           sudo apt-get update && sudo apt-get install -y clang llvm-18
           # Ubuntu ships llvm-link as llvm-link-NN; expose it on PATH.
-          sudo ln -sf /usr/bin/llvm-link-* /usr/local/bin/llvm-link
+          sudo ln -sf /usr/bin/llvm-link-18 /usr/local/bin/llvm-link
       - name: Install wasmtime
         run: |
           curl -sSf https://wasmtime.dev/install.sh | bash
