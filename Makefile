@@ -7,7 +7,7 @@ WASMRUN ?= wasmtime
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native clean all
+.PHONY: check.wasm check.wasm.fast check.native clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -59,7 +59,25 @@ bench: $(SOURCES.bench:.c=.exe) $(SOURCES.bench:.c=.exe-)
 %.exe: %.c
 	$(CC) -iquote test/native -iquote . $(CFLAGS) -march=native -o $@ $< $(LDLIBS)
 
+FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-I", "include", "-Wall"
+FLAGS.wasm.test := $(FLAGS.wasm), "-iquote", "."
+FLAGS.native := "clang", "-xc", "-std=c11", "-iquote", "test/native", "-iquote", ".", "-Wall"
+
+compile_commands.json:
+	@{ printf '['; sep=''; \
+	  for f in $(SOURCES); do \
+	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.wasm),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
+	  done; \
+	  for f in $(SOURCES.check.wasm); do \
+	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.wasm.test),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
+	  done; \
+	  for f in $(SOURCES.check.native) $(SOURCES.bench); do \
+	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.native),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
+	  done; \
+	  printf '\n]\n'; \
+	} > $@
+
 clean:
-	$(RM) *.a */*/*.[deo]* */*/*/*.[deo]* */*/*/*/*.[deo]*
+	$(RM) *.a */*/*.[deo]* */*/*/*.[deo]* */*/*/*/*.[deo]* compile_commands.json
 
 -include */*/*.d */*/*/*.d */*/*/*/*.d
