@@ -4,10 +4,11 @@
 #include "decimal.h"
 #include <stdint.h>
 
-/* 4096 bits.  Worst case: 770-digit decimal input (~2560 bits) times 2^673
- * for subnormal-boundary scaling, or M * 5^342 (~940 bits) on the other
- * side -- both fit comfortably. */
-#define BIGINT_LIMBS_ 64
+/* 16384 bits.  Sized for the binary128 worst case in strtold: 5^4993 is
+ * ~11600 bits, and the subnormal-boundary shift adds another ~12000 bits
+ * to the lhs.  The double path uses far less but pays only a fixed
+ * stack-allocation cost. */
+#define BIGINT_LIMBS_ 256
 
 typedef struct {
     uint32_t len;
@@ -18,6 +19,13 @@ static void bigint_set_u64_(bigint_t* b, uint64_t x)
 {
     b->len = x != 0;
     b->v[0] = x;
+}
+
+static void bigint_set_u128_(bigint_t* b, unsigned __int128 x)
+{
+    b->v[0] = (uint64_t)x;
+    b->v[1] = (uint64_t)(x >> 64);
+    b->len = b->v[1] ? 2 : b->v[0] ? 1 : 0;
 }
 
 static void bigint_mul_u64_(bigint_t* b, uint64_t m)
@@ -115,7 +123,7 @@ static int bigint_cmp_(const bigint_t* a, const bigint_t* b)
  *   if p <  0 and q-p >= 0:  D_int  vs  M * 5^(-p) * 2^(q-p)
  *   if p <  0 and q-p <  0:  D_int * 2^(p-q)  vs  M * 5^(-p)
  */
-static int bigint_cmp_halfway_(const decimal_t* d, uint64_t M, int q)
+static int bigint_cmp_halfway_(const decimal_t* d, unsigned __int128 M, int q)
 {
     bigint_t lhs, rhs;
     /* d->dec_exp is the exponent paired with the truncated 38-digit mantissa.
@@ -141,7 +149,7 @@ static int bigint_cmp_halfway_(const decimal_t* d, uint64_t M, int q)
         }
     }
 
-    bigint_set_u64_(&rhs, M);
+    bigint_set_u128_(&rhs, M);
 
     if (p >= 0)
         bigint_mul_pow5_(&lhs, p);
