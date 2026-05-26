@@ -1,4 +1,5 @@
 #include "../../math/double/shift.h"
+#include "decimal.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -75,4 +76,9 @@ static double scientific_(uint64_t significand, int exp)
         return HUGE_VAL;
 
     return (exp < 0 ? scaledown_ : scaleup_)(significand, exp);
+}
+
+static double decimal_to_scalar_(const decimal_t* d)
+{
+    return scientific_((uint64_t)d->mant, d->dec_exp);
 }

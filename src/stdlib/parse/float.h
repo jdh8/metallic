@@ -88,7 +88,8 @@ static Scalar parsedec_(const char s[restrict static 1], char* end[restrict stat
         double: 64 * 0.3010,
         long double: 128 * 0.3010);
 
-    Bitset x = 0;
+    decimal_t d = {0};
+    unsigned __int128 x = 0;
     int consumed = 0;
     int position = 0;
     _Bool pointed = 0;
@@ -100,9 +101,16 @@ static Scalar parsedec_(const char s[restrict static 1], char* end[restrict stat
         for (pointed = 1; *++s == '0'; --position)
             *end = (char*)(s + 1);
 
+    d.digits = s;
+
     for (unsigned digit = *s - '0'; digit < 10 || (*s == '.' && !pointed); digit = *s - '0') {
         if (digit < 10) {
-            x = consumed < capacity ? 10 * x + digit : x | !!digit;
+            if (consumed < capacity)
+                x = 10 * x + digit;
+            else if (digit) {
+                x |= 1;
+                d.truncated = 1;
+            }
             ++consumed;
         }
         else {
@@ -115,7 +123,11 @@ static Scalar parsedec_(const char s[restrict static 1], char* end[restrict stat
     if (!pointed)
         position = consumed;
 
-    return scientific_(x, position - min_(capacity, consumed) + parseexp_('e', s, end));
+    d.mant = x;
+    d.total_digits = consumed;
+    d.dec_exp = position - min_(capacity, consumed) + parseexp_('e', s, end);
+
+    return decimal_to_scalar_(&d);
 }
 
 static unsigned match_(const char s[static 1], const char t[static 1])
