@@ -1,84 +1,127 @@
 #include "../../math/double/shift.h"
+#include "../../math/reinterpret.h"
 #include "decimal.h"
+#include "pow5.h"
 #include <math.h>
 #include <stdint.h>
 
-static uint32_t powi32_(uint32_t x, int i)
+static int clz_u128_(unsigned __int128 x)
 {
-    uint32_t y = 1;
-
-    for (; i; i >>= 1) {
-        if (i & 1)
-            y *= x;
-        x *= x;
-    }
-    return y;
+    uint64_t hi = x >> 64;
+    return hi ? __builtin_clzll(hi) : 64 + __builtin_clzll((uint64_t)x);
 }
 
-static uint64_t fixmul_(uint64_t a, uint32_t b, int shift[static 1])
+/* Divide a 256-bit dividend (n_hi:n_lo) by a 128-bit divisor d, returning a
+ * 128-bit quotient and the 128-bit remainder.  Requires n_hi < d so that
+ * the quotient fits in 128 bits.  Bit-by-bit long division -- ~128
+ * iterations, same shape as the software path of udivmodti4_. */
+static unsigned __int128 udiv256by128_(
+    unsigned __int128 n_hi, unsigned __int128 n_lo,
+    unsigned __int128 d, unsigned __int128 r[static 1])
 {
-    uint64_t low = (a & 0xFFFFFFFF) * b;
-    uint64_t high = (a >> 32) * b + (low >> 32);
-    uint32_t overflow = high >> 32;
-    int space = overflow ? __builtin_clz(overflow) : 32;
-    *shift += 32 - space;
-    return (high << space | (low & 0xFFFFFFFF) >> (32 - space)) + (low << space >> 31 & 1);
-}
+    unsigned __int128 q = 0;
+    unsigned __int128 rem = n_hi;
 
-static double scaleup_(uint64_t significand, int exp)
-{
-    const uint32_t coeff = 1e13 * 0x1p-13;
-    int shift = __builtin_ctzll(significand);
-
-    significand >>= shift;
-    shift += exp;
-
-    for (; exp >= 13; exp -= 13)
-        significand = fixmul_(significand, coeff, &shift);
-
-    significand = fixmul_(significand, powi32_(5, exp), &shift);
-
-    return ldexp(significand, shift);
-}
-
-static double scaledown_(uint64_t significand, int exp)
-{
-    const uint64_t denom = 1e14 * 0x1p-14;
-    int shift = __builtin_clzll(significand);
-
-    significand <<= shift;
-    shift = exp - shift;
-
-    for (; exp <= -14; exp += 14) {
-        uint64_t q = significand / denom;
-        uint64_t r = significand % denom;
-        int s = __builtin_clzll(q);
-        significand = (q << s) + (uint64_t) rint(1e-14 * 0x1p32 * (r << (s - 18)));
-        shift -= s;
+    for (int i = 127; i >= 0; --i) {
+        int carry = (int)(rem >> 127);
+        rem = (rem << 1) | ((n_lo >> i) & 1);
+        q <<= 1;
+        if (carry || rem >= d) {
+            rem -= d;
+            q |= 1;
+        }
     }
 
-    uint64_t b = powi32_(5, -exp);
-    uint64_t q = significand / b;
-    uint64_t r = significand % b;
-    int s = __builtin_clzll(q);
-    significand = (q << s) + (uint64_t)(shift_(r, s) / b);
-    shift -= s;
-
-    return ldexp(significand, shift);
+    *r = rem;
+    return q;
 }
 
-static double scientific_(uint64_t significand, int exp)
+/* Convert a decimal_t to a correctly-rounded double using a 128-bit fast
+ * path: normalize the mantissa to 128 bits, compose 5^|dec_exp| via pow5_,
+ * then multiply (positive exp) or 256/128-divide (negative exp) to obtain
+ * a 128-bit candidate.  Round-half-to-even is applied in a single step
+ * after the subnormal shift to avoid double-rounding.  Halfway-ambiguous
+ * inputs (where digit truncation could flip the rounding decision) are
+ * resolved by a bigint slow path in a later commit. */
+static double decimal_to_double_(const decimal_t* d)
 {
-    if (!significand || exp < -342)
+    if (!d->mant)
         return 0;
 
-    if (exp > 308)
+    if (d->dec_exp > 309)
         return HUGE_VAL;
 
-    return (exp < 0 ? scaledown_ : scaleup_)(significand, exp);
+    if (d->dec_exp < -380)
+        return 0;
+
+    int leading = clz_u128_(d->mant);
+    unsigned __int128 mant = d->mant << leading;
+    int binexp = -leading + d->dec_exp;
+    _Bool sticky_lo = d->truncated;
+
+    if (d->dec_exp >= 0) {
+        pow5_t p = pow5_(d->dec_exp);
+        unsigned __int128 hi;
+        unsigned __int128 lo = umulti4_(mant, p.mant, &hi);
+        int shift = !(hi >> 127);
+        mant = (hi << shift) | (shift ? lo >> 127 : 0);
+        if (shift ? (lo & (((unsigned __int128)1 << 127) - 1)) != 0 : lo != 0)
+            sticky_lo = 1;
+        binexp += p.binexp + 128 - shift;
+    } else {
+        pow5_t p = pow5_(-d->dec_exp);
+        unsigned __int128 rem;
+        int k = mant < p.mant ? 128 : 127;
+        if (k == 128)
+            mant = udiv256by128_(mant, 0, p.mant, &rem);
+        else
+            mant = udiv256by128_(mant >> 1, mant << 127, p.mant, &rem);
+        if (rem)
+            sticky_lo = 1;
+        binexp -= p.binexp + k;
+    }
+
+    int biased = binexp + 127 + 1023;
+    int shift = biased >= 1 ? 75 : 75 + 1 - biased;
+
+    if (biased < 1)
+        biased = 0;
+
+    uint64_t result_mant;
+    int round_bit;
+    _Bool sticky;
+
+    if (shift >= 128) {
+        result_mant = 0;
+        round_bit = shift == 128 ? (int)(mant >> 127) : 0;
+        sticky = shift == 128
+            ? (mant & (((unsigned __int128)1 << 127) - 1)) != 0
+            : mant != 0;
+    } else {
+        result_mant = (uint64_t)(mant >> shift);
+        round_bit = (int)((mant >> (shift - 1)) & 1);
+        sticky = (mant & (((unsigned __int128)1 << (shift - 1)) - 1)) != 0;
+    }
+    sticky = sticky || sticky_lo;
+
+    if (round_bit && (sticky || (result_mant & 1)))
+        ++result_mant;
+
+    if (result_mant >> 53) {
+        result_mant >>= 1;
+        ++biased;
+    } else if ((result_mant >> 52) && biased == 0) {
+        biased = 1;
+    }
+
+    if (biased >= 2047)
+        return HUGE_VAL;
+
+    uint64_t bits = ((uint64_t)biased << 52) | (result_mant & ((UINT64_C(1) << 52) - 1));
+    return reinterpret(double, bits);
 }
 
 static double decimal_to_scalar_(const decimal_t* d)
 {
-    return scientific_((uint64_t)d->mant, d->dec_exp);
+    return decimal_to_double_(d);
 }
