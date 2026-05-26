@@ -120,8 +120,3 @@ static double decimal_to_double_(const decimal_t* d)
     uint64_t bits = ((uint64_t)biased << 52) | (result_mant & ((UINT64_C(1) << 52) - 1));
     return reinterpret(double, bits);
 }
-
-static double decimal_to_scalar_(const decimal_t* d)
-{
-    return decimal_to_double_(d);
-}

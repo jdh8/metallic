@@ -83,10 +83,7 @@ static Scalar parsehex_(const char s[restrict static 1], char* end[restrict stat
 
 static Scalar parsedec_(const char s[restrict static 1], char* end[restrict static 1])
 {
-    const int capacity = _Generic((Scalar)0,
-        float: 32 * 0.3010,
-        double: 128 * 0.3010,
-        long double: 128 * 0.3010);
+    const int capacity = 128 * 0.3010;
 
     decimal_t d = {0};
     unsigned __int128 x = 0;
