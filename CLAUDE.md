@@ -59,6 +59,10 @@ examples/hello/ hello-world example with its own Makefile
 - Keep implementations minimal; avoid abstractions that are not required by the current task.
 - Comments explain non-obvious constraints (hardware bugs, ABI invariants, WASI limitations) — not what the code does.
 
+## Working with subagents
+
+When a piece of work splits naturally into independent sub-tasks — separate exploration targets, multi-area refactors, parallel verification — feel free to spawn subagents (Explore, Plan, general-purpose) and run them concurrently. Don't serialize work that doesn't depend on itself. Reserve a single agent for tasks that are small or strictly sequential.
+
 ## Commit discipline
 
 When executing a large plan, **break it into atomic commits** — one logical change per commit. A commit should build and pass `make check.wasm.fast` on its own. Prefer many small commits over one large one; this makes bisect and review tractable and keeps the history readable.
