@@ -93,9 +93,13 @@ static const int wasi_to_posix[77] = {
     EACCES,           /* 76 ENOTCAPABLE -> EACCES (substitute) */
 };
 
-static inline long wasi_check(__wasi_errno_t e)
+/* Set errno from a WASI errno and return -1.  Convenience for the common
+ * POSIX failure return; for callers that need a non-(-1) failure value
+ * (NULL from fopen, (time_t)-1 from time, ...), set errno inline instead. */
+static inline int wasi_seterrno(__wasi_errno_t e)
 {
-    return e ? -wasi_to_posix[e] : 0;
+    errno = wasi_to_posix[e];
+    return -1;
 }
 
 #endif /* METALLIC_WASI_ERRNO_H */
