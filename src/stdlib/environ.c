@@ -1,6 +1,7 @@
 #include <stddef.h>
 #include <stdint.h>
-#include "wasi.h"
+
+#include "../wasi/wasi.h"
 
 /* Lazy initialization of the process environment.
  *
