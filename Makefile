@@ -1,23 +1,18 @@
 CC.wasm := clang --target=wasm32-unknown-unknown-wasm
 CPPFLAGS += -I include -MMD -MP -MQ $@
 CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
-LDFLAGS := -nostdlib -Wl,--allow-undefined $(LDFLAGS)
+LDFLAGS := -nostdlib $(LDFLAGS)
 LDLIBS := -lm
 WASMRUN ?= wasmtime
 
-all: metallic.a wasi.a
+all: metallic.a
 
 .PHONY: check.wasm check.wasm.fast check.native clean all
 
-WASI_SOURCES := $(wildcard src/wasi/*.c)
-CORE_SOURCES := $(filter-out $(WASI_SOURCES), $(wildcard src/*/*.c src/*/*/*.c))
+SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
 metallic.a: CC := $(CC.wasm)
-metallic.a: $(CORE_SOURCES:.c=.o)
-	llvm-link -o $@ $^
-
-wasi.a: CC := $(CC.wasm)
-wasi.a: $(WASI_SOURCES:.c=.o)
+metallic.a: $(SOURCES:.c=.o)
 	llvm-link -o $@ $^
 
 SOURCES.check.wasm := $(wildcard test/wasm/*/*.c test/wasm/*/*/*.c)
@@ -48,7 +43,7 @@ SOURCES.check.wasm.fast := $(filter-out $(KNOWN_BROKEN_WASM), $(SOURCES.check.wa
 
 check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
-%.out: %.c metallic.a wasi.a
+%.out: %.c metallic.a
 	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.run: %.out

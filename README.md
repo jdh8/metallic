@@ -14,48 +14,17 @@ running at near-native speed. Metallic aims to be the runtime for that world.
     # Run the included hello-world example under wasmtime.
     cd examples/hello && make run
 
-## Linking model
+## Linking
 
-Metallic is split into two static archives:
-
-| Archive       | Role                                                     |
-|---------------|----------------------------------------------------------|
-| `metallic.a`  | Pure libc — no host I/O. Imports a small set of `__*` symbols. |
-| `wasi.a`      | Host backend implementing those imports against WASI snapshot_preview1. |
-
-Programs targeting WASI link both:
+Metallic builds to a single static archive, `metallic.a`, that calls
+WASI snapshot_preview1 directly.  Programs link it like any other library:
 
     clang --target=wasm32-unknown-unknown-wasm -nostdlib \
-        -Wl,--allow-undefined -I include \
-        main.c metallic.a wasi.a -o app.out
+        -I include main.c metallic.a -o app.out
 
-Programs targeting another host (a custom JS shim, a browser polyfill,
-a non-WASI runtime) link `metallic.a` and provide their own implementations
-of the host import contract below.
-
-## Host import contract
-
-Any backend used in place of `wasi.a` must define these symbols. The convention
-is **positive return on success, negative POSIX errno on failure**.
-
-| Symbol            | Signature                                              | Purpose                  |
-|-------------------|--------------------------------------------------------|--------------------------|
-| `__read`          | `long (int fd, void *, size_t)`                        | read bytes from fd       |
-| `__write`         | `long (int fd, const void *, size_t)`                  | write bytes to fd        |
-| `__lseek`         | `long (int fd, long offset, int whence)`               | seek (LP64 path)         |
-| `__llseek`        | `int (int fd, long hi, unsigned long lo, off_t *, int)` | seek (ILP32 path)        |
-| `__close`         | `int (int fd)`                                          | close fd                 |
-| `__open`          | `int (const char *, int flags, int mode)`               | open file                |
-| `__fcntl`         | `int (int fd, int cmd, unsigned long arg)`              | F_GETFL/F_SETFL/etc.     |
-| `__stat`          | `int (const char *, struct stat *)`                    | stat by path             |
-| `__fstat`         | `int (int fd, struct stat *)`                          | stat by fd               |
-| `__lstat`         | `int (const char *, struct stat *)`                    | lstat by path            |
-| `__unlink`        | `int (const char *)`                                   | unlink file              |
-| `__rmdir`         | `int (const char *)`                                   | remove directory         |
-| `__rename`        | `int (const char *, const char *)`                     | rename file              |
-| `__clock_gettime` | `int (clockid_t, struct timespec *)`                   | wall/monotonic/cpu clock |
-| `__argc`          | `int (void)`                                            | argument count           |
-| `__argv`          | `size_t (char *buf, size_t size)`                       | argv null-separated      |
+Host I/O lives in [src/wasi/wasi.h](src/wasi/wasi.h), where each binding
+carries the `import_module("wasi_snapshot_preview1")` attribute so the
+linker emits them as wasm imports without needing `--allow-undefined`.
 
 ## Status
 
