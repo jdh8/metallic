@@ -46,6 +46,11 @@ int main(void)
 
 extern uintptr_t __metallic_brk;
 
+/* Weak so a backend (e.g. src/wasi/start.c) can replace it with a version
+ * that knows how to exit the process cleanly.  This default exists for
+ * freestanding/bare-metal targets that only care about returning from
+ * main(); on WASI the strong override drains stdio and calls proc_exit. */
+__attribute__((__weak__))
 int _start(void)
 {
     __metallic_brk = ((uintptr_t)__builtin_frame_address(0) & 0xFF) + 1;
