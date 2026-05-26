@@ -4,22 +4,20 @@
 
 #include <time.h>
 
-extern _Thread_local int errno;
-
-int __clock_gettime(clockid_t, struct timespec*);
+#include "../wasi/wasi.h"
+#include "../wasi/errno.h"
 
 time_t time(time_t* t)
 {
-    struct timespec spec;
-    int code = __clock_gettime(CLOCK_REALTIME, &spec);
-
-    if (code < 0) {
-        errno = -code;
-        return -1;
+    __wasi_timestamp_t now = 0;
+    __wasi_errno_t e = __wasi_clock_time_get(__WASI_CLOCKID_REALTIME, 1, &now);
+    if (e) {
+        errno = wasi_to_posix[e];
+        return (time_t)-1;
     }
 
+    time_t secs = (time_t)(now / 1000000000u);
     if (t)
-        *t = spec.tv_sec;
-
-    return spec.tv_sec;
+        *t = secs;
+    return secs;
 }
