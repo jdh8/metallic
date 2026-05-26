@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install clang + llvm-link
         run: |
-          sudo apt-get update && sudo apt-get install -y clang llvm
+          sudo apt-get update && sudo apt-get install -y clang llvm-18
           # Ubuntu ships llvm-link as llvm-link-NN; expose it on PATH.
           sudo ln -sf /usr/bin/llvm-link-* /usr/local/bin/llvm-link
       - name: Install wasmtime
