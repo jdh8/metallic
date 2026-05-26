@@ -1,8 +1,17 @@
+#include "parse.h"
 #include <wchar.h>
+#include <stdlib.h>
 
-/* On wasm32 with clang, `long double` == `double`, so wcstold reduces to
- * a wcstod call. */
 long double wcstold(const wchar_t* s, wchar_t** end)
 {
-    return (long double)wcstod(s, end);
+    char buf[256];
+    wparse_copy_(s, buf, sizeof(buf));
+
+    char* p;
+    long double v = strtold(buf, &p);
+
+    if (end)
+        *end = wparse_endptr_(s, buf, p);
+
+    return v;
 }
