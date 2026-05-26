@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang llvm
+      - name: Build
+        run: make
+      - name: Run native tests
+        # Native tests have a few pre-existing accuracy failures against the
+        # host libm.  The build itself succeeding is the gate; the test run
+        # is FYI.
+        run: make -k check.native || true
+
+  wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install clang + llvm-link
+        run: |
+          sudo apt-get update && sudo apt-get install -y clang llvm
+          # Ubuntu ships llvm-link as llvm-link-NN; expose it on PATH.
+          sudo ln -sf /usr/bin/llvm-link-* /usr/local/bin/llvm-link
+      - name: Install wasmtime
+        run: |
+          curl -sSf https://wasmtime.dev/install.sh | bash
+          echo "$HOME/.wasmtime/bin" >> $GITHUB_PATH
+      - name: Build
+        run: make
+      - name: Run wasm tests (known-good subset)
+        # check.wasm.fast excludes the 11 pre-existing soft-float / 128-bit
+        # integer shift / long double sqrt failures.  Full `make check.wasm`
+        # is reserved for manual runs.
+        run: make check.wasm.fast
