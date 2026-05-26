@@ -53,5 +53,12 @@ int main(void)
     assert(RUN("-0x945380.800000000000p+3", ".14") == -0x945380p+3);
     assert(RUN("-0x945380.800000000001p+3", ".14") == -0x945381p+3);
 
+    /* Decimal boundary cases */
+    assert(RUN("1.4e-45", "") == 0x1p-149);                       /* FLT_TRUE_MIN */
+    assert(RUN("1e-46", "") == 0);                                /* well below half FLT_TRUE_MIN */
+    assert(RUN("3.4028234663852886e+38", "") == 0x1.fffffep+127); /* FLT_MAX */
+    OVERFLOW(RUN("3.4028235677973366e+38", "") == INFINITY);
+    errno = 0;
+
     assert(!errno);
 }
