@@ -1,21 +1,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "../wasi/wasi.h"
+
 void __wasm_call_ctors(void);
-
-int __argc(void);
-
-/*!
- * `argv` builder
- *
- * This function writes null-separated command line to buffer.
- * For example, if the command line is `foo -c alfa`,
- * it is stored as `"foo\0-c\0alfa"`.
- * Note that there is an implied '\0' at the end of a string.
- *
- * \return Characters supposed to be written
- */
-size_t __argv(char*, size_t);
 
 static size_t strlen_(char s[static 1])
 {
@@ -29,32 +17,41 @@ int __main_argc_argv(int, char**);
 __attribute__((__weak__))
 int main(void)
 {
-    int argc = __argc();
+    size_t argc = 0;
+    size_t buf_size = 0;
+    if (__wasi_args_sizes_get(&argc, &buf_size) != 0)
+        return __main_argc_argv(0, (char*[]){ NULL });
+
+    /* `args_get` fills both a pointer array (one entry per arg) and a flat
+     * null-separated buffer that those pointers reference.  Allocate both on
+     * the caller's stack as VLAs — the pointer array is null-terminated so
+     * crt1 can hand it directly to the user's main(int, char**) shim. */
     char* argv[argc + 1];
-    char args[__argv((void*)0, 0)];
+    char args[buf_size];
 
-    __argv(args, sizeof(args));
-    argv[0] = args;
+    if (__wasi_args_get((uint8_t**)argv, (uint8_t*)args) != 0)
+        return __main_argc_argv(0, (char*[]){ NULL });
 
-    for (int i = 0; i < argc - 1; ++i)
-        argv[i + 1] = argv[i] + strlen_(argv[i]) + 1;
+    /* WASI populates argv[] with pointers into args[]; rebase them so they
+     * point into the local args[] buffer rather than wherever WASI wrote. */
+    if (argc > 0) {
+        argv[0] = args;
+        for (size_t i = 0; i + 1 < argc; ++i)
+            argv[i + 1] = argv[i] + strlen_(argv[i]) + 1;
+    }
+    argv[argc] = NULL;
 
-    argv[argc] = (void*)0;
-
-    return __main_argc_argv(argc, argv);
+    return __main_argc_argv((int)argc, argv);
 }
 
 extern uintptr_t __metallic_brk;
 
-/* Weak so a backend (e.g. src/wasi/start.c) can replace it with a version
- * that knows how to exit the process cleanly.  This default exists for
- * freestanding/bare-metal targets that only care about returning from
- * main(); on WASI the strong override drains stdio and calls proc_exit. */
-__attribute__((__weak__))
-int _start(void)
+_Noreturn void _start(void)
 {
     __metallic_brk = ((uintptr_t)__builtin_frame_address(0) & 0xFF) + 1;
     __wasm_call_ctors();
 
-    return main();
+    int rc = main();
+
+    __wasi_proc_exit((__wasi_exitcode_t)(unsigned)rc);
 }
