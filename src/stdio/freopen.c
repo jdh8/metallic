@@ -1,13 +1,11 @@
 #include "flush.h"
 #include "modeflags.h"
 #include "FILE_.h"
-#include <fcntl.h>
+#include "../wasi/wasi.h"
+#include "../wasi/errno.h"
 #include <stdlib.h>
 
-extern _Thread_local int errno;
-
-int __open(const char[static 1], int, int);
-int __fcntl(int, int, unsigned long);
+int open_path_(const char *path, int flags);
 
 FILE* freopen(const char path[restrict static 1], const char mode[restrict static 1], FILE stream[restrict static 1])
 {
@@ -16,25 +14,27 @@ FILE* freopen(const char path[restrict static 1], const char mode[restrict stati
 
     if (path) {
         stream->close(stream);
-        int fd = __open(path, flags, 0666);
+        int fd = open_path_(path, flags);
 
         if (fd >= 0) {
             *stream = FILE_(fd, .state = flags & O_APPEND ? appbit_ : 0);
             return stream;
         }
-        errno = -fd;
     }
     else {
-        if (flags & O_CLOEXEC)
-            __fcntl(stream->fd, F_SETFD, FD_CLOEXEC);
+        /* WASI has no FD_CLOEXEC concept; O_CLOEXEC has no effect here. */
+        __wasi_fdflags_t f = 0;
+        if (flags & O_APPEND)   f |= __WASI_FDFLAGS_APPEND;
+        if (flags & O_NONBLOCK) f |= __WASI_FDFLAGS_NONBLOCK;
+        if (flags & O_DSYNC)    f |= __WASI_FDFLAGS_DSYNC;
+        if (flags & O_SYNC)     f |= __WASI_FDFLAGS_SYNC;
 
-        int status = __fcntl(stream->fd, F_SETFL, flags & ~(O_CREAT | O_EXCL | O_CLOEXEC));
-
-        if (status >= 0) {
+        __wasi_errno_t e = __wasi_fd_fdstat_set_flags((__wasi_fd_t)stream->fd, f);
+        if (!e) {
             *stream = FILE_(stream->fd);
             return stream;
         }
-        errno = -status;
+        errno = wasi_to_posix[e];
         stream->close(stream);
     }
 

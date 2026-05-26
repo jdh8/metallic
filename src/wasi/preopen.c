@@ -84,8 +84,10 @@ int preopen_lookup(const char *path, int *out_basefd,
 {
     ensure_init();
 
-    if (!path || !*path)
-        return -ENOENT;
+    if (!path || !*path) {
+        errno = ENOENT;
+        return -1;
+    }
 
     int absolute = (path[0] == '/');
     const char *p = absolute ? path : strip_dotslash(path);
@@ -135,8 +137,10 @@ int preopen_lookup(const char *path, int *out_basefd,
         }
     }
 
-    if (best < 0)
-        return -ENOENT;
+    if (best < 0) {
+        errno = ENOENT;
+        return -1;
+    }
 
     *out_basefd = entries[best].fd;
 
