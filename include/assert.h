@@ -1,9 +1,9 @@
 #ifdef __cplusplus
 extern "C"
 #endif
-long __write(int, const void*, __SIZE_TYPE__);
+void __assert_write(const char*, __SIZE_TYPE__);
 
-#define _STDERR(x) __write(2, (x), sizeof(x) - 1)
+#define _STDERR(x) __assert_write((x), sizeof(x) - 1)
 #define _STRINGIFYIMPL(x) #x
 #define _STRINGIFY(x) _STRINGIFYIMPL(x)
 
