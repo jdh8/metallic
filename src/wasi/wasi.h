@@ -64,4 +64,16 @@ __wasi_errno_t __wasi_clock_time_get(__wasi_clockid_t id, __wasi_timestamp_t pre
 WASI_IMPORT(proc_exit)
 _Noreturn void __wasi_proc_exit(__wasi_exitcode_t rc);
 
+WASI_IMPORT(args_sizes_get)
+__wasi_errno_t __wasi_args_sizes_get(size_t* argc, size_t* argv_buf_size);
+
+WASI_IMPORT(args_get)
+__wasi_errno_t __wasi_args_get(uint8_t** argv, uint8_t* argv_buf);
+
+WASI_IMPORT(environ_sizes_get)
+__wasi_errno_t __wasi_environ_sizes_get(size_t* environc, size_t* environ_buf_size);
+
+WASI_IMPORT(environ_get)
+__wasi_errno_t __wasi_environ_get(uint8_t** environ, uint8_t* environ_buf);
+
 #endif /* METALLIC_WASI_H */
