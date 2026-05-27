@@ -1,5 +1,5 @@
 CC.wasm := clang --target=wasm32-unknown-unknown-wasm
-CPPFLAGS += -I include -MMD -MP -MQ $@
+CPPFLAGS += -I include -D__STDC_NO_THREADS__=1 -MMD -MP -MQ $@
 CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
 LDFLAGS := -nostdlib $(LDFLAGS)
 LDLIBS := -lm
@@ -44,7 +44,7 @@ SOURCES.check.wasm.fast := $(filter-out $(KNOWN_BROKEN_WASM), $(SOURCES.check.wa
 check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
 %.out: %.c metallic.a
-	$(CC.wasm) -I include -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC.wasm) -I include -D__STDC_NO_THREADS__=1 -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.run: %.out
 	$(WASMRUN) --dir=$(dir $<)::. $<
@@ -59,7 +59,7 @@ bench: $(SOURCES.bench:.c=.exe) $(SOURCES.bench:.c=.exe-)
 %.exe: %.c
 	$(CC) -iquote test/native -iquote . $(CFLAGS) -march=native -o $@ $< $(LDLIBS)
 
-FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-I", "include", "-Wall"
+FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-I", "include", "-D__STDC_NO_THREADS__=1", "-Wall"
 FLAGS.wasm.test := $(FLAGS.wasm), "-iquote", "."
 FLAGS.native := "clang", "-xc", "-std=c11", "-iquote", "test/native", "-iquote", ".", "-Wall"
 

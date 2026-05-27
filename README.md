@@ -48,6 +48,10 @@ Not yet provided: `<inttypes.h>` `<stdalign.h>` `<stdatomic.h>` `<stdnoreturn.h>
   preview1 delivers no signals. `raise(SIGABRT)` is correctly routed.
 * `localtime` aliases `gmtime` — WASI preview1 has no timezone info.
 * Only the `C` locale is supported.
+* No threads.  `__STDC_NO_THREADS__` is predefined, so `<threads.h>` is
+  absent and feature-test code routes around the C11 thread API.  Atomics
+  use clang's freestanding `<stdatomic.h>`; on single-threaded WASI they
+  lower to plain loads and stores.
 * The math library is the project's strength — most functions are faithfully
   rounded (error < 1 ulp).
 

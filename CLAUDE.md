@@ -50,6 +50,7 @@ examples/hello/ hello-world example with its own Makefile
 - Signals are synchronous only; WASI preview1 has no async signal delivery.
 - `localtime` is an alias for `gmtime`; timezone data is unavailable.
 - Only the C locale is supported.
+- No threads: `__STDC_NO_THREADS__` is predefined via the Makefile; `<threads.h>` is not shipped. Atomics use clang's freestanding `<stdatomic.h>` (single-threaded WASI lowers them to plain ops).
 - Math accuracy is the library's strength: most functions are faithfully rounded (< 1 ulp).
 
 ## Coding conventions
