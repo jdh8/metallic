@@ -14,15 +14,15 @@ struct Scanner
 {
     FILE* stream;
     size_t count;
-    int peek;
+    int peek[8];
+    int n_peek;
     int eof;
 };
 
 static int sgetc(struct Scanner* s)
 {
-    if (s->peek >= 0) {
-        int c = s->peek;
-        s->peek = -1;
+    if (s->n_peek) {
+        int c = s->peek[--s->n_peek];
         ++s->count;
         return c;
     }
@@ -41,7 +41,7 @@ static void sungetc(struct Scanner* s, int c)
 {
     if (c == EOF)
         return;
-    s->peek = c;
+    s->peek[s->n_peek++] = c;
     --s->count;
 }
 
@@ -192,6 +192,191 @@ static int scan_chars(struct Scanner* sc, int width, char* arg)
     return 1;
 }
 
+/* Case-insensitive ASCII compare for INF/NAN literals. */
+static int lower_(int c) { return (c >= 'A' && c <= 'Z') ? c | 0x20 : c; }
+
+static int scan_word_(struct Scanner* sc, const char* word, int* width, char* buf, int* n)
+{
+    /* Greedily consume case-insensitive prefix of `word`. Returns number of
+     * chars matched.  All matched chars are appended to buf and *width is
+     * decremented; the first non-matching char is pushed back. */
+    int matched = 0;
+    for (int i = 0; word[i] && *width > 0; ++i) {
+        int c = sgetc(sc);
+        if (c == EOF) break;
+        if (lower_(c) != word[i]) { sungetc(sc, c); break; }
+        if (*n < BUFSZ - 1) buf[(*n)++] = (char)c;
+        --*width;
+        ++matched;
+    }
+    return matched;
+}
+
+static void store_float_(unsigned length, void* arg, const char* buf)
+{
+    if (!arg) return;
+    char* endp;
+    if (length == ('L' << 2 | 1))
+        *(long double*)arg = strtold(buf, &endp);
+    else if (length >> 2 == 'l')
+        *(double*)arg = strtod(buf, &endp);
+    else
+        *(float*)arg = strtof(buf, &endp);
+}
+
+static int hex_digit_(int c)
+{
+    return (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
+}
+
+static int dec_digit_(int c) { return c >= '0' && c <= '9'; }
+
+static int scan_float(struct Scanner* sc, int width, unsigned length, void* arg)
+{
+    char buf[BUFSZ];
+    int n = 0;
+    int c;
+
+    skip_ws(sc);
+    c = sgetc(sc);
+    if (c == EOF) return -1;
+
+    /* Optional sign. */
+    if (c == '+' || c == '-') {
+        if (n < BUFSZ - 1) buf[n++] = c;
+        if (--width == 0) goto fail_no_digits;
+        c = sgetc(sc);
+        if (c == EOF) goto fail_no_digits;
+    }
+
+    /* INF[INITY] or NAN[(...)] */
+    int low = lower_(c);
+    if (low == 'i' || low == 'n') {
+        sungetc(sc, c);
+        int matched;
+        if (low == 'i') {
+            matched = scan_word_(sc, "inf", &width, buf, &n);
+            if (matched != 3) goto fail_no_digits;
+            if (width > 0)
+                scan_word_(sc, "inity", &width, buf, &n);
+        } else {
+            matched = scan_word_(sc, "nan", &width, buf, &n);
+            if (matched != 3) goto fail_no_digits;
+            /* Optional "(...)" n-char-sequence — skip if present. */
+            if (width > 0) {
+                int p = sgetc(sc);
+                if (p == '(') {
+                    if (n < BUFSZ - 1) buf[n++] = '(';
+                    --width;
+                    while (width > 0) {
+                        int q = sgetc(sc);
+                        if (q == EOF) break;
+                        if (n < BUFSZ - 1) buf[n++] = (char)q;
+                        --width;
+                        if (q == ')') break;
+                    }
+                } else {
+                    sungetc(sc, p);
+                }
+            }
+        }
+        goto done;
+    }
+
+    int is_hex = 0;
+    int seen_int_digit = 0;
+    int seen_frac_digit = 0;
+
+    /* Detect hex prefix "0x" / "0X". */
+    if (c == '0' && width > 0) {
+        if (n < BUFSZ - 1) buf[n++] = c;
+        --width;
+        seen_int_digit = 1;
+        int next = (width > 0) ? sgetc(sc) : EOF;
+        if (next == 'x' || next == 'X') {
+            is_hex = 1;
+            if (n < BUFSZ - 1) buf[n++] = next;
+            --width;
+            seen_int_digit = 0;
+            c = (width > 0) ? sgetc(sc) : EOF;
+        } else {
+            c = next;
+        }
+    }
+
+    /* Integer-part digits. */
+    while (width > 0 && c != EOF) {
+        if (is_hex ? !hex_digit_(c) : !dec_digit_(c)) break;
+        if (n < BUFSZ - 1) buf[n++] = c;
+        seen_int_digit = 1;
+        --width;
+        c = sgetc(sc);
+    }
+
+    /* Optional radix point. */
+    if (c == '.' && width > 0) {
+        if (n < BUFSZ - 1) buf[n++] = c;
+        --width;
+        c = (width > 0) ? sgetc(sc) : EOF;
+        while (width > 0 && c != EOF) {
+            if (is_hex ? !hex_digit_(c) : !dec_digit_(c)) break;
+            if (n < BUFSZ - 1) buf[n++] = c;
+            seen_frac_digit = 1;
+            --width;
+            c = sgetc(sc);
+        }
+    }
+
+    if (!seen_int_digit && !seen_frac_digit) {
+        sungetc(sc, c);
+        goto fail_no_digits;
+    }
+
+    /* Optional exponent: e/E for decimal, p/P for hex. */
+    int exp_lo = is_hex ? 'p' : 'e';
+    if ((c == exp_lo || c == exp_lo - 0x20) && width > 0) {
+        int saved_n = n;
+        if (n < BUFSZ - 1) buf[n++] = c;
+        --width;
+        int after_e = (width > 0) ? sgetc(sc) : EOF;
+        int had_sign = 0;
+        if ((after_e == '+' || after_e == '-') && width > 0) {
+            if (n < BUFSZ - 1) buf[n++] = after_e;
+            --width;
+            had_sign = 1;
+            after_e = (width > 0) ? sgetc(sc) : EOF;
+        }
+        int exp_digits = 0;
+        int last = after_e;
+        while (width > 0 && dec_digit_(last)) {
+            if (n < BUFSZ - 1) buf[n++] = last;
+            ++exp_digits;
+            --width;
+            last = sgetc(sc);
+        }
+        if (!exp_digits) {
+            /* Backtrack: 'e' (+ optional sign) had no digits.  Push last,
+             * then the sign (if any), then the 'e'. */
+            sungetc(sc, last);
+            if (had_sign) sungetc(sc, buf[--n]);
+            sungetc(sc, buf[--n]);
+            n = saved_n;
+        } else {
+            sungetc(sc, last);
+        }
+    } else {
+        sungetc(sc, c);
+    }
+
+done:
+    buf[n] = '\0';
+    store_float_(length, arg, buf);
+    return 1;
+
+fail_no_digits:
+    return n ? 0 : 0;
+}
+
 static const char* parse_scanset_(const char* p, unsigned char map[32], int* negate)
 {
     *negate = 0;
@@ -250,7 +435,7 @@ static void store_n_(unsigned length, void* arg, size_t count)
 
 int vfscanf(FILE* restrict stream, const char* restrict format, va_list list)
 {
-    struct Scanner sc = { stream, 0, -1, 0 };
+    struct Scanner sc = { .stream = stream };
     int assigned = 0;
     int any_input = 0;
 
@@ -300,6 +485,12 @@ int vfscanf(FILE* restrict stream, const char* restrict format, va_list list)
             case 'x':
             case 'X': r = scan_int(&sc, width, 16, 0, length, arg); break;
             case 'p': r = scan_int(&sc, width, 16, 0, 'l' << 2 | 1, arg); break;
+            case 'f': case 'F':
+            case 'e': case 'E':
+            case 'g': case 'G':
+            case 'a': case 'A':
+                r = scan_float(&sc, width, length, arg);
+                break;
             case 's': r = scan_str(&sc, width, arg); break;
             case 'c':
                 if (width == INT_MAX) width = 1;
