@@ -3,6 +3,8 @@
 
 #include "../wasi/wasi.h"
 
+void __run_atexit_(void);
+
 _Noreturn void _Exit(int rc)
 {
     __wasi_proc_exit((__wasi_exitcode_t)(unsigned)rc);
@@ -10,7 +12,7 @@ _Noreturn void _Exit(int rc)
 
 _Noreturn void exit(int rc)
 {
-    /* Best-effort flush of the standard streams; no atexit yet. */
+    __run_atexit_();
     fflush(stdout);
     fflush(stderr);
     __wasi_proc_exit((__wasi_exitcode_t)(unsigned)rc);
