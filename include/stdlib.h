@@ -60,6 +60,7 @@ long double strtold(const char*, char**);
 #endif
 
 /********************** Wide strings **********************/
+size_t __ctype_get_mb_cur_max(void);
 #define MB_CUR_MAX __ctype_get_mb_cur_max()
 
 int mblen(const char*, size_t);
