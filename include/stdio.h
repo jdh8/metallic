@@ -83,6 +83,9 @@ typedef __PTRDIFF_TYPE__ ssize_t;
 ssize_t getline(char** __restrict, size_t* __restrict, FILE* __restrict);
 ssize_t getdelim(char** __restrict, size_t* __restrict, int, FILE* __restrict);
 
+int asprintf(char** __restrict, const char* __restrict, ...);
+int vasprintf(char** __restrict, const char* __restrict, __builtin_va_list);
+
 extern FILE __stdin;
 extern FILE __stdout;
 extern FILE __stderr;
