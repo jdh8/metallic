@@ -79,6 +79,10 @@ int rename(const char*, const char*);
 FILE* tmpfile(void);
 char* tmpnam(char*);
 
+typedef __PTRDIFF_TYPE__ ssize_t;
+ssize_t getline(char** __restrict, size_t* __restrict, FILE* __restrict);
+ssize_t getdelim(char** __restrict, size_t* __restrict, int, FILE* __restrict);
+
 extern FILE __stdin;
 extern FILE __stdout;
 extern FILE __stderr;
