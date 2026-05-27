@@ -31,12 +31,14 @@ linker emits them as wasm imports without needing `--allow-undefined`.
 Implemented C11 hosted-environment headers:
 
 * `<assert.h>` `<complex.h>` `<ctype.h>` `<errno.h>` `<fenv.h>` `<float.h>`
-  `<limits.h>` `<locale.h>` `<math.h>` `<setjmp.h>` `<signal.h>` `<stdarg.h>`
-  `<stdbool.h>` `<stddef.h>` `<stdint.h>` `<stdio.h>` `<stdlib.h>` `<string.h>`
-  `<time.h>` `<wchar.h>`
+  `<inttypes.h>` `<iso646.h>` `<limits.h>` `<locale.h>` `<math.h>`
+  `<setjmp.h>` `<signal.h>` `<stdalign.h>` `<stdarg.h>` `<stdbool.h>`
+  `<stddef.h>` `<stdint.h>` `<stdio.h>` `<stdlib.h>` `<stdnoreturn.h>`
+  `<string.h>` `<tgmath.h>` `<time.h>` `<uchar.h>` `<wchar.h>` `<wctype.h>`
 
-Not yet provided: `<inttypes.h>` `<stdalign.h>` `<stdatomic.h>` `<stdnoreturn.h>`
-`<tgmath.h>` `<threads.h>` `<uchar.h>` `<wctype.h>`.
+Opted out via `__STDC_NO_THREADS__`: `<threads.h>` is intentionally not
+shipped.  `<stdatomic.h>` comes from clang's freestanding headers and
+lowers to plain operations on single-threaded WASI.
 
 ## Limitations
 
