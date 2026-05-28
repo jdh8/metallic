@@ -5,11 +5,12 @@
 
 float expf(float x)
 {
-    const float minimum = -103.972077083991796;
-    const float maximum = 88.7228391116729996;
+    const double minimum = -103.97207708399179;
+    const double maximum = 88.7228391116729996;
 
-    const float log2e = 1.442695040888963407;
-    const double ln2 = 0.6931471805599453094;
+    const double log2e = 1.4426950408889634;
+    const double ln2hi = 0.6931471805601177;
+    const double ln2lo = -1.7239444525614835e-13;
 
     if (x < minimum)
         return 0;
@@ -17,8 +18,11 @@ float expf(float x)
     if (x > maximum)
         return maximum * FLT_MAX;
 
-    float n = rintf(x * log2e);
-    double y = 1 + kernel_expf_(x - n * ln2);
+    /* Cody-Waite reduction: ln2hi has 14 trailing zero bits, so n * ln2hi is
+     * exact and no fused multiply-add is needed (cf. the WASM no-FMA model). */
+    double n = rint(x * log2e);
+    double r = x - n * ln2hi;
+    double y = 1 + kernel_expf_(r - n * ln2lo);
 
     return shift_(y, n);
 }
