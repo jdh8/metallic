@@ -7,7 +7,7 @@ WASMRUN ?= wasmtime
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native clean all compile_commands.json
+.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -52,6 +52,29 @@ check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 
 bench: $(SOURCES.bench:.c=.exe) $(SOURCES.bench:.c=.exe-)
+
+# Correct-rounding oracle (native, MPFR-backed; NOT part of the wasm gate).
+# Verifies math functions against CORE-MATH's correctly-rounded MPFR reference
+# (`ref_*` from the vendored `{func}_mpfr.c`).  Built with WASM-faithful FP:
+# no auto-FMA, no contraction, and deliberately not -march=native, so a native
+# pass reflects the shipped wasm build.  Requires libmpfr-dev and a CORE-MATH
+# checkout (see CORE_MATH).
+CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src
+ORACLE_CFLAGS := -std=c11 -iquote . -O3 -ffp-contract=off -mno-fma -fopenmp -Wall
+ORACLE_LDLIBS := -lmpfr -lgmp -lm
+
+SOURCES.check.oracle.float  := $(wildcard test/oracle/math/float/*.c)
+SOURCES.check.oracle.double := $(wildcard test/oracle/math/double/*.c)
+
+check.oracle: check.oracle.float check.oracle.double
+check.oracle.float:  $(SOURCES.check.oracle.float:.c=.exe-)
+check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
+
+test/oracle/math/float/%.exe: test/oracle/math/float/%.c
+	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< $(ORACLE_LDLIBS)
+
+test/oracle/math/double/%.exe: test/oracle/math/double/%.c
+	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary64/support -o $@ $< $(ORACLE_LDLIBS)
 
 %.exe-: %.exe
 	$<
