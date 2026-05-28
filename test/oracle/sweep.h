@@ -20,10 +20,12 @@
  * on the worker threads only. */
 static int sweep_f32(float fut(float), float ref(float), void init(void))
 {
+    enum { LIST_CAP = 64 };
     uint64_t bad = 0;
     int64_t worst = 0;
-    uint32_t worst_x = 0, first_x = 0;
-    int have_first = 0;
+    uint32_t worst_x = 0;
+    uint32_t bad_x[LIST_CAP];
+    int listed = 0;
 
     #pragma omp parallel
     {
@@ -36,19 +38,17 @@ static int sweep_f32(float fut(float), float ref(float), void init(void))
             if (isnan(x))
                 continue;
 
-            if (reinterpret(uint32_t, fut(x)) == reinterpret(uint32_t, ref(x)))
+            float a = fut(x), b = ref(x);
+
+            /* Any NaN matches any NaN; otherwise require bit-identity. */
+            if ((isnan(a) && isnan(b)) || reinterpret(uint32_t, a) == reinterpret(uint32_t, b))
                 continue;
 
             ++bad;
 
             #pragma omp critical
             {
-                int64_t d = ulp_dist_f(fut(x), ref(x));
-
-                if (!have_first) {
-                    have_first = 1;
-                    first_x = (uint32_t)k;
-                }
+                int64_t d = ulp_dist_f(a, b);
 
                 if (d < 0)
                     d = -d;
@@ -57,19 +57,25 @@ static int sweep_f32(float fut(float), float ref(float), void init(void))
                     worst = d;
                     worst_x = (uint32_t)k;
                 }
+
+                /* Collect the first LIST_CAP mismatches so hard-to-round cases
+                 * can be read off and patched in one sweep. */
+                if (listed < LIST_CAP)
+                    bad_x[listed++] = (uint32_t)k;
             }
         }
     }
 
     if (bad) {
-        float x = reinterpret(float, first_x);
-        float w = reinterpret(float, worst_x);
+        fprintf(stderr, "FAIL: %llu mismatches, worst %lld ulp at x=%a; first %d:\n",
+            (unsigned long long)bad, (long long)worst,
+            (double)reinterpret(float, worst_x), listed);
 
-        fprintf(stderr,
-            "FAIL: %llu mismatches; first x=%a -> got %a want %a; "
-            "worst %lld ulp at x=%a (got %a want %a)\n",
-            (unsigned long long)bad, (double)x, (double)fut(x), (double)ref(x),
-            (long long)worst, (double)w, (double)fut(w), (double)ref(w));
+        for (int i = 0; i < listed; ++i) {
+            float x = reinterpret(float, bad_x[i]);
+            fprintf(stderr, "  x=%a  got=%a  want=%a\n",
+                (double)x, (double)fut(x), (double)ref(x));
+        }
 
         return 1;
     }
