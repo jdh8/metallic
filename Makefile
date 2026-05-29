@@ -83,7 +83,7 @@ bench/float/%.nofma.exe: bench/float/%.c
 # pass reflects the shipped wasm build.  Requires libmpfr-dev and a CORE-MATH
 # checkout (see CORE_MATH).
 CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src
-ORACLE_CFLAGS := -std=c11 -iquote . -O3 -ffp-contract=off -mno-fma -fopenmp -Wall -DCORE_MATH='"$(CORE_MATH)"'
+ORACLE_CFLAGS := -std=c11 -iquote . -O3 -ffp-contract=off -mno-fma -fno-builtin -fopenmp -Wall -DCORE_MATH='"$(CORE_MATH)"'
 ORACLE_LDLIBS := -lmpfr -lgmp -lm
 
 SOURCES.check.oracle.float  := $(wildcard test/oracle/math/float/*.c)

@@ -201,6 +201,18 @@ static exptab_sum_ exptab_mul_(exptab_sum_ a, exptab_sum_ b)
     return (exptab_sum_){ p.hi, lo };
 }
 
+/* Multiply double-double `s` by scalar `x`, then add double-double constant `(c_hi, c_lo)`.
+ * Used for Horner evaluation of polynomial with double-double coefficients.
+ * Uses TwoSum for the addition of p.hi and c_hi so that the rounding error is
+ * preserved in lo even when p.hi << c_hi (e.g. at the leading coefficient 1.0). */
+static exptab_sum_ exptab_muladd_(exptab_sum_ s, double x, double c_hi, double c_lo)
+{
+    exptab_sum_ p = exptab_prod_(s.hi, x);
+    exptab_sum_ t = exptab_twosum_(p.hi, c_hi);
+    double lo = s.lo * x + p.lo + t.lo + c_lo;
+    return exptab_fast2sum_(t.hi, lo);
+}
+
 /* Double-double sum. */
 static exptab_sum_ exptab_add_(exptab_sum_ a, exptab_sum_ b)
 {
