@@ -1,33 +1,23 @@
-#include "expf.h"
+#include "kernel/erff.h"
 #include <math.h>
-
-static double right_(double x)
-{
-    const double c[] = {
-       -1.2655414002954096370,
-        1.0009261252013356806,
-        0.36249638433463102684,
-        0.17824481408677383361,
-       -0.53449623821044308004,
-        1.2320178646153913321,
-       -2.8400914385649108826,
-        3.4701646981231999064,
-       -2.2636614184225674494,
-        0.76671522289756803240,
-       -0.10677459988959471943
-    };
-
-    double t = 2 / (2 + x);
-
-    return t * expf_((((((((((c[10] * t + c[9]) * t + c[8])
-        * t + c[7]) * t + c[6]) * t + c[5]) * t + c[4])
-        * t + c[3]) * t + c[2]) * t + c[1]) * t + c[0]
-        - x * x);
-}
 
 float erfcf(float x)
 {
-    double t = right_(fabsf(x));
+    float r = fabsf(x);
+
+    if (r < 0.4375f) {
+        /* lone hard-to-round case in this regime (found by exhaustive sweep) */
+        if (x == -0x1.d93ec4p-17f)
+            return 0x1.00010ap+0f;
+
+        return 1 - kernel_erf_(x);
+    }
+
+    /* lone hard-to-round case in the complement regime */
+    if (x == 0x1.1bea34p+1f)
+        return 0x1.bfaddap-10f;
+
+    double t = kernel_erfc_(r);
 
     return signbit(x) ? 2 - t : t;
 }
