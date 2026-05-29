@@ -20,20 +20,19 @@ float logf(float x)
     if (i <= 0)
         return i << 1 == 0 ? -INFINITY : NAN;
 
-    if (i < 0x7F800000) {
-        /* Hard-to-round cases the polynomial path misses by 1 ulp; found by the
-         * exhaustive oracle sweep (test/oracle/math/float/logf.c). */
-        if (x == 0x1.bacb4ap+25f)
-            return 0x1.1e0696p+4f;
+    if (i >= 0x7F800000)
+        return x;
 
-        if (x == 0x1.b121a6p+76f)
-            return 0x1.a9a3f2p+5f;
+    /* Hard-to-round cases the polynomial path misses by 1 ulp; found by the
+     * exhaustive oracle sweep (test/oracle/math/float/logf.c). */
+    if (x == 0x1.bacb4ap+25f)
+        return 0x1.1e0696p+4f;
 
-        if (x == 0x1.6351d8p+95f)
-            return 0x1.08b512p+6f;
+    if (x == 0x1.b121a6p+76f)
+        return 0x1.a9a3f2p+5f;
 
-        return finite_(normalizef_(i));
-    }
+    if (x == 0x1.6351d8p+95f)
+        return 0x1.08b512p+6f;
 
-    return x;
+    return finite_(normalizef_(i));
 }

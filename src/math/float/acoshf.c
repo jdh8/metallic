@@ -22,16 +22,15 @@ float acoshf(float x)
     if (i < 0x3F800000)
         return NAN;
 
-    if (i < 0x7F800000) {
-        /* Hard-to-round large arguments (exhaustive oracle sweep). */
-        if (x == 0x1.b121a6p+75f)
-            return 0x1.a9a3f2p+5f;
+    if (i >= 0x7F800000)
+        return x;
 
-        if (x == 0x1.6351d8p+94f)
-            return 0x1.08b512p+6f;
+    /* Hard-to-round large arguments (exhaustive oracle sweep). */
+    if (x == 0x1.b121a6p+75f)
+        return 0x1.a9a3f2p+5f;
 
-        return finite_(x);
-    }
+    if (x == 0x1.6351d8p+94f)
+        return 0x1.08b512p+6f;
 
-    return x;
+    return finite_(x);
 }

@@ -21,20 +21,19 @@ float log10f(float x)
     if (i <= 0)
         return i << 1 == 0 ? -INFINITY : NAN;
 
-    if (i < 0x7F800000) {
-        /* Hard-to-round cases the polynomial path misses by 1 ulp; found by the
-         * exhaustive oracle sweep (test/oracle/math/float/log10f.c). */
-        if (x == 0x1.fddcf4p-98f)
-            return -0x1.d33a46p+4f;
+    if (i >= 0x7F800000)
+        return x;
 
-        if (x == 0x1.1727b8p-91f)
-            return -0x1.b5b2aep+4f;
+    /* Hard-to-round cases the polynomial path misses by 1 ulp; found by the
+     * exhaustive oracle sweep (test/oracle/math/float/log10f.c). */
+    if (x == 0x1.fddcf4p-98f)
+        return -0x1.d33a46p+4f;
 
-        if (x == 0x1.5cf1a6p-88f)
-            return -0x1.a5b2aep+4f;
+    if (x == 0x1.1727b8p-91f)
+        return -0x1.b5b2aep+4f;
 
-        return finite_(normalizef_(i));
-    }
+    if (x == 0x1.5cf1a6p-88f)
+        return -0x1.a5b2aep+4f;
 
-    return x;
+    return finite_(normalizef_(i));
 }

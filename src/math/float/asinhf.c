@@ -20,21 +20,20 @@ static double finite_(double s)
 
 float asinhf(float x)
 {
-    if (x - x == 0) {
-        float s = fabsf(x);
+    if (x - x != 0)
+        return x;
 
-        /* Hard-to-round large arguments (exhaustive oracle sweep). */
-        if (s == 0x1.bacb4ap+24f)
-            return copysignf(0x1.1e0696p+4f, x);
+    float s = fabsf(x);
 
-        if (s == 0x1.b121a6p+75f)
-            return copysignf(0x1.a9a3f2p+5f, x);
+    /* Hard-to-round large arguments (exhaustive oracle sweep). */
+    if (s == 0x1.bacb4ap+24f)
+        return copysignf(0x1.1e0696p+4f, x);
 
-        if (s == 0x1.6351d8p+94f)
-            return copysignf(0x1.08b512p+6f, x);
+    if (s == 0x1.b121a6p+75f)
+        return copysignf(0x1.a9a3f2p+5f, x);
 
-        return copysignf(finite_(s), x);
-    }
+    if (s == 0x1.6351d8p+94f)
+        return copysignf(0x1.08b512p+6f, x);
 
-    return x;
+    return copysignf(finite_(s), x);
 }
