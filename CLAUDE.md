@@ -59,6 +59,7 @@ examples/hello/ hello-world example with its own Makefile
 - Shared low-level patterns (copy loops, endian helpers) live in small internal headers rather than separate `.c` files.
 - Keep implementations minimal; avoid abstractions that are not required by the current task.
 - Comments explain non-obvious constraints (hardware bugs, ABI invariants, WASI limitations) — not what the code does.
+- Exception for `math/`: a lookup table (and double-double / Ziv machinery) is acceptable, even preferred, when it makes a `double` or hard `float` function correctly rounded and faster. Accuracy wins over minimalism here. See `.claude/skills/program-math-functions/`.
 
 ## Working with subagents
 

@@ -72,6 +72,17 @@ kernels. WASM *does* have fast directed rounding (`f64.nearest`, `floor`, etc.) 
 single-rounding-mode fact is what makes correct rounding tractable here
 (see [reference/correct-rounding.md](reference/correct-rounding.md)).
 
+**Lookup tables are allowed when they buy correct rounding (or speed).** The
+general "keep it minimal" rule yields to accuracy here: for **`double` functions
+and the harder `float` functions**, a table-driven kernel — e.g. an `N`-entry
+`2^(j/N)` reduction table, or a fast double-double path with a rare
+higher-precision fallback (Ziv) — is the preferred shape when it makes the
+function **correctly rounded and faster** than a table-free polynomial. The
+double `exp` kernel (`kernel/exptab.h`, a 128-entry double-double table) is the
+model. Store table entries as exact hex/decimal literals and note their
+provenance/generator in a comment. Easy float functions that are already compact
+and correctly rounded need no table.
+
 ## Procedure for a new function
 
 1. **Specify the edges first.** Enumerate the C11/Annex F special cases: NaN, ±0
