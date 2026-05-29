@@ -168,21 +168,21 @@ static const double exptab_r_[9][2] = {
 typedef struct { double hi, lo; } exptab_sum_;
 
 /* Fast2Sum: exact a + b assuming |a| >= |b|. */
-static exptab_sum_ exptab_fast2sum_(double a, double b)
+static inline exptab_sum_ exptab_fast2sum_(double a, double b)
 {
     double hi = a + b;
     return (exptab_sum_){ hi, a - hi + b };
 }
 
 /* TwoSum: exact x + y for any operands. */
-static exptab_sum_ exptab_twosum_(double x, double y)
+static inline exptab_sum_ exptab_twosum_(double x, double y)
 {
     double hi = x + y, d = hi - x;
     return (exptab_sum_){ hi, (y - d) + (d - hi + x) };
 }
 
 /* Exact product x*y as a double-double via Dekker's split (no FMA). */
-static exptab_sum_ exptab_prod_(double x, double y)
+static inline exptab_sum_ exptab_prod_(double x, double y)
 {
     double hi = x * y;
     double xh = split_(x), xl = x - xh;
@@ -193,7 +193,7 @@ static exptab_sum_ exptab_prod_(double x, double y)
 
 /* Double-double product; cross terms are corrections, so an FMA-free product
  * there is accurate to second order -- well below the final rounding. */
-static exptab_sum_ exptab_mul_(exptab_sum_ a, exptab_sum_ b)
+static inline exptab_sum_ exptab_mul_(exptab_sum_ a, exptab_sum_ b)
 {
     exptab_sum_ p = exptab_prod_(a.hi, b.hi);
     double lo = a.hi * b.lo + p.lo;
@@ -205,7 +205,7 @@ static exptab_sum_ exptab_mul_(exptab_sum_ a, exptab_sum_ b)
  * Used for Horner evaluation of polynomial with double-double coefficients.
  * Uses TwoSum for the addition of p.hi and c_hi so that the rounding error is
  * preserved in lo even when p.hi << c_hi (e.g. at the leading coefficient 1.0). */
-static exptab_sum_ exptab_muladd_(exptab_sum_ s, double x, double c_hi, double c_lo)
+static inline exptab_sum_ exptab_muladd_(exptab_sum_ s, double x, double c_hi, double c_lo)
 {
     exptab_sum_ p = exptab_prod_(s.hi, x);
     exptab_sum_ t = exptab_twosum_(p.hi, c_hi);
@@ -214,7 +214,7 @@ static exptab_sum_ exptab_muladd_(exptab_sum_ s, double x, double c_hi, double c
 }
 
 /* Double-double sum. */
-static exptab_sum_ exptab_add_(exptab_sum_ a, exptab_sum_ b)
+static inline exptab_sum_ exptab_add_(exptab_sum_ a, exptab_sum_ b)
 {
     exptab_sum_ s = exptab_twosum_(a.hi, b.hi);
     double lo = s.lo + (a.lo + b.lo);
@@ -223,7 +223,7 @@ static exptab_sum_ exptab_add_(exptab_sum_ a, exptab_sum_ b)
 
 /* 2^(j/128) * exp(r) as a normalized double-double in [1,2); q absorbs the
  * normalization. */
-static exptab_sum_ exptab_mantissa_(int j, int64_t *q, exptab_sum_ r)
+static inline exptab_sum_ exptab_mantissa_(int j, int64_t *q, exptab_sum_ r)
 {
     exptab_sum_ acc = { exptab_r_[8][0], exptab_r_[8][1] };
 
@@ -249,7 +249,7 @@ static exptab_sum_ exptab_mantissa_(int j, int64_t *q, exptab_sum_ r)
 
 /* Reconstruct 2^q * 2^(j/128) * exp(r), correctly rounded, including gradual
  * underflow into the subnormal range. */
-static double exptab_reconstruct_(int j, int64_t q, exptab_sum_ r)
+static inline double exptab_reconstruct_(int j, int64_t q, exptab_sum_ r)
 {
     exptab_sum_ p = exptab_mantissa_(j, &q, r);
 
