@@ -7,4 +7,9 @@
 #include "src/math/float/cosf.c"
 #undef cosf
 
+#ifdef BENCH_COREMATH
+#include <binary32/cos/cosf.c>   /* cr_cosf */
+BENCH_CR(cosf)
+#else
 BENCH(cosf)
+#endif

@@ -6,4 +6,9 @@
 #include "src/math/float/asinhf.c"
 #undef asinhf
 
+#ifdef BENCH_COREMATH
+#include <binary32/asinh/asinhf.c>   /* cr_asinhf */
+BENCH_CR(asinhf)
+#else
 BENCH(asinhf)
+#endif

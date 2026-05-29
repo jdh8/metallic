@@ -6,4 +6,9 @@
 #include "src/math/float/atanf.c"
 #undef atanf
 
+#ifdef BENCH_COREMATH
+#include <binary32/atan/atanf.c>   /* cr_atanf */
+BENCH_CR(atanf)
+#else
 BENCH(atanf)
+#endif

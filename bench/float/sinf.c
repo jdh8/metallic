@@ -7,4 +7,9 @@
 #include "src/math/float/sinf.c"
 #undef sinf
 
+#ifdef BENCH_COREMATH
+#include <binary32/sin/sinf.c>   /* cr_sinf */
+BENCH_CR(sinf)
+#else
 BENCH(sinf)
+#endif

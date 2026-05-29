@@ -6,4 +6,9 @@
 #include "src/math/float/expm1f.c"
 #undef expm1f
 
+#ifdef BENCH_COREMATH
+#include <binary32/expm1/expm1f.c>   /* cr_expm1f */
+BENCH_CR(expm1f)
+#else
 BENCH(expm1f)
+#endif

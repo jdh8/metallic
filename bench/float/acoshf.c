@@ -6,4 +6,9 @@
 #include "src/math/float/acoshf.c"
 #undef acoshf
 
+#ifdef BENCH_COREMATH
+#include <binary32/acosh/acoshf.c>   /* cr_acoshf */
+BENCH_CR(acoshf)
+#else
 BENCH(acoshf)
+#endif

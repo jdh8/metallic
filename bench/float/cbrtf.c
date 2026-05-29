@@ -6,4 +6,9 @@
 #include "src/math/float/cbrtf.c"
 #undef cbrtf
 
+#ifdef BENCH_COREMATH
+#include <binary32/cbrt/cbrtf.c>   /* cr_cbrtf */
+BENCH_CR(cbrtf)
+#else
 BENCH(cbrtf)
+#endif
