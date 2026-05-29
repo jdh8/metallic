@@ -15,7 +15,7 @@ static float kernel_(float x)
     double y = reinterpret(float, i);
 
     y *= 0.5 + 1.5 * x / (2 * y * (y * y) + x);
-    y += 0.33333333333333333333 * (x / (y * y) - y);
+    y *= 0.5 + 1.5 * x / (2 * y * (y * y) + x);
 
     return y;
 }
