@@ -87,10 +87,19 @@ static inline dint_t dint_add_(const dint_t *self, const dint_t *other)
 
     if (a->ex > b->ex) {
         int64_t sh = a->ex - b->ex;
-        /* Round to nearest before discarding the shifted-out bits. */
-        if (sh <= 128)
-            small += 1 & (unsigned __int128)(small >> (sh - 1));
-        small = sh < 128 ? small >> sh : 0;
+        /* Round to nearest before discarding the shifted-out bits.  Detect
+         * the overflow case (all-ones significand rounds up to 2^128): after
+         * right-shifting by sh the result is 2^(128-sh), not 0. */
+        if (sh <= 128) {
+            unsigned __int128 round_bit = 1 & (unsigned __int128)(small >> (sh - 1));
+            unsigned __int128 rounded = small + round_bit;
+            small = sh < 128 ? (rounded < small
+                                ? (unsigned __int128)1 << (128 - sh)
+                                : rounded >> sh)
+                              : 0;
+        } else {
+            small = 0;
+        }
     }
 
     _Bool sgn = a->sgn;
