@@ -17,4 +17,10 @@ static double bench(double f(double))
     dummy;
 }
 
-#define BENCH(f) int main(void) { printf("%9f\n%9f\n", bench(metallic_##f), bench(f)); }
+/* Metallic vs system libm.  One row: function, the two sweep times (seconds),
+ * and the libm/metallic ratio (>1 => Metallic faster).  See bench/README.md. */
+#define BENCH(f) int main(void) {                             \
+    double m = bench(metallic_##f), l = bench(f);             \
+    printf("%-7s metallic %8.4f  libm %8.4f  libm/m %5.2f\n", \
+           #f, m, l, l / m);                                  \
+}
