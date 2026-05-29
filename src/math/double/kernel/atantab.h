@@ -507,6 +507,19 @@ static inline exptab_sum_ atantab_atan_dd_(double x)
 
 /* --- accurate path (dint engine) --- */
 
+/* Build a dint from a double-double (hi, lo) where |lo| << |hi|.
+ * This gives ~106 bits of precision (hi contributes 53, lo another 53).
+ * Precondition: hi is finite and nonzero, lo may be 0. */
+static inline dint_t atantab_dint_from_dd_(double hi, double lo)
+{
+    dint_t h = dint_from_f64_(hi);
+    if (lo == 0.0)
+        return h;
+    dint_t l = dint_from_f64_(lo);
+    return dint_add_(&h, &l);
+}
+
+
 /* 1 / a, Newton-refined to ~127 bits.  a != 0. */
 static inline dint_t atantab_recip_dint_(const dint_t *a)
 {
@@ -540,33 +553,77 @@ static inline dint_t atantab_atan_small_dint_(const dint_t *h)
     return dint_add_(h, &p);
 }
 
-/* Accurate atan for x > 0 (finite). */
-static inline dint_t atantab_atan_dint_(double x)
+/* Accurate atan for x > 0, given as a dint with a double hint xd_ for the
+ * table index (xd_ must equal dint_to_f64_(xd) or be the exact double
+ * corresponding to xd).  Caller must ensure x > 0.
+ * sticky_out receives extra low-order bits from the final angle+atan_small
+ * addition; pass to dint_to_f64_ex_ for correctly-rounded conversion when
+ * the 128-bit result is at a rounding boundary. */
+static inline dint_t atantab_atan_dint_xd_ex_(const dint_t *xd, double xd_,
+                                               uint64_t *sticky_out)
 {
-    dint_t xd = dint_from_f64_(x);
+    *sticky_out = 0;
     dint_t t, angle;
 
-    if (x > atantab_tan_[127][0]) {
+    if (xd_ > atantab_tan_[127][0]) {
         /* atan(x) = pi/2 - atan(1/x). */
-        dint_t inv = atantab_recip_dint_(&xd);
+        dint_t inv = atantab_recip_dint_(xd);
         dint_t a = atantab_atan_small_dint_(&inv);
         a.sgn = !a.sgn;
+        /* pi/2 subtraction: use dint_add_ (no sticky needed here since
+         * cancellation would dominate anyway). */
         return dint_add_(&atantab_pi_2_dint_, &a);
     }
 
-    int i = atantab_index_(x);
+    int i = atantab_index_(xd_);
     t = atantab_tan_dint_[i];
     angle = dint_mul_int_(&atantab_step_dint_, i);
 
     /* h = (x - t) / (1 + x*t). */
-    dint_t num = dint_add_(&xd, &(dint_t){ !t.sgn, t.ex, t.m });
-    dint_t xt = dint_mul_(&xd, &t);
+    dint_t neg_t = { !t.sgn, t.ex, t.m };
+    dint_t num = dint_add_(xd, &neg_t);
+    dint_t xt = dint_mul_(xd, &t);
     dint_t den = dint_add_(&atantab_one_dint_, &xt);
     dint_t rden = atantab_recip_dint_(&den);
     dint_t h = dint_mul_(&num, &rden);
 
     dint_t a = atantab_atan_small_dint_(&h);
-    return dint_add_(&angle, &a);
+
+    /* Final addition: angle (large) + atan_small (small); use extended add
+     * to capture sticky bits for more accurate dint_to_f64_ conversion. */
+    if (i == 0 || angle.ex == a.ex) {
+        /* No alignment shift: result is exact (or near-exact), no sticky. */
+        return dint_add_(&angle, &a);
+    }
+    /* angle.ex > a.ex when i > 0 and angle > atan_small: use extended add. */
+    return dint_add_ex_(&angle, &a, sticky_out);
+}
+
+/* Accurate atan for x > 0, given as a dint with a double hint xd_ for the
+ * table index (xd_ must equal dint_to_f64_(xd) or be the exact double
+ * corresponding to xd).  Caller must ensure x > 0. */
+static inline dint_t atantab_atan_dint_xd_(const dint_t *xd, double xd_)
+{
+    uint64_t sticky;
+    return atantab_atan_dint_xd_ex_(xd, xd_, &sticky);
+}
+
+/* Accurate atan for x > 0 (finite). */
+static inline dint_t atantab_atan_dint_(double x)
+{
+    dint_t xd = dint_from_f64_(x);
+    return atantab_atan_dint_xd_(&xd, x);
+}
+
+/* atan of a double-double argument (q_hi, q_lo) where q_hi is a normal
+ * positive double and |q_lo| <= ulp(q_hi)/2.  Forms a ~106-bit dint from
+ * the double-double and evaluates atan via atantab_atan_dint_xd_.  This
+ * gives ~128 bits of accuracy for atan of the exact rational q_hi + q_lo,
+ * which is better than the ~75 bits from using just q_hi. */
+static inline dint_t atantab_atan_dd_dint_(double q_hi, double q_lo)
+{
+    dint_t qd = atantab_dint_from_dd_(q_hi, q_lo);
+    return atantab_atan_dint_xd_(&qd, q_hi);
 }
 
 #endif

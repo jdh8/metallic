@@ -215,6 +215,98 @@ static inline dint_t dint_from_f64_(double b)
     };
 }
 
+/* dint_add_ extended: compute a+b and also return the sticky bits that were
+ * discarded during the alignment shift.  Only valid when |a| >= |b| > 0 and
+ * a->sgn == b->sgn (same-sign addition where alignment shift loses bits).
+ * The sticky_out word holds the shifted-out bits of b (in b's original scale)
+ * that were rounded away; it is nonzero when the addition is not exact in
+ * 128 bits and the discarded portion is positive.
+ * Caller passes a pointer to a uint64_t that receives the sticky word. */
+static inline dint_t dint_add_ex_(const dint_t *a, const dint_t *b, uint64_t *sticky_out)
+{
+    *sticky_out = 0;
+
+    if (b->m == 0)
+        return *a;
+    if (a->m == 0)
+        return *b;
+
+    /* We require |a| >= |b| and same sign (same-sign addition). */
+    unsigned __int128 big = a->m;
+    unsigned __int128 small = b->m;
+    int64_t m_ex = a->ex;
+
+    if (a->ex > b->ex) {
+        int64_t sh = a->ex - b->ex;
+        if (sh <= 128) {
+            /* Capture the bits that will be lost. */
+            if (sh < 128) {
+                unsigned __int128 mask = ((unsigned __int128)1 << sh) - 1;
+                /* sticky = bits of small below the round bit */
+                unsigned __int128 discarded = small & mask;
+                unsigned __int128 round_bit = 1 & (unsigned __int128)(small >> (sh - 1));
+                *sticky_out = (uint64_t)(discarded ^ (discarded >> 64));  /* fold to 64 bits */
+                if (!round_bit && discarded)
+                    *sticky_out = 1;  /* nonzero sticky */
+                unsigned __int128 rounded = small + round_bit;
+                if (rounded < small) {
+                    small = (unsigned __int128)1 << (128 - sh);
+                } else {
+                    small = rounded >> sh;
+                }
+            } else {
+                *sticky_out = (uint64_t)(small | (small >> 64));
+                small = 0;
+            }
+        } else {
+            *sticky_out = 1;
+            small = 0;
+        }
+    }
+
+    unsigned __int128 c = big + small;
+    if (c < big) {
+        c += c & 1;
+        c = ((unsigned __int128)1 << 127) | (c >> 1);
+        m_ex += 1;
+    }
+
+    int shift = dint_clz_(c);
+    c <<= shift;
+
+    return (dint_t){ a->sgn, m_ex - shift, c };
+}
+
+/* Convert to f64 using the dint mantissa plus an extra 64-bit "sticky" word
+ * that holds additional low-order bits (e.g., from a preceding alignment
+ * shift that dint_add_ would otherwise discard).  The sticky word is scaled
+ * as if it were appended below the 128-bit mantissa m: it does not affect
+ * the round bit but does set sticky when nonzero.  For the rare accurate path
+ * where the 128-bit computation lands at an apparent midpoint (lo=0, round
+ * bit set), the extra sticky word can break the tie correctly. */
+static inline double dint_to_f64_ex_(const dint_t *self, uint64_t extra_sticky)
+{
+    uint64_t hi = (uint64_t)(self->m >> 64);
+
+    double r = reinterpret(double, (hi >> 11) | (0x3ffULL << 52));
+
+    double rd = 0.0;
+    if ((hi >> 10) & 1)
+        rd += 0x1p-53;
+    if ((hi & 0x3ff) != 0 || (uint64_t)self->m != 0 || extra_sticky != 0)
+        rd += 0x1p-54;
+
+    if (self->sgn) {
+        r = -r;
+        r -= rd;
+    } else {
+        r += rd;
+    }
+
+    double e = reinterpret(double, ((uint64_t)((self->ex + 1023) & 0x7ff)) << 52);
+    return r * e;
+}
+
 /* Convert to f64 with correct rounding (port of dint_tod).  Assumes the result
  * is in the normal range, which always holds for ln of finite positive x. */
 static inline double dint_to_f64_(const dint_t *self)
