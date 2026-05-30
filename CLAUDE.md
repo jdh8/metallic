@@ -65,6 +65,10 @@ examples/hello/ hello-world example with its own Makefile
 
 When a piece of work splits naturally into independent sub-tasks — separate exploration targets, multi-area refactors, parallel verification — feel free to spawn subagents (Explore, Plan, general-purpose) and run them concurrently. Don't serialize work that doesn't depend on itself. Reserve a single agent for tasks that are small or strictly sequential.
 
+## Branch strategy
+
+This is a sole-developer project. Develop directly on `main` — no feature branches. Push to `origin/main` when done.
+
 ## Commit discipline
 
 When executing a large plan, **break it into atomic commits** — one logical change per commit. A commit should build and pass `make check.wasm.fast` on its own. Prefer many small commits over one large one; this makes bisect and review tractable and keeps the history readable.
