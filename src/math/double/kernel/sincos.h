@@ -32,5 +32,5 @@ static double kernel_cos_(double a, double b)
     double h = 0.5 * x;
     double y = 1 - h;
 
-    return ((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0] - a * b + (1 - y - h) + y;
+    return x * x * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]) - a * b + (1 - y - h) + y;
 }
