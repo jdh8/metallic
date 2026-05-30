@@ -11,13 +11,21 @@ not accuracy (accuracy is proven separately by the oracle sweep — see
 | `make bench`      | Metallic vs **CORE-MATH** (+libm) | the 17 correctly-rounded float unary functions |
 | `make bench.fma`  | same, native/FMA model only       | the 17 |
 | `make bench.nofma`| same, no-FMA model only           | the 17 |
-| `make bench.libm` | Metallic vs **libm** only         | everything else (all `double/*`, plus float functions not yet correctly rounded) |
+| `make bench.libm` | Metallic vs **libm** only         | everything else (all `double/*`, plus the float functions not in the curated set above) |
 
 `make bench` requires a CORE-MATH checkout (the `CORE_MATH` variable in the
 `Makefile`, default `$(HOME)/src/core-math-sys/vendor/src`). CORE-MATH is the
 **apples-to-apples** baseline: like Metallic it is correctly rounded, whereas
 libm is not necessarily — so a fair "are we fast *and* correct?" comparison is
 against CORE-MATH. `make bench.libm` needs only the system libm.
+
+The 17 in `make bench` are the `CR_FUNCS` list in the `Makefile`: the float
+*unary* functions that have a direct CORE-MATH `cr_*` counterpart. They are a
+**curated** apples-to-apples subset, not the full correctly-rounded set —
+several other correctly-rounded float functions (`erff`, `erfcf`, `hypotf`,
+`sinhf`, `coshf`, `tanhf`, and bivariate `atan2f`) lack a matching `cr_*`
+baseline here and so fall into `make bench.libm` alongside the genuinely
+not-yet-correctly-rounded ones (`powf`, `lgammaf`, `tgammaf`).
 
 ## What the numbers mean
 

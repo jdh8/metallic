@@ -40,6 +40,31 @@ Opted out via `__STDC_NO_THREADS__`: `<threads.h>` is intentionally not
 shipped.  `<stdatomic.h>` comes from clang's freestanding headers and
 lowers to plain operations on single-threaded WASI.
 
+## Math accuracy
+
+Correct rounding is the math library's goal, and most transcendentals reach it.
+A function is **correctly rounded** when its result is the true value rounded to
+the nearest representable number (error ≤ 0.5 ulp); **faithfully rounded** is the
+weaker guarantee of one of the two nearest (error < 1 ulp). For `float`, correct
+rounding is *proven* by an exhaustive sweep of all 2³² bit patterns against an
+MPFR oracle; for `double` it is strong evidence from a sampler that hammers the
+published hard-to-round cases plus a broad random sample. See `test/oracle/` and
+`make check.oracle` (native, MPFR-backed; not part of the wasm CI gate).
+
+* **`float`, correctly rounded (≤ 0.5 ulp).** Unary, proven by exhaustive sweep:
+  `expf` `exp2f` `expm1f` `logf` `log2f` `log10f` `log1pf` `sinf` `cosf` `tanf`
+  `asinf` `acosf` `atanf` `asinhf` `acoshf` `atanhf` `sinhf` `coshf` `tanhf`
+  `cbrtf` `erff` `erfcf`.  Bivariate (sampler evidence, since the 2⁶⁴ domain
+  cannot be swept): `atan2f` `hypotf`.
+* **`float`, faithfully rounded (< 1 ulp).** `powf` `lgammaf` `tgammaf`.
+* **`double`, correctly rounded (≤ 0.5 ulp), sampler evidence.** `exp` `exp2`
+  `expm1` `log` `log2` `log10` `log1p` `cbrt` `atan` `asin` `acos` `hypot`
+  `asinh` `acosh` `atanh` `erf`.
+* **`double`, faithfully rounded (< 1 ulp).** `sin` `cos` `tan` `sinh` `cosh`
+  `tanh` `atan2` `erfc` `lgamma` `tgamma` — pending a wider accurate path.
+* **Complex `double`** (`cabs`, `cexp`, `clog`, `csqrt`, the trig/hyperbolic
+  families, …) is composed from the real kernels and inherits their accuracy.
+
 ## Limitations
 
 * `longjmp` aborts the process. WebAssembly has no native stack unwinding;
@@ -54,8 +79,6 @@ lowers to plain operations on single-threaded WASI.
   absent and feature-test code routes around the C11 thread API.  Atomics
   use clang's freestanding `<stdatomic.h>`; on single-threaded WASI they
   lower to plain loads and stores.
-* The math library is the project's strength — most functions are faithfully
-  rounded (error < 1 ulp).
 
 ## Testing
 
