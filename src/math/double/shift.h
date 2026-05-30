@@ -1,3 +1,6 @@
+#ifndef METALLIC_DOUBLE_SHIFT_H
+#define METALLIC_DOUBLE_SHIFT_H
+
 #include "../reinterpret.h"
 #include <stdint.h>
 
@@ -7,3 +10,5 @@ static double shift_(double x, int64_t n)
 
     return reinterpret(double, i);
 }
+
+#endif
