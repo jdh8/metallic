@@ -1,10 +1,10 @@
-#include "kernel/exp.h"
+#include "kernel/sinhtab.h"
 #include "divs.h"
-#include "shift.h"
 #include <math.h>
-#include <float.h>
 #include <stdint.h>
 
+/* Polynomial for tanh(x)/x − 1 evaluated at x² ∈ [0, (0.2554...)²].
+ * Coefficients from the original tanh.c. */
 static double kernel_(double x)
 {
     const double c[] = {
@@ -19,39 +19,51 @@ static double kernel_(double x)
     return x * (((((c[5] * x + c[4]) * x + c[3]) * x + c[2]) * x + c[1]) * x + c[0]);
 }
 
-static double half_(double x)
-{
-    const double log2e = 1.44269504088896340736;
-    const double ln2[] = { 0x1.62e42fefa4p-1, -0x1.8432a1b0e2634p-43 };
-
-    double n = rint(x * log2e);
-    double a = x - n * ln2[0];
-    double b = n * -ln2[1];
-    double y = kernel_expb_(a, b);
-
-    switch (reinterpret(uint64_t, n)) {
-        case 0x3FF0000000000000:
-            x = 2 * y + 1;
-            return divs_(x, 2, x);
-        case 0x4000000000000000:
-            x = 4 * y + 3;
-            return divs_(x, 2, x);
-    }
-    return 1 - 2 / (shift_(y + 1, n) + 1);
-}
-
-static double right_(double x)
-{
-    if (x < 0.2554128118829953416)
-        return divs_(x, 1, kernel_(x * x));
-
-    if (x < 19.061547465398495995)
-        return half_(2 * x);
-
-    return 1 + 0 / x;
-}
-
 double tanh(double x)
 {
-    return copysign(right_(fabs(x)), x);
+    double s = fabs(x);
+
+    /* NaN: propagate before the int cast in the reduction causes UB. */
+    if (isnan(x))
+        return x;
+
+    /* For |x| >= 20, tanh(x) rounds to ±1 (e^40 > 2^53). */
+    if (s >= 20.0)
+        return copysign(1.0, x);
+
+    /* For |x| <= 2^-27, tanh(x) rounds to exactly x. */
+    if (s < 7.450580596923828e-9)
+        return x;
+
+    /* For |x| < 0.2554, use the polynomial tanh(x) = x/(1 + kernel(x²)).
+     * This avoids catastrophic cancellation in expm1(2x) for small x,
+     * which would degrade precision without FMA. */
+    if (s < 0.2554128118829953416)
+        return divs_(x, 1.0, kernel_(s * s));
+
+    /* tanh(x) = expm1(2x) / (expm1(2x) + 2).
+     *
+     * Compute expm1(2s) = 2^q * m - 1 as a double-double t, then
+     * tanh(s) = t / (t + 2) = t * recip(t + 2).
+     *
+     * For |x| >= 0.2554, expm1(2x) >= expm1(0.511) ≈ 0.667, so the
+     * subtraction 2^q*m − 1 loses at most ~1 bit — precision is adequate.
+     */
+    int64_t q;
+    exptab_sum_ m = sinhtab_exp_dd_(2.0 * s, &q);
+
+    /* Scale mantissa m by 2^q (exact: multiplying by a power of 2). */
+    double mhi_scaled = shift_(m.hi, q);
+    double mlo_scaled = shift_(m.lo, q);
+
+    /* t = expm1(2s) = 2^q*m - 1 as a double-double. */
+    exptab_sum_ t = exptab_twosum_(mhi_scaled, -1.0);
+    t.lo += mlo_scaled;
+
+    /* tanh(s) = t / (t + 2) = t * recip(t + 2). */
+    exptab_sum_ t2 = exptab_fast2sum_(t.hi + 2.0, t.lo);
+    exptab_sum_ inv = sinhtab_recip_(t2);
+    exptab_sum_ result = exptab_mul_(t, inv);
+
+    return copysign(result.hi + result.lo, x);
 }
