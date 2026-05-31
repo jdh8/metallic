@@ -126,6 +126,13 @@ check.oracle.mpfr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACL
 print.oracle.cr:
 	@echo $(ORACLE.cr)
 
+# cr_* cross-checks compare against CORE-MATH's cr_* and use no bignum, so they
+# link without MPFR/GMP: the gate (check.oracle.cr) needs only gcc and a
+# CORE-MATH checkout, no libmpfr-dev.  Make prefers this rule for *_cr.exe (its
+# stem is shorter than the generic rule's).
+test/oracle/math/float/%_cr.exe: test/oracle/math/float/%_cr.c
+	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< -lm
+
 test/oracle/math/float/%.exe: test/oracle/math/float/%.c
 	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< $(ORACLE_LDLIBS)
 

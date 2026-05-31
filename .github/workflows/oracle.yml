@@ -59,13 +59,13 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      # The oracle build needs MPFR + GMP; gcc and its OpenMP runtime (libgomp)
-      # are already on the runner, so no clang/libomp install is required.
-      - name: Install MPFR + GMP
-        run: sudo apt-get update && sudo apt-get install -y libmpfr-dev libgmp-dev
-
-      # CORE-MATH supplies both the MPFR references (ref_*) and the cr_* used by
-      # the cross-checks.  Clone to the parent of src/ so the Makefile default
+      # The cr_* cross-checks use no bignum, so the gate needs only gcc (and its
+      # OpenMP runtime libgomp, already on the runner) plus a CORE-MATH checkout
+      # -- no libmpfr-dev/libgmp-dev.  (The MPFR audit, check.oracle.mpfr, does
+      # need them, but that target is not run here.)
+      #
+      # CORE-MATH supplies the cr_* implementations the cross-checks compare
+      # against.  Clone to the parent of src/ so the Makefile default
       # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src resolves correctly.
       - name: Clone CORE-MATH
         run: |
