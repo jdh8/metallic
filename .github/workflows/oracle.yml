@@ -2,6 +2,10 @@ name: Oracle
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # gitlab.inria.fr/core-math/core-math pinned commit.  A fixed SHA makes the
+  # cache key stable (so warm runs never re-clone) and the gate reproducible.
+  # Bump with: git ls-remote https://gitlab.inria.fr/core-math/core-math.git HEAD
+  CORE_MATH_REF: 646e6ce4fcc29ace08b9c28de30e3283a0e6dd65
 
 # Correct-rounding gate for the correctly-rounded float functions (Makefile
 # ORACLE.cr).  Each job is a bit-for-bit cross-check against CORE-MATH's
@@ -46,8 +50,32 @@ jobs:
           fns=$(make -s print.oracle.cr | tr ' ' '\n' | jq -R . | jq -sc .)
           echo "fns=${fns}" >> "${GITHUB_OUTPUT}"
 
+  # Warm the CORE-MATH cache once.  With fail-fast: false the correct-rounding
+  # matrix fans out ~26 jobs; without this, a cold cache would have all of them
+  # clone GitLab in parallel and race to save the same key.  Funnelling the cold
+  # path through a single job means exactly one GitLab clone per pinned SHA, and
+  # the matrix jobs (which `needs:` this) then restore read-only -- so once warm,
+  # the gate never touches GitLab.
+  coremath:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache CORE-MATH
+        id: coremath
+        uses: actions/cache@v4
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
+      - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
+        run: |
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
+
   correct-rounding:
-    needs: matrix
+    needs: [matrix, coremath]
     name: ${{ matrix.fn }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
@@ -65,12 +93,27 @@ jobs:
       # need them, but that target is not run here.)
       #
       # CORE-MATH supplies the cr_* implementations the cross-checks compare
-      # against.  Clone to the parent of src/ so the Makefile default
+      # against.  Restore it to the parent of src/ so the Makefile default
       # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src resolves correctly.
+      # The `coremath` job warmed this cache, so on the common path this is a
+      # pure restore and the clone fallback below never runs.  Caveat: GitHub
+      # evicts caches after 7 days idle (and caps a repo at 10 GB), so a cold
+      # cache still falls back to GitLab -- caching reduces, not eliminates, the
+      # GitLab dependency.
+      - name: Cache CORE-MATH
+        id: coremath
+        uses: actions/cache@v4
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
       - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
         run: |
-          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
-            "${HOME}/src/core-math-sys/vendor"
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
 
       # The .exe- target builds the oracle and runs it; the harness exits nonzero
       # on any mismatch, so make (and the job) fails on a correct-rounding bug.

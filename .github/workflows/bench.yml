@@ -2,6 +2,9 @@ name: Benchmark
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  # gitlab.inria.fr/core-math/core-math pinned commit.  Keep this in sync with
+  # oracle.yml so both workflows share one repo-scoped cache entry.
+  CORE_MATH_REF: 646e6ce4fcc29ace08b9c28de30e3283a0e6dd65
 
 # Run benchmarks on every push to main and on manual dispatch.
 # Results are stored in the gh-pages branch and visualised at
@@ -29,13 +32,25 @@ jobs:
       - uses: actions/checkout@v6
 
       # CORE-MATH is required for the 19 correctly-rounded float function
-      # benchmarks.  Clone to the parent of src/ so the Makefile default
+      # benchmarks.  Restore it to the parent of src/ so the Makefile default
       # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src resolves to the
-      # src/ subdirectory where binary32/<func>/<funcf>.c lives.
+      # src/ subdirectory where binary32/<func>/<funcf>.c lives.  Shares the
+      # pinned-SHA cache key with oracle.yml; the clone below runs only on a
+      # cold cache (see the eviction caveat there).
+      - name: Cache CORE-MATH
+        id: coremath
+        uses: actions/cache@v4
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
       - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
         run: |
-          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
-            "${HOME}/src/core-math-sys/vendor"
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
 
       # -j$(nproc) compiles all 19 CR benchmarks in parallel and runs them in
       # parallel.  Each executable writes one self-contained line, so interleaved
