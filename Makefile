@@ -98,13 +98,22 @@ check.oracle: check.oracle.float check.oracle.double
 check.oracle.float:  $(SOURCES.check.oracle.float:.c=.exe-)
 check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
 
-# Gate-worthy subset: the correctly-rounded float functions (CR_FUNCS), each
-# PROVEN over all 2^32 inputs.  Non-gamma use the exhaustive MPFR sweep; the
-# gamma pair uses the faster cr_* bit-for-bit cross-check.  This is the set the
-# `oracle` CI workflow runs (one matrix job per name).  The other float oracles
-# (coshf, erff, hypotf, sinhf, tanhf, atan2f, erfcf) are only faithfully
-# rounded so far and are excluded until they reach correct rounding.
-ORACLE.cr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) lgamma_cr tgamma_cr
+# The set of correctly-rounded float functions, gated by the `oracle` CI
+# workflow (one matrix job per name).  Broader than CR_FUNCS (the unary
+# *benchmark* set): it adds the exp/erf-family unary functions and the two
+# bivariate functions, all verified correctly rounded.  Verification method per
+# group:
+#   - unary functions: the exhaustive MPFR sweep over all 2^32 inputs (a proof);
+#   - the gamma pair: the faster cr_* bit-for-bit cross-check (lgamma_cr,
+#     tgamma_cr) -- MPFR loggamma is slow and the cross-check is equivalent;
+#   - bivariate (atan2f, hypotf): deterministic random sampling plus CORE-MATH's
+#     worst-case files -- exhaustive proof over 2^64 pairs is infeasible, so this
+#     matches how CORE-MATH itself validates them.
+# powf is excluded: notoriously hard, not yet correctly rounded.
+ORACLE.cr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) \
+             coshf sinhf tanhf erff erfcf \
+             lgamma_cr tgamma_cr \
+             atan2f hypotf
 check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
 
 # Emit the ORACLE.cr names (space-separated) so the `oracle` CI workflow can
