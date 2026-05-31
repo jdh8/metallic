@@ -164,8 +164,27 @@ static double lgamma_f64_(float z, double err[static 1])
     if (z < 0.5f) {
         double x = (double)z;
         double reflected = lgamma_pos_f64_(1.0 - x);
-        double s = fabs(sin(LG_PI_HI * x));
-        double value = ln_pi - log(s) - reflected;
+        double f = x - rint(x);   /* fractional part in (-0.5, 0.5] */
+        double af = fabs(f);
+        double value;
+
+        if (af < 0.125) {
+            /* log|sin(pi*f)| = log(pi) + log|f| + log(sinc(pi*f)).
+             * ln_pi == log(pi), so value = -log|f| - sinc_log - reflected.
+             * sinc_log = log(sin(pi*f)/(pi*f)) = t*(c1 + t*(c2 + ...)), t=(pi*f)^2.
+             * Degree-6 in t; truncation < 2.3e-14 for |f| < 0.125 (within 2^-44). */
+            double t = (LG_PI_HI * f) * (LG_PI_HI * f);
+            double sinc_log = (((((-1.0/5765760 * t
+                - 1.0/467775) * t
+                - 1.0/37800) * t
+                - 1.0/2835) * t
+                - 1.0/180) * t
+                - 1.0/6) * t;
+            value = -log(af) - sinc_log - reflected;
+        } else {
+            double s = fabs(sin(LG_PI_HI * x));
+            value = ln_pi - log(s) - reflected;
+        }
 
         *err = ldexp(fabs(reflected), -36) + ldexp(1.0, -44);
         return value;
