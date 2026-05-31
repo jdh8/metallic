@@ -1,5 +1,9 @@
 # Metallic
 
+[![CI](https://github.com/jdh8/metallic/actions/workflows/ci.yml/badge.svg)](https://github.com/jdh8/metallic/actions/workflows/ci.yml)
+[![Oracle](https://github.com/jdh8/metallic/actions/workflows/oracle.yml/badge.svg)](https://github.com/jdh8/metallic/actions/workflows/oracle.yml)
+[![Benchmark](https://github.com/jdh8/metallic/actions/workflows/bench.yml/badge.svg)](https://jdh8.github.io/metallic/dev/bench/)
+
 A from-scratch C library for WebAssembly. The name comes from Gary Bernhardt's
 [The Birth & Death of JavaScript][bdjs] — a vision of "metal" web applications
 running at near-native speed. Metallic aims to be the runtime for that world.
