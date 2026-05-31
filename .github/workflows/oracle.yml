@@ -4,20 +4,21 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 # Correct-rounding gate for the correctly-rounded float functions (Makefile
-# ORACLE.cr).  Each job compares against a correctly-rounded oracle:
-#   - unary functions: an EXHAUSTIVE MPFR sweep over all 2^32 binary32 inputs --
-#     a proof, not a sample;
-#   - the gamma pair (lgamma_cr, tgamma_cr): the faster bit-for-bit cross-check
-#     against CORE-MATH's cr_*, equivalent to the MPFR sweep but much quicker;
-#   - the bivariate pair (atan2f, hypotf): deterministic random sampling plus
-#     CORE-MATH's worst-case files (exhaustive proof over 2^64 pairs is
-#     infeasible -- this matches how CORE-MATH validates them).
-# This catches the slow-path / Ziv-fallback bugs that check.wasm.fast (exact
-# functions only) cannot see.
+# ORACLE.cr).  Each job is a bit-for-bit cross-check against CORE-MATH's
+# correctly-rounded cr_*: a correctly-rounded function must agree with cr_*
+# everywhere, so this is equivalent to an MPFR sweep for catching regressions
+# but ~10x faster (no bignum per call).  Unary functions are checked over all
+# 2^32 binary32 inputs; the bivariate pair (atan2f, hypotf) is sampled plus
+# CORE-MATH's worst-case files (a 2^64 proof is infeasible -- the same way
+# CORE-MATH validates them).  This catches the slow-path / Ziv-fallback bugs
+# that check.wasm.fast (exact functions only) cannot see.
+#
+# The independent MPFR ground-truth sweep (make check.oracle.mpfr) is kept for
+# development and audits but is too slow to gate, so it is not run here.
 #
 # One matrix job per function keeps wall-clock at roughly the slowest single
-# sweep (~2-3 min on a GitHub runner) rather than their sum, and pinpoints which
-# function regressed.  The matrix is derived from `make print.oracle.cr`.
+# check rather than their sum, and pinpoints which function regressed.  The
+# matrix is derived from `make print.oracle.cr`.
 
 on:
   push:

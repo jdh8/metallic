@@ -7,7 +7,7 @@ WASMRUN ?= wasmtime
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.cr print.oracle.cr clean all compile_commands.json
+.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.cr check.oracle.mpfr print.oracle.cr clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -98,23 +98,28 @@ check.oracle: check.oracle.float check.oracle.double
 check.oracle.float:  $(SOURCES.check.oracle.float:.c=.exe-)
 check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
 
-# The set of correctly-rounded float functions, gated by the `oracle` CI
-# workflow (one matrix job per name).  Broader than CR_FUNCS (the unary
-# *benchmark* set): it adds the exp/erf-family unary functions and the two
-# bivariate functions, all verified correctly rounded.  Verification method per
-# group:
-#   - unary functions: the exhaustive MPFR sweep over all 2^32 inputs (a proof);
-#   - the gamma pair: the faster cr_* bit-for-bit cross-check (lgamma_cr,
-#     tgamma_cr) -- MPFR loggamma is slow and the cross-check is equivalent;
-#   - bivariate (atan2f, hypotf): deterministic random sampling plus CORE-MATH's
-#     worst-case files -- exhaustive proof over 2^64 pairs is infeasible, so this
-#     matches how CORE-MATH itself validates them.
-# powf is excluded: notoriously hard, not yet correctly rounded.
-ORACLE.cr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) \
-             coshf sinhf tanhf erff erfcf \
-             lgamma_cr tgamma_cr \
-             atan2f hypotf
+# The correct-rounding GATE: fast cr_* bit-for-bit cross-checks
+# (test/oracle/math/float/<fn>_cr.c), run by the `oracle` CI workflow (one matrix
+# job per name).  A correctly-rounded function must agree with CORE-MATH's cr_*
+# everywhere, so for regression detection this is equivalent to the MPFR sweep
+# but ~10x faster (no bignum per call).  Unary functions are exhaustive over all
+# 2^32 inputs; the bivariate pair (atan2f, hypotf) is sampled + worst-case files
+# (an exhaustive 2^64 proof is infeasible -- the same way CORE-MATH validates
+# them).  powf is excluded: notoriously hard, not yet correctly rounded.
+ORACLE.cr := expf_cr logf_cr log2f_cr log10f_cr log1pf_cr sinf_cr cosf_cr tanf_cr \
+             asinf_cr acosf_cr atanf_cr asinhf_cr acoshf_cr atanhf_cr \
+             exp2f_cr expm1f_cr cbrtf_cr coshf_cr sinhf_cr tanhf_cr erff_cr erfcf_cr \
+             lgamma_cr tgamma_cr atan2f_cr hypotf_cr
 check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
+
+# Independent ground-truth AUDIT (not gated; slow, opt-in): the exhaustive MPFR
+# sweeps (ref_*).  MPFR's arbitrary precision is independent of CORE-MATH's
+# implementation and computes well beyond the target precision -- valuable during
+# development, but too slow to gate.  Gamma is omitted: MPFR loggamma is
+# impractically slow, and the cr_* cross-checks cover the gamma pair.
+ORACLE.mpfr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) \
+               coshf sinhf tanhf erff erfcf atan2f hypotf
+check.oracle.mpfr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.mpfr)))
 
 # Emit the ORACLE.cr names (space-separated) so the `oracle` CI workflow can
 # build its matrix from this single source of truth instead of duplicating it.
