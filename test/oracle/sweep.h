@@ -35,12 +35,12 @@ static int sweep_f32(float fut(float), float ref(float), void init(void))
         for (int64_t k = 0; k <= 0xFFFFFFFF; ++k) {
             float x = reinterpret(float, (uint32_t)k);
 
-            if (isnan(x))
-                continue;
-
             float a = fut(x), b = ref(x);
 
-            /* Any NaN matches any NaN; otherwise require bit-identity. */
+            /* NaN inputs are swept too: a correctly-rounded function must return
+             * NaN, which the any-NaN-matches-any-NaN clause accepts; a non-NaN
+             * result for a NaN input is then flagged.  Otherwise require
+             * bit-identity. */
             if ((isnan(a) && isnan(b)) || reinterpret(uint32_t, a) == reinterpret(uint32_t, b))
                 continue;
 
