@@ -34,11 +34,20 @@ jobs:
       # the source headers, not the full history.
       - name: Clone CORE-MATH
         run: |
+          # Clone to the parent of the src/ directory so that the default
+          # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src in the Makefile
+          # resolves to the src/ subdirectory inside the CORE-MATH repo root,
+          # where binary32/<func>/<funcf>.c lives.
           git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
-            "${HOME}/src/core-math-sys/vendor/src"
+            "${HOME}/src/core-math-sys/vendor"
 
       - name: Build metallic.a
         run: make metallic.a
+
+      # bench.fma: Metallic vs CORE-MATH vs libm for the 19 correctly-rounded
+      # float unary functions compiled with -march=native (hardware FMA enabled).
+      - name: Run fma benchmarks
+        run: make bench.fma 2>&1 | tee bench_fma.txt
 
       # bench.nofma: Metallic vs CORE-MATH vs libm for the 19 correctly-rounded
       # float unary functions, with -ffp-contract=off -mno-fma to match the
@@ -57,7 +66,7 @@ jobs:
 
       - name: Parse benchmark output to JSON
         run: |
-          cat bench_nofma.txt bench_libm.txt \
+          cat bench_fma.txt bench_nofma.txt bench_libm.txt \
             | python3 scripts/parse_bench.py > bench.json
           cat bench.json
 
