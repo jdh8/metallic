@@ -1,0 +1,72 @@
+name: Benchmark
+
+# Run benchmarks on every push to main and on manual dispatch.
+# Results are stored in the gh-pages branch and visualised at
+# https://jdh8.github.io/metallic/dev/bench/
+# Requires GitHub Pages to be enabled (Settings → Pages → gh-pages / root).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write   # benchmark-action pushes JSON to gh-pages
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      # CORE-MATH is required for the 19 correctly-rounded float function
+      # benchmarks (bench.nofma).  A shallow clone is sufficient — we only need
+      # the source headers, not the full history.
+      - name: Clone CORE-MATH
+        run: |
+          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
+            "${HOME}/src/core-math-sys/vendor/src"
+
+      - name: Build metallic.a
+        run: make metallic.a
+
+      # bench.nofma: Metallic vs CORE-MATH vs libm for the 19 correctly-rounded
+      # float unary functions, with -ffp-contract=off -mno-fma to match the
+      # WASM target.  This is the most informative benchmark — apples-to-apples
+      # because all three implementations are correctly rounded, and the FP model
+      # matches what actually ships in metallic.a.
+      - name: Run nofma benchmarks
+        run: make bench.nofma 2>&1 | tee bench_nofma.txt
+
+      # bench.libm: Metallic vs libm for everything else (all double functions
+      # plus float functions outside the correctly-rounded set).  No CORE-MATH
+      # needed.  Uses -march=native which is fine for relative comparison since
+      # both implementations are compiled identically.
+      - name: Run libm benchmarks
+        run: make bench.libm 2>&1 | tee bench_libm.txt
+
+      - name: Parse benchmark output to JSON
+        run: |
+          cat bench_nofma.txt bench_libm.txt \
+            | python3 scripts/parse_bench.py > bench.json
+          cat bench.json
+
+      # Stores history in gh-pages branch at dev/bench/data.js.
+      # The chart at https://jdh8.github.io/metallic/dev/bench/ shows sweep
+      # times (seconds) over commits — lower is faster for Metallic.
+      - name: Publish to GitHub Pages
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Metallic math benchmarks
+          tool: customSmallerIsBetter
+          output-file-path: bench.json
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Warn (but don't fail) if a function regresses by more than 20%.
+          alert-threshold: "120%"
+          comment-on-alert: true
+          fail-on-alert: false
