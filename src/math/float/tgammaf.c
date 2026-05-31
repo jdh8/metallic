@@ -1,9 +1,34 @@
 #include "kernel/gamma.h"
-#include "kernel/lanczos.h"
 #include "finite/log2f.h"
-#include "finite/sinpif.h"
 #include "exp2f.h"
 #include <math.h>
+
+/* Fast minimax for Gamma(2.875 + d), d in [-0.5, 0.5].
+ * Relative error is bounded near 2^-42, enough for the Ziv gate. */
+static const double tgamma_poly_f64_[12] = {
+    1.7877108988966335,
+    1.5591939012079723,
+    1.0510493267695413,
+    0.47065801828715076,
+    0.18881863420183825,
+    0.05883154870082071,
+    0.017826013745994518,
+    0.004228753264700664,
+    0.001097379867515545,
+    0.00019460263214349485,
+    5.3863392739342684e-5,
+    4.788385422314536e-6,
+};
+
+static double tgamma_poly_eval_(double x, const double *c, int n)
+{
+    double y = c[n - 1];
+
+    for (int i = n - 2; i >= 0; --i)
+        y = y * x + c[i];
+
+    return y;
+}
 
 /* Lanczos partial-fraction sum carried in double-double.
  *
@@ -56,8 +81,9 @@ static double gamma1p_dd_(double z, double lo[static 1])
 {
     const double log2e = 1.442695040888963407;
     const double ln2 = 0.69314718055994530942;
+    const double lanczos_g = 4.3644453082153116114;
 
-    double base = lanczos_g_ + 0.5 + z;
+    double base = lanczos_g + 0.5 + z;
     double l2 = log2f_(base);
 
     double a_lo;
@@ -80,13 +106,18 @@ static double gamma1p_dd_(double z, double lo[static 1])
     return gamma_mul_dd_(g, g_lo, s_hi, s_low, lo);
 }
 
-float tgammaf(float z)
+/* Legacy fully double-double path. Kept as the accurate fallback for the rare
+ * hard-to-round cases that survive the fast Ziv gate. */
+static float tgammaf_dd_(float z)
 {
     const double pi_hi = 3.14159265358979312;
     const double pi_lo = 1.2246467991473532e-16;
 
     if (z == 0)
         return copysignf(INFINITY, z);
+
+    if (isnan(z))
+        return z;
 
     if (z == INFINITY)
         return INFINITY;
@@ -95,16 +126,17 @@ float tgammaf(float z)
         if (rintf(z) == z)
             return NAN;
 
-        /* Reflection: Gamma(z) = pi / (sin(pi z) * Gamma(1-z)).  Carry the
-         * denominator and the division in double-double, fold in the low part
-         * of pi, then round the pair to the nearest float. */
-        double sp = sinpif_(z);
+        double sp_lo;
+        double sp = gamma_sinpi_dd_(z, &sp_lo);
+
+        if (z < -170.0f)
+            return copysignf(0.0f, sp);
 
         double g_lo;
         double g_hi = gamma1p_dd_(-z, &g_lo);
 
         double d_lo;
-        double d_hi = gamma_mul_dd_(sp, 0.0, g_hi, g_lo, &d_lo);
+        double d_hi = gamma_mul_dd_(sp, sp_lo, g_hi, g_lo, &d_lo);
 
         double q_lo;
         double q_hi = gamma_div_dd_(pi_hi, d_hi, d_lo, &q_lo);
@@ -114,8 +146,94 @@ float tgammaf(float z)
         return gamma_to_float_odd_(q_hi, q_lo);
     }
 
+    if (z >= 36.0f)
+        return INFINITY;
+
     double lo;
     double hi = gamma1p_dd_(z - 1.0, &lo);
 
     return gamma_to_float_odd_(hi, lo);
+}
+
+/* Fast f64 approximation over the recurrence range with an absolute bound. */
+static double tgamma_f64_(double x, double err[static 1])
+{
+    double m = x - 2.875;
+    double i = nearbyint(m);
+    double value = tgamma_poly_eval_(m - i, tgamma_poly_f64_, 12);
+    int steps = (int)fabs(i);
+
+    if (i > 0.0) {
+        double factor = x;
+
+        for (int k = 0; k < steps; ++k) {
+            factor -= 1.0;
+            value *= factor;
+        }
+    } else if (i < 0.0) {
+        double product = x;
+        double factor = x;
+
+        for (int k = 1; k < steps; ++k) {
+            factor += 1.0;
+            product *= factor;
+        }
+
+        value /= product;
+    }
+
+    *err = ldexp(fabs(value), -37);
+    return value;
+}
+
+float tgammaf(float z)
+{
+    if (isnan(z))
+        return z;
+
+    if (z == 0)
+        return copysignf(INFINITY, z);
+
+    if (z == INFINITY)
+        return INFINITY;
+
+    /* Pole neighborhood: Gamma(z) = 1/z - gamma + O(z). */
+    if (fabsf(z) < 0x1p-12f) {
+        const double c[] = {
+            -0.5772156649015329,
+             0.9890559953279726,
+            -0.9074790760808863,
+             0.9817280868344002,
+        };
+
+        double x = (double)z;
+        double correction = tgamma_poly_eval_(x, c, 4);
+        double q_lo;
+        double q_hi = gamma_div_dd_(1.0, x, 0.0, &q_lo);
+        double t;
+        double y_hi = gamma_twosum_(q_hi, correction, &t);
+        double y_lo = q_lo + t;
+
+        return gamma_to_float_odd_(y_hi, y_lo);
+    }
+
+    if (z >= 35.04010009765625f)
+        return INFINITY;
+
+    if (z < 0.0f && truncf(z) == z)
+        return NAN;
+
+    if (z < -42.0f)
+        return (((long long)floor((double)z)) & 1LL) == 0 ? 0.0f : -0.0f;
+
+    double x = (double)z;
+    double err;
+    double f = tgamma_f64_(x, &err);
+    float lo = (float)(f - err);
+    float hi = (float)(f + err);
+
+    if (lo == hi)
+        return lo;
+
+    return tgammaf_dd_(z);
 }
