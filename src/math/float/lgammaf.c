@@ -164,9 +164,7 @@ static double lgamma_f64_(float z, double err[static 1])
     if (z < 0.5f) {
         double x = (double)z;
         double reflected = lgamma_pos_f64_(1.0 - x);
-        double sp_lo;
-        double sp = gamma_sinpi_dd_(x, &sp_lo);
-        double s = fabs(sp + sp_lo);
+        double s = fabs(sin(LG_PI_HI * x));
         double value = ln_pi - log(s) - reflected;
 
         *err = ldexp(fabs(reflected), -36) + ldexp(1.0, -44);
