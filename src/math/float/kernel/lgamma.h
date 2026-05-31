@@ -55,8 +55,8 @@ static double lg_div_dd_(double a_hi, double a_lo, double b_hi, double b_lo, dou
 }
 
 /* 0.5*ln(2*pi) as a double-double. */
-#define LG_HALF_LN2PI_HI 0.9189385332046727
-#define LG_HALF_LN2PI_LO -3.190973144713607e-17
+#define LG_HALF_LN2PI_HI 0x1.d67f1c864beb5p-1
+#define LG_HALF_LN2PI_LO -0x1.65b5a1b7ff5dfp-55
 
 /* pi as a double-double. */
 #define LG_PI_HI 3.141592653589793
@@ -71,24 +71,24 @@ static double lg_div_dd_(double a_hi, double a_lo, double b_hi, double b_lo, dou
  * is asymptotic; we recurse so z >= LG_STIRLING_CUTOFF before summing, where
  * eight terms are far more accurate than double-double. */
 static const double lg_stir_hi_[8] = {
-     0.08333333333333333,
-    -0.002777777777777778,
-     0.0007936507936507937,
-    -0.0005952380952380953,
-     0.0008417508417508417,
-    -0.0019175269175269175,
-     0.0064102564102564104,
-    -0.029550653594771242,
+     0x1.5555555555555p-4,
+    -0x1.6c16c16c16c17p-9,
+     0x1.a01a01a01a01ap-11,
+    -0x1.3813813813814p-11,
+     0x1.b951e2b18ff23p-11,
+    -0x1.f6ab0d9993c7dp-10,
+     0x1.a41a41a41a41ap-8,
+    -0x1.e4286cb0f5398p-6,
 };
 static const double lg_stir_lo_[8] = {
-     1.1564823173178713e-18,
-    -7.99281450159102e-20,
-     2.281137385736494e-20,
-     4.0833951130722286e-21,
-     2.770967609444871e-21,
-    -2.0843036967211252e-20,
-     4.546152162088584e-20,
-     4.690875149773431e-19,
+     0x1.5555555555555p-58,
+     0x1.f49f49f49f49fp-64,
+     0x1.a01a01a01a01ap-71,
+     0x1.fb1fb1fb1fb20p-65,
+     0x1.5c3a9ce01b952p-65,
+     0x1.f82553c999b0ep-64,
+     0x1.0690690690690p-62,
+     0x1.1efcdab896745p-61,
 };
 
 /* Recurse until z >= this before applying Stirling.  At z = 13 the first
@@ -110,15 +110,22 @@ static const double lg_sinpi_a_lo_[8] = {
     -2.7064172561139924e-17, 2.7591435558369737e-18, -5.6884907021238545e-19,
      2.052498891805865e-20,  4.916628064464509e-22,
 };
-static const double lg_cospi_b_hi_[8] = {
-     1.0,                  -4.934802200544679,     4.058712126416768,
-    -1.3352627688545895,    0.23533063035889312,  -0.025806891390014054,
-     0.001929574309403922, -0.0001046381049248457,
+/* 14 terms: at the branch edge u = 1/2 - |f| -> 1/4 the first omitted term is
+ * (pi/4)^28/28! ~ 2^-108, below the double-double round-off.  Eight terms left a
+ * ~2^-50 truncation that leaked ~1 binary32 ulp into ln|sin| near |f| = 1/4. */
+static const double lg_cospi_b_hi_[14] = {
+    0x1.0000000000000p+0, -0x1.3bd3cc9be45dep+2, 0x1.03c1f081b5ac4p+2,
+    -0x1.55d3c7e3cbffap+0, 0x1.e1f506891babbp-3, -0x1.a6d1f2a204a8cp-6,
+    0x1.f9d38a3763cc3p-10, -0x1.b6e24f44b128fp-14, 0x1.20c62c2f2d7f5p-18,
+    -0x1.2a0c591af8314p-23, 0x1.ef6e308d6d1c4p-29, -0x1.52ae4120fde27p-34,
+    0x1.838d8f4321800p-40, -0x1.789d662bb5482p-46,
 };
-static const double lg_cospi_b_lo_[8] = {
-     0.0,                  -3.1326477033326616e-16, 2.1888843707431657e-16,
-     2.557591896698939e-17, -1.0167242967024417e-17, -1.3344439210430054e-18,
-    -7.851331287025183e-20,  1.1473530558267206e-21,
+static const double lg_cospi_b_lo_[14] = {
+    0x0.0p+0, -0x1.692b71366cc04p-52, -0x1.32b33f87fc145p-52,
+    0x1.d582920937625p-59, -0x1.7362f495c096dp-60, 0x1.5961232276df6p-60,
+    -0x1.c8a14c8bd6bc5p-64, -0x1.6de1e0a0c23b9p-69, -0x1.5a3cd1a11c7a2p-72,
+    -0x1.215803afbd5f8p-77, -0x1.c5f7779fbdd48p-83, 0x1.76dd247cd9002p-88,
+    -0x1.453680e7f5659p-96, -0x1.01d70ae199b04p-104,
 };
 
 /* Evaluate sum_k c_k * u^k (c in dd arrays, k=0..7) by Horner in u (dd). */
@@ -149,10 +156,10 @@ static const double lg_sinc_lo_[10] = {
     1.7231504593537484e-25,
 };
 
-static double lg_poly8_(const double *chi, const double *clo, double uhi, double ulo, double *rlo)
+static double lg_poly_(const double *chi, const double *clo, int n, double uhi, double ulo, double *rlo)
 {
-    double phi = chi[7], plo = clo[7];
-    for (int i = 6; i >= 0; i--) {
+    double phi = chi[n - 1], plo = clo[n - 1];
+    for (int i = n - 2; i >= 0; i--) {
         double t;
         phi = gamma_mul_dd_(phi, plo, uhi, ulo, &t);
         plo = t;
@@ -169,12 +176,12 @@ static double lg_sinpi_dd_(double t, double *rlo)
     double r, rl;
     if (a <= 0.25) {
         double u2lo, u2 = gamma_twoprod_(a, a, &u2lo);
-        double slo, s = lg_poly8_(lg_sinpi_a_hi_, lg_sinpi_a_lo_, u2, u2lo, &slo);
+        double slo, s = lg_poly_(lg_sinpi_a_hi_, lg_sinpi_a_lo_, 8, u2, u2lo, &slo);
         r = gamma_mul_dd_(s, slo, a, 0.0, &rl);
     } else {
         double vlo, v = gamma_twosum_(0.5, -a, &vlo);
         double v2lo, v2 = gamma_mul_dd_(v, vlo, v, vlo, &v2lo);
-        r = lg_poly8_(lg_cospi_b_hi_, lg_cospi_b_lo_, v2, v2lo, &rl);
+        r = lg_poly_(lg_cospi_b_hi_, lg_cospi_b_lo_, 14, v2, v2lo, &rl);
     }
     if (t < 0.0) { r = -r; rl = -rl; }
     *rlo = rl;
