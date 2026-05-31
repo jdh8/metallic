@@ -17,52 +17,84 @@ permissions:
   contents: write   # benchmark-action pushes JSON to gh-pages
 
 jobs:
-  bench:
+  # fma and nofma run in parallel as a two-element matrix; both need CORE-MATH.
+  bench-cr:
+    name: Benchmark ${{ matrix.fp-model }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        fp-model: [fma, nofma]
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # CORE-MATH is required for the 19 correctly-rounded float function
+      # benchmarks.  Clone to the parent of src/ so the Makefile default
+      # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src resolves to the
+      # src/ subdirectory where binary32/<func>/<funcf>.c lives.
+      - name: Clone CORE-MATH
+        run: |
+          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
+            "${HOME}/src/core-math-sys/vendor"
+
+      # -j$(nproc) compiles all 19 CR benchmarks in parallel and runs them in
+      # parallel.  Each executable writes one self-contained line, so interleaved
+      # output still parses correctly.
+      - name: Run ${{ matrix.fp-model }} benchmarks
+        run: make -j$(nproc) bench.${{ matrix.fp-model }} 2>&1 | tee bench_${{ matrix.fp-model }}.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ matrix.fp-model }}
+          path: bench_${{ matrix.fp-model }}.txt
+
+  # libm benchmarks don't need CORE-MATH and run fully in parallel with bench-cr.
+  bench-libm:
+    name: Benchmark libm
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install clang + llvm-link
-        run: |
-          sudo apt-get update && sudo apt-get install -y clang llvm-18
-          # Ubuntu ships llvm-link as llvm-link-NN; expose it on PATH.
-          sudo ln -sf /usr/bin/llvm-link-18 /usr/local/bin/llvm-link
-
-      # CORE-MATH is required for the 19 correctly-rounded float function
-      # benchmarks (bench.nofma).  A shallow clone is sufficient — we only need
-      # the source headers, not the full history.
-      - name: Clone CORE-MATH
-        run: |
-          # Clone to the parent of the src/ directory so that the default
-          # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src in the Makefile
-          # resolves to the src/ subdirectory inside the CORE-MATH repo root,
-          # where binary32/<func>/<funcf>.c lives.
-          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
-            "${HOME}/src/core-math-sys/vendor"
-
-      - name: Build metallic.a
-        run: make metallic.a
-
-      # bench.fma: Metallic vs CORE-MATH vs libm for the 19 correctly-rounded
-      # float unary functions compiled with -march=native (hardware FMA enabled).
-      - name: Run fma benchmarks
-        run: make bench.fma 2>&1 | tee bench_fma.txt
-
-      # bench.nofma: Metallic vs CORE-MATH vs libm for the 19 correctly-rounded
-      # float unary functions, with -ffp-contract=off -mno-fma to match the
-      # WASM target.  This is the most informative benchmark — apples-to-apples
-      # because all three implementations are correctly rounded, and the FP model
-      # matches what actually ships in metallic.a.
-      - name: Run nofma benchmarks
-        run: make bench.nofma 2>&1 | tee bench_nofma.txt
-
-      # bench.libm: Metallic vs libm for everything else (all double functions
-      # plus float functions outside the correctly-rounded set).  No CORE-MATH
-      # needed.  Uses -march=native which is fine for relative comparison since
-      # both implementations are compiled identically.
       - name: Run libm benchmarks
-        run: make bench.libm 2>&1 | tee bench_libm.txt
+        run: make -j$(nproc) bench.libm 2>&1 | tee bench_libm.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-libm
+          path: bench_libm.txt
+
+  publish:
+    needs: [bench-cr, bench-libm]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # Create an empty orphan gh-pages branch on the very first workflow run;
+      # subsequent runs find the branch via ls-remote and skip.
+      # git commit-tree with the well-known empty-tree SHA avoids touching the
+      # working tree or switching branches.
+      - name: Ensure gh-pages branch
+        run: |
+          if ! git ls-remote --exit-code origin gh-pages; then
+            commit=$(
+              GIT_AUTHOR_NAME='github-actions[bot]' \
+              GIT_AUTHOR_EMAIL='github-actions[bot]@users.noreply.github.com' \
+              GIT_COMMITTER_NAME='github-actions[bot]' \
+              GIT_COMMITTER_EMAIL='github-actions[bot]@users.noreply.github.com' \
+              git commit-tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904 \
+                -m 'Initialize gh-pages'
+            )
+            git push origin "${commit}:refs/heads/gh-pages"
+          fi
+
+      - name: Download benchmark outputs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: bench-*
+          merge-multiple: true
+          path: .
 
       - name: Parse benchmark output to JSON
         run: |
