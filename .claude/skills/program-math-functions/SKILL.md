@@ -72,6 +72,20 @@ kernels. WASM *does* have fast directed rounding (`f64.nearest`, `floor`, etc.) 
 single-rounding-mode fact is what makes correct rounding tractable here
 (see [reference/correct-rounding.md](reference/correct-rounding.md)).
 
+**Porting dd algorithms from metallic-rs — re-tailor for WASM.** Double-double
+arithmetic (`gamma_twoprod_`, `gamma_mul_dd_`, and similar helpers) calls `fma()`
+at every multiplication step. In metallic-rs and on x86-64 with FMA, this is a
+single hardware instruction. On WASM it is a software call — making every
+double-double multiplication expensive. When porting an algorithm that uses dd
+in a **hot path** (fast path, called on most inputs), do **not** assume the dd
+machinery is free: replace it with a plain double computation that is accurate
+enough for the task (a float fast path only needs ~25 bits, so plain double
+arithmetic suffices). Reserve full dd paths for the **slow path / Ziv fallback**
+(rarely reached). Concrete example: `lgammaf`'s fast-path reflection formula called
+`gamma_sinpi_dd_` on every negative non-integer — 58% of all benchmark inputs —
+costing ~70 FP ops including multiple software `fma()` calls, when a plain
+`sin(M_PI * x)` would have been accurate enough.
+
 **Lookup tables are allowed when they buy correct rounding (or speed).** The
 general "keep it minimal" rule yields to accuracy here: for **`double` functions
 and the harder `float` functions**, a table-driven kernel — e.g. an `N`-entry
