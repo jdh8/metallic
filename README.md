@@ -92,6 +92,12 @@ published hard-to-round cases plus a broad random sample. See `test/oracle/` and
   pre-existing soft-float/integer/long-double failures. CI runs this.
 * `make check.wasm` — full wasm suite including the known-broken tests.
 
+If `wasmtime` is installed but not on `PATH` (for example via
+`$HOME/.wasmtime/bin/wasmtime`), the Makefile will use that location
+automatically. You can also select another runner explicitly:
+
+    make WASMRUN=/path/to/wasmtime check.wasm.fast
+
 ## Known issues
 
 11 pre-existing test failures in the soft-float / 128-bit integer / long-double

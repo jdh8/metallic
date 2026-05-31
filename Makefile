@@ -3,7 +3,8 @@ CPPFLAGS += -I include -D__STDC_NO_THREADS__=1 -MMD -MP -MQ $@
 CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
 LDFLAGS := -nostdlib $(LDFLAGS)
 LDLIBS := -lm
-WASMRUN ?= wasmtime
+# Prefer PATH lookup, but fall back to wasmtime's default install location.
+WASMRUN ?= $(or $(shell command -v wasmtime 2>/dev/null),$(if $(wildcard $(HOME)/.wasmtime/bin/wasmtime),$(HOME)/.wasmtime/bin/wasmtime,wasmtime))
 
 all: metallic.a
 
