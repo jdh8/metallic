@@ -1,0 +1,73 @@
+name: Oracle
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+# Exhaustive correct-rounding proof for the 19 correctly-rounded float functions
+# (CR_FUNCS).  Each job sweeps ALL 2^32 binary32 inputs and compares to a
+# correctly-rounded oracle -- the MPFR reference (ref_*) for most, and the faster
+# bit-for-bit cross-check against CORE-MATH's cr_* for the gamma pair.  This is a
+# PROOF, not a sample, so a green run guarantees the function is correctly
+# rounded everywhere.  It catches the slow-path / Ziv-fallback bugs that
+# check.wasm.fast (exact functions only) cannot see.
+#
+# One matrix job per function keeps wall-clock at roughly the slowest single
+# sweep (~2-3 min on a GitHub runner) rather than their sum, and pinpoints which
+# function regressed.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# A newer push to the same ref supersedes in-flight runs.
+concurrency:
+  group: oracle-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # Derive the function list from the Makefile (ORACLE.cr) so the matrix can
+  # never drift from the curated correctly-rounded set.
+  matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      fns: ${{ steps.gen.outputs.fns }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: gen
+        run: |
+          fns=$(make -s print.oracle.cr | tr ' ' '\n' | jq -R . | jq -sc .)
+          echo "fns=${fns}" >> "${GITHUB_OUTPUT}"
+
+  correct-rounding:
+    needs: matrix
+    name: ${{ matrix.fn }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false   # report every regressing function, not just the first
+      matrix:
+        fn: ${{ fromJson(needs.matrix.outputs.fns) }}
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # The oracle build needs MPFR + GMP; gcc and its OpenMP runtime (libgomp)
+      # are already on the runner, so no clang/libomp install is required.
+      - name: Install MPFR + GMP
+        run: sudo apt-get update && sudo apt-get install -y libmpfr-dev libgmp-dev
+
+      # CORE-MATH supplies both the MPFR references (ref_*) and the cr_* used by
+      # the cross-checks.  Clone to the parent of src/ so the Makefile default
+      # CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src resolves correctly.
+      - name: Clone CORE-MATH
+        run: |
+          git clone --depth=1 https://gitlab.inria.fr/core-math/core-math.git \
+            "${HOME}/src/core-math-sys/vendor"
+
+      # The .exe- target builds the oracle and runs it; the harness exits nonzero
+      # on any mismatch, so make (and the job) fails on a correct-rounding bug.
+      - name: Prove ${{ matrix.fn }} correctly rounded over all 2^32 inputs
+        run: make test/oracle/math/float/${{ matrix.fn }}.exe-

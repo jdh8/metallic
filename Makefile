@@ -7,7 +7,7 @@ WASMRUN ?= wasmtime
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double clean all compile_commands.json
+.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.cr print.oracle.cr clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -97,6 +97,20 @@ SOURCES.check.oracle.double := $(wildcard test/oracle/math/double/*.c)
 check.oracle: check.oracle.float check.oracle.double
 check.oracle.float:  $(SOURCES.check.oracle.float:.c=.exe-)
 check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
+
+# Gate-worthy subset: the correctly-rounded float functions (CR_FUNCS), each
+# PROVEN over all 2^32 inputs.  Non-gamma use the exhaustive MPFR sweep; the
+# gamma pair uses the faster cr_* bit-for-bit cross-check.  This is the set the
+# `oracle` CI workflow runs (one matrix job per name).  The other float oracles
+# (coshf, erff, hypotf, sinhf, tanhf, atan2f, erfcf) are only faithfully
+# rounded so far and are excluded until they reach correct rounding.
+ORACLE.cr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) lgamma_cr tgamma_cr
+check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
+
+# Emit the ORACLE.cr names (space-separated) so the `oracle` CI workflow can
+# build its matrix from this single source of truth instead of duplicating it.
+print.oracle.cr:
+	@echo $(ORACLE.cr)
 
 test/oracle/math/float/%.exe: test/oracle/math/float/%.c
 	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< $(ORACLE_LDLIBS)
