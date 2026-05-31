@@ -54,3 +54,11 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# Claude and AI context
+/.claude/settings.local.json
+/.claude/backups/
+/.claude/history/
+/.claude/worktrees/
+/.claude/scheduled_tasks.lock
+*.local.md
