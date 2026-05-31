@@ -6,4 +6,9 @@
 #include "src/math/float/lgammaf.c"
 #undef lgammaf
 
+#ifdef BENCH_COREMATH
+#include <binary32/lgamma/lgammaf.c>   /* cr_lgammaf */
+BENCH_CR(lgammaf)
+#else
 BENCH(lgammaf)
+#endif

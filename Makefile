@@ -51,14 +51,15 @@ check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
 check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 
-# Default benchmark: speed of the 17 correctly-rounded float unary functions
+# Default benchmark: speed of the 19 correctly-rounded float unary functions
 # against CORE-MATH's correctly-rounded cr_* impls -- the apples-to-apples
 # comparison, since both are correctly rounded (libm is not necessarily).
 # Requires a CORE-MATH checkout (see CORE_MATH below).  Two FP models per
 # function: .fma (native, hardware FMA) and .nofma (-ffp-contract=off -mno-fma,
 # generic arch) mirroring the no-FMA wasm target.  Output format: bench/README.md.
 CR_FUNCS := expf logf log2f log10f log1pf sinf cosf tanf \
-            asinf acosf atanf asinhf acoshf atanhf exp2f expm1f cbrtf
+            asinf acosf atanf asinhf acoshf atanhf exp2f expm1f cbrtf \
+            tgammaf lgammaf
 BENCH.cr   := $(addprefix bench/float/,$(addsuffix .c,$(CR_FUNCS)))
 # Functions without a CORE-MATH apples-to-apples comparison here (all double
 # benches plus float functions not yet correctly rounded): legacy 2-way vs libm.
@@ -69,6 +70,10 @@ bench: bench.fma bench.nofma
 bench.fma:   $(BENCH.cr:.c=.fma.exe) $(BENCH.cr:.c=.fma.exe-)
 bench.nofma: $(BENCH.cr:.c=.nofma.exe) $(BENCH.cr:.c=.nofma.exe-)
 bench.libm: $(BENCH.libm:.c=.exe) $(BENCH.libm:.c=.exe-)
+
+# Float bench files include the implementation source directly (`src/math/float/*.c`).
+# Keep bench binaries in sync when those implementation files change.
+bench/float/%.exe bench/float/%.fma.exe bench/float/%.nofma.exe: src/math/float/%.c
 
 bench/float/%.fma.exe: bench/float/%.c
 	$(CC) -iquote test/native -iquote . -I $(CORE_MATH) $(CFLAGS) -march=native -DBENCH_COREMATH -DBENCH_LABEL='"fma"' -o $@ $< $(LDLIBS)
