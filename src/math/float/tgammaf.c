@@ -1,6 +1,4 @@
 #include "kernel/gamma.h"
-#include "finite/log2f.h"
-#include "exp2f.h"
 #include <math.h>
 
 /* Fast minimax for Gamma(2.875 + d), d in [-0.5, 0.5].
@@ -30,127 +28,94 @@ static double tgamma_poly_eval_(double x, const double *c, int n)
     return y;
 }
 
-/* Lanczos partial-fraction sum carried in double-double.
+/* Gamma(2.875 + d) as a double-double for d in [-0.5, 0.5].
  *
- *   S(z) = p0 + p1/(z+1) + p2/(z+2) + p3/(z+3) + p4/(z+4)
- *
- * The p1 and p2 terms are large and of opposite sign, so they partially
- * cancel; accumulating with two-sum keeps the low part the final cast needs.
- * Coefficients are the float Lanczos set from kernel/lanczos.h (array p,
- * g = 4.3644...); they are reproduced here so each quotient can also yield its
- * residual for the double-double carry. */
-static double lanczos_series_dd_(double z, double lo[static 1])
+ * Degree-18 minimax from mpmath.chebyfit(gamma(2.875+d), [-0.5,0.5], 19) at
+ * prec=260; relative approximation error ~2^-68.  The six leading coefficients
+ * are carried as double-double (their f64 rounding would otherwise enter at
+ * ~2^-53); the tail c6..c18 is summed in plain f64 (its rounding enters only at
+ * d^6, below 2^-62) and folded into the dd Horner pass.  This is the accurate
+ * analogue of tgamma_poly_f64_ used by the fast path. */
+static const double tgamma_dd_hi_[6] = {
+    0x1.c9a76be577123p+0, 0x1.8f2754ddcf90cp+0, 0x1.0d1191949418ap+0,
+    0x1.e1f42cf0ae65ep-2, 0x1.82b358a3ae616p-3, 0x1.e1f2b30cb100bp-5,
+};
+static const double tgamma_dd_lo_[6] = {
+    -0x1.58baa4910955dp-55, -0x1.f91aaf754e977p-58, -0x1.75f1d7b24101cp-54,
+     0x1.4eccfb1f0e199p-60, -0x1.d86fa29f03bacp-59, -0x1.9e340af621b03p-65,
+};
+static const double tgamma_tail_[13] = {
+     0x1.240f6d3d63a06p-6,  0x1.1522ca0d963cfp-8,  0x1.1fd00825c3345p-10,
+     0x1.980885bff4e6bp-13, 0x1.b3f446a8d8113p-15, 0x1.49e2edc896c01p-18,
+     0x1.48150757752ffp-19, -0x1.41d67b864cdf7p-23, 0x1.6269864c4a0c4p-23,
+    -0x1.57bf34cf1bfe7p-25, 0x1.1a074caa43f5ap-26, -0x1.b0c82a252e56ep-28,
+     0x1.33ad3a2fc226ep-29,
+};
+
+/* Renormalizing double-double sum (a_hi+a_lo)+(b_hi+b_lo) -> (hi, *lo). */
+static double tg_add_dd_(double a_hi, double a_lo, double b_hi, double b_lo, double lo[static 1])
 {
-    const double p[] = {
-        2.5066282972608683788,
-        93.724008703110370647,
-       -85.030278048785721233,
-        15.313090747320992728,
-       -0.2376573970640603182
-    };
-
-    double s = p[0];
-    double e = 0;
-
-    for (int k = 1; k <= 4; ++k) {
-        double d = z + k;
-        double t = p[k] / d;
-
-        /* residual of the quotient: t_lo = (p[k] - t*d) / d, with t*d fused. */
-        double t_lo = fma(-t, d, p[k]) / d;
-
-        double a;
-        s = gamma_twosum_(s, t, &a);
-        e += a + t_lo;
-    }
-
+    double e;
+    double s = gamma_twosum_(a_hi, b_hi, &e);
+    e += a_lo + b_lo;
     double hi = s + e;
     *lo = s - hi + e;
     return hi;
 }
 
-/* Gamma(1+z) in double-double for z >= -0.5.
- *
- *   Gamma(1+z) = 2^E * S(z),   E = (0.5+z)*log2(base) - log2e*base,
- *   base = z + g + 0.5.
- *
- * The two terms of E are large and nearly cancel, so E is formed in
- * double-double; 2^E is then exp2(E_hi) corrected by the first-order term
- * ln2*E_lo, and multiplied by the double-double Lanczos sum. */
-static double gamma1p_dd_(double z, double lo[static 1])
+/* Gamma(2.875 + d) in double-double via dd Horner over the six leading
+ * coefficients, with the f64 tail folded into the lowest term. */
+static double tgamma_poly_dd_(double d, double lo[static 1])
 {
-    const double log2e = 1.442695040888963407;
-    const double ln2 = 0.69314718055994530942;
-    const double lanczos_g = 4.3644453082153116114;
+    double tail = tgamma_poly_eval_(d, tgamma_tail_, 13);
 
-    double base = lanczos_g + 0.5 + z;
-    double l2 = log2f_(base);
+    /* acc = c5 + d*tail */
+    double plo, phi = gamma_twoprod_(d, tail, &plo);
+    double acc_lo, acc_hi = tg_add_dd_(tgamma_dd_hi_[5], tgamma_dd_lo_[5], phi, plo, &acc_lo);
 
-    double a_lo;
-    double a_hi = gamma_twoprod_(0.5 + z, l2, &a_lo);
-
-    double b_lo;
-    double b_hi = gamma_twoprod_(log2e, base, &b_lo);
-
-    double s_lo;
-    double e_hi = gamma_twosum_(a_hi, -b_hi, &s_lo);
-    double e_lo = s_lo + (a_lo - b_lo);
-
-    /* 2^(e_hi + e_lo) ~= exp2(e_hi) * (1 + ln2*e_lo). */
-    double g = exp2f_(e_hi);
-    double g_lo = g * (ln2 * e_lo);
-
-    double s_low;
-    double s_hi = lanczos_series_dd_(z, &s_low);
-
-    return gamma_mul_dd_(g, g_lo, s_hi, s_low, lo);
-}
-
-/* Legacy fully double-double path. Kept as the accurate fallback for the rare
- * hard-to-round cases that survive the fast Ziv gate. */
-static float tgammaf_dd_(float z)
-{
-    const double pi_hi = 3.14159265358979312;
-    const double pi_lo = 1.2246467991473532e-16;
-
-    if (z == 0)
-        return copysignf(INFINITY, z);
-
-    if (isnan(z))
-        return z;
-
-    if (z == INFINITY)
-        return INFINITY;
-
-    if (z < 0.5f) {
-        if (rintf(z) == z)
-            return NAN;
-
-        double sp_lo;
-        double sp = gamma_sinpi_dd_(z, &sp_lo);
-
-        if (z < -170.0f)
-            return copysignf(0.0f, sp);
-
-        double g_lo;
-        double g_hi = gamma1p_dd_(-z, &g_lo);
-
-        double d_lo;
-        double d_hi = gamma_mul_dd_(sp, sp_lo, g_hi, g_lo, &d_lo);
-
-        double q_lo;
-        double q_hi = gamma_div_dd_(pi_hi, d_hi, d_lo, &q_lo);
-
-        q_lo += pi_lo / d_hi;
-
-        return gamma_to_float_odd_(q_hi, q_lo);
+    for (int k = 4; k >= 0; --k) {
+        double t;
+        acc_hi = gamma_mul_dd_(acc_hi, acc_lo, d, 0.0, &t);       /* acc * d */
+        acc_hi = tg_add_dd_(acc_hi, t, tgamma_dd_hi_[k], tgamma_dd_lo_[k], &acc_lo);
     }
 
-    if (z >= 36.0f)
-        return INFINITY;
+    *lo = acc_lo;
+    return acc_hi;
+}
 
-    double lo;
-    double hi = gamma1p_dd_(z - 1.0, &lo);
+/* Accurate double-double fallback for the hard-to-round cases that survive the
+ * fast Ziv gate.  Mirrors tgamma_f64_: reduce x into the minimax interval around
+ * 2.875, evaluate Gamma there in double-double, then walk the recurrence
+ *   Gamma(x) = Gamma(x-steps) * prod_{j=1..steps}(x-j)    (x above the interval)
+ *   Gamma(x) = Gamma(x+steps) / prod_{j=0..steps-1}(x+j)  (x below)
+ * carrying everything in double-double.  Negative x flows through the same
+ * recurrence -- the product runs through negative factors and supplies the
+ * sign, so no reflection is needed (matching the fast path, against which the
+ * Ziv gate compares).  The earlier Lanczos path was capped at ~2^-41 by the
+ * float-accuracy log2f_ it relied on, so it could not round these correctly. */
+static float tgammaf_dd_(float z)
+{
+    double x = (double)z;
+    double m = x - 2.875;
+    double i = nearbyint(m);
+    double lo, hi = tgamma_poly_dd_(m - i, &lo);
+    int steps = (int)fabs(i);
+
+    if (i > 0.0) {
+        double factor = x;
+        for (int k = 0; k < steps; ++k) {
+            factor -= 1.0;
+            hi = gamma_mul_dd_(hi, lo, factor, 0.0, &lo);
+        }
+    } else if (i < 0.0) {
+        double prod_lo = 0.0, prod_hi = x, factor = x;
+        for (int k = 1; k < steps; ++k) {
+            factor += 1.0;
+            prod_hi = gamma_mul_dd_(prod_hi, prod_lo, factor, 0.0, &prod_lo);
+        }
+        double rlo, rhi = gamma_div_dd_(1.0, prod_hi, prod_lo, &rlo);
+        hi = gamma_mul_dd_(hi, lo, rhi, rlo, &lo);
+    }
 
     return gamma_to_float_odd_(hi, lo);
 }
