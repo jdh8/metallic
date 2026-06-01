@@ -51,16 +51,16 @@ A function is **correctly rounded** when its result is the true value rounded to
 the nearest representable number (error ≤ 0.5 ulp); **faithfully rounded** is the
 weaker guarantee of one of the two nearest (error < 1 ulp). For `float`, correct
 rounding is *proven* by an exhaustive sweep of all 2³² bit patterns against an
-MPFR oracle; for `double` it is strong evidence from a sampler that hammers the
-published hard-to-round cases plus a broad random sample. See `test/oracle/` and
-`make check.oracle` (native, MPFR-backed; not part of the wasm CI gate).
+MPFR or CORE-MATH oracle; for `double` it is strong evidence from a sampler that
+hammers the published hard-to-round cases plus a broad random sample. See
+`test/oracle/` and `make check.oracle` (native; not part of the wasm CI gate).
 
 * **`float`, correctly rounded (≤ 0.5 ulp).** Unary, proven by exhaustive sweep:
   `expf` `exp2f` `expm1f` `logf` `log2f` `log10f` `log1pf` `sinf` `cosf` `tanf`
   `asinf` `acosf` `atanf` `asinhf` `acoshf` `atanhf` `sinhf` `coshf` `tanhf`
-  `cbrtf` `erff` `erfcf`.  Bivariate (sampler evidence, since the 2⁶⁴ domain
-  cannot be swept): `atan2f` `hypotf`.
-* **`float`, faithfully rounded (< 1 ulp).** `powf` `lgammaf` `tgammaf`.
+  `cbrtf` `erff` `erfcf` `lgammaf` `tgammaf`.  Bivariate (sampler evidence, since
+  the 2⁶⁴ domain cannot be swept): `atan2f` `hypotf`.
+* **`float`, faithfully rounded (< 1 ulp).** `powf`.
 * **`double`, correctly rounded (≤ 0.5 ulp), sampler evidence.** `exp` `exp2`
   `expm1` `log` `log2` `log10` `log1p` `cbrt` `atan` `asin` `acos` `hypot`
   `asinh` `acosh` `atanh` `erf`.
