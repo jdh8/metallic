@@ -6,4 +6,4 @@
 #include "src/math/float/coshf.c"
 #undef coshf
 
-BENCH(coshf)
+BENCH(coshf, BENCH_BOUNDED(-90.0f, 90.0f))

@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/acos/acosf.c>   /* cr_acosf */
-BENCH_CR(acosf)
+BENCH_CR(acosf, BENCH_BOUNDED(-1.1f, 1.1f))
 #else
-BENCH(acosf)
+BENCH(acosf, BENCH_BOUNDED(-1.1f, 1.1f))
 #endif

@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/acosh/acoshf.c>   /* cr_acoshf */
-BENCH_CR(acoshf)
+BENCH_CR(acoshf, BENCH_FROM(1.0f))
 #else
-BENCH(acoshf)
+BENCH(acoshf, BENCH_FROM(1.0f))
 #endif

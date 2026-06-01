@@ -9,7 +9,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/tan/tanf.c>   /* cr_tanf */
-BENCH_CR(tanf)
+BENCH_CR(tanf, BENCH_FULL)
 #else
-BENCH(tanf)
+BENCH(tanf, BENCH_FULL)
 #endif

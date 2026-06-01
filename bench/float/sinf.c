@@ -9,7 +9,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/sin/sinf.c>   /* cr_sinf */
-BENCH_CR(sinf)
+BENCH_CR(sinf, BENCH_FULL)
 #else
-BENCH(sinf)
+BENCH(sinf, BENCH_FULL)
 #endif

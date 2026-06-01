@@ -6,4 +6,4 @@
 #include "src/math/float/logbf.c"
 #undef logbf
 
-BENCH(logbf)
+BENCH(logbf, BENCH_FULL)

@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/exp2/exp2f.c>   /* cr_exp2f */
-BENCH_CR(exp2f)
+BENCH_CR(exp2f, BENCH_BOUNDED(-155.0f, 130.0f))
 #else
-BENCH(exp2f)
+BENCH(exp2f, BENCH_BOUNDED(-155.0f, 130.0f))
 #endif

@@ -9,7 +9,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/cos/cosf.c>   /* cr_cosf */
-BENCH_CR(cosf)
+BENCH_CR(cosf, BENCH_FULL)
 #else
-BENCH(cosf)
+BENCH(cosf, BENCH_FULL)
 #endif

@@ -6,4 +6,4 @@
 #include "src/math/float/erfcf.c"
 #undef erfcf
 
-BENCH(erfcf)
+BENCH(erfcf, BENCH_FULL)

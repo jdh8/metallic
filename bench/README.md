@@ -27,13 +27,28 @@ not-yet-correctly-rounded ones (for now, `powf`).
 
 ## What the numbers mean
 
-Each run sweeps a function across a strided subset of the entire IEEE-754 domain
-(every ~19th `binary32` bit pattern, or a coarse `binary64` stride), evaluating
-both `f(x)` and `f(-x)`. The printed `metallic`, `libm`, and `core-math` columns
-are the **CPU seconds** (`clock()`) for one full sweep.
+Each run evaluates a function on 225 million random inputs drawn from an
+interval matched to the function's domain (same intervals as `metallic-rs`
+benchmarks):
 
-These are **aggregate sweep times, not per-call latency**, and their absolute
-values are machine- and load-dependent. **Only the ratios are meaningful:**
+- **Representation-uniform** (`BENCH_FULL`, `BENCH_FROM`, `BENCH_TO`): every
+  bit pattern in the range is equally likely — each exponent/magnitude region
+  gets an equal share.  Used for unbounded domains (`sin`, `log`, `cbrt`, …)
+  and open-ended ones (`log`: `[0, +∞]`).
+- **Value-uniform** (`BENCH_BOUNDED`): every real value in `[lo, hi]` is
+  equally likely.  Used for bounded domains where the tiny-magnitude region
+  should not be over-represented (`asin`: `[-1.1, 1.1]`, `exp`: `[-105, 90]`,
+  …).
+
+The double benchmarks still use a strided bit-pattern sweep (coarse `binary64`
+stride) as a throughput baseline.
+
+The printed `metallic`, `libm`, and `core-math` columns are the **CPU seconds**
+(`clock()`) for one full run.
+
+These are **aggregate throughput times, not per-call latency**, and their
+absolute values are machine- and load-dependent. **Only the ratios are
+meaningful:**
 
 - **`cr/m`** = `core-math` time ÷ `metallic` time.
 - **`libm/m`** = `libm` time ÷ `metallic` time.
@@ -43,10 +58,11 @@ less time); **< 1 means the other implementation is faster**. For example
 `cr/m 2.70` ⇒ Metallic ≈ 2.7× faster than CORE-MATH; `cr/m 0.27` ⇒ CORE-MATH
 ≈ 3.7× faster than Metallic.
 
-The harness is a throughput-style loop (consecutive `f(x)`/`f(-x)` are
-independent; results are sunk through a `volatile` so neither call is optimized
-away). It is fine for relative comparison — every implementation is measured
-identically — but do not read it as a latency figure.
+The harness pre-fills a 65536-element buffer with random inputs (outside the
+timed loop), then cycles through it 3440 times.  Results are sunk through a
+`volatile` so no call is optimized away.  It is fine for relative comparison —
+every implementation is measured identically — but do not read it as a latency
+figure.
 
 ### Example row (`make bench`)
 

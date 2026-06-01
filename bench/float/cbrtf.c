@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/cbrt/cbrtf.c>   /* cr_cbrtf */
-BENCH_CR(cbrtf)
+BENCH_CR(cbrtf, BENCH_FULL)
 #else
-BENCH(cbrtf)
+BENCH(cbrtf, BENCH_FULL)
 #endif

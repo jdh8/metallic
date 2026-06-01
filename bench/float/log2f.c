@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/log2/log2f.c>   /* cr_log2f */
-BENCH_CR(log2f)
+BENCH_CR(log2f, BENCH_FROM(0.0f))
 #else
-BENCH(log2f)
+BENCH(log2f, BENCH_FROM(0.0f))
 #endif

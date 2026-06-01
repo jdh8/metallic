@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/asinh/asinhf.c>   /* cr_asinhf */
-BENCH_CR(asinhf)
+BENCH_CR(asinhf, BENCH_FULL)
 #else
-BENCH(asinhf)
+BENCH(asinhf, BENCH_FULL)
 #endif

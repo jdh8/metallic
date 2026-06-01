@@ -6,4 +6,4 @@
 #include "src/math/float/tanhf.c"
 #undef tanhf
 
-BENCH(tanhf)
+BENCH(tanhf, BENCH_FULL)

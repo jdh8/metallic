@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/asin/asinf.c>   /* cr_asinf */
-BENCH_CR(asinf)
+BENCH_CR(asinf, BENCH_BOUNDED(-1.1f, 1.1f))
 #else
-BENCH(asinf)
+BENCH(asinf, BENCH_BOUNDED(-1.1f, 1.1f))
 #endif

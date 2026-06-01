@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/tgamma/tgammaf.c>   /* cr_tgammaf */
-BENCH_CR(tgammaf)
+BENCH_CR(tgammaf, BENCH_BOUNDED(-10.0f, 35.0f))
 #else
-BENCH(tgammaf)
+BENCH(tgammaf, BENCH_BOUNDED(-10.0f, 35.0f))
 #endif

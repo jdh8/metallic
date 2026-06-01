@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/atan/atanf.c>   /* cr_atanf */
-BENCH_CR(atanf)
+BENCH_CR(atanf, BENCH_FULL)
 #else
-BENCH(atanf)
+BENCH(atanf, BENCH_FULL)
 #endif

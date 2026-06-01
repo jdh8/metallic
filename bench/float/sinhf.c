@@ -6,4 +6,4 @@
 #include "src/math/float/sinhf.c"
 #undef sinhf
 
-BENCH(sinhf)
+BENCH(sinhf, BENCH_BOUNDED(-90.0f, 90.0f))

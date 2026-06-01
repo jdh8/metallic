@@ -8,7 +8,7 @@
 
 #ifdef BENCH_COREMATH
 #include <binary32/log1p/log1pf.c>   /* cr_log1pf */
-BENCH_CR(log1pf)
+BENCH_CR(log1pf, BENCH_FROM(-1.0f))
 #else
-BENCH(log1pf)
+BENCH(log1pf, BENCH_FROM(-1.0f))
 #endif
