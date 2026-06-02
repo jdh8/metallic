@@ -62,6 +62,30 @@ static inline sum_t dd_mul_f64_(sum_t a, double b)
     return (sum_t){ p.hi, fma(a.lo, b, p.lo) };
 }
 
+/* sqrt of a non-negative double-double, ~106-bit accurate.  One Newton-Heron
+ * step refines the f64 sqrt of the high word: r + (S - r^2) / (2r). */
+static inline sum_t dd_sqrt_(sum_t s)
+{
+    if (s.hi <= 0.0)
+        return (sum_t){ 0.0, 0.0 };
+
+    double r = sqrt(s.hi);
+    sum_t r2 = dd_product_(r, r);
+    sum_t res = dd_add_(s, (sum_t){ -r2.hi, -r2.lo });
+    double corr = (res.hi + res.lo) / (2.0 * r);
+    return dd_2sum_(r, corr);
+}
+
+/* a / b for double-double a, b, ~106-bit accurate. */
+static inline sum_t dd_div_(sum_t a, sum_t b)
+{
+    double q = a.hi / b.hi;
+    sum_t qb = dd_mul_f64_(b, q);
+    sum_t res = dd_add_(a, (sum_t){ -qb.hi, -qb.lo });
+    double corr = (res.hi + res.lo) / b.hi;
+    return dd_2sum_(q, corr);
+}
+
 /* Horner evaluation of a double-double polynomial at a double-double argument.
  * coeffs[0] is the constant term; coeffs[n-1] is the leading term. */
 static inline sum_t poly_dd_(sum_t u, const sum_t c[], int n)

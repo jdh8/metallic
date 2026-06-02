@@ -14,6 +14,7 @@
  * float inputs convert exactly into the 240-bit registers (mpfr_set_flt). */
 
 #include <complex.h>
+#include <math.h>
 #include <mpfr.h>
 
 #define CMPFR_PREC 240
@@ -42,6 +43,48 @@ static inline void ref_cargf(float x, float y, float *re, float *im)
     *re = mpfr_get_flt(r, MPFR_RNDN);
     *im = 0.0f;
     mpfr_clears(mx, my, r, (mpfr_ptr)0);
+}
+
+/* csqrtf principal branch.  re = sqrt((|z|+x)/2) >= 0, im = sign(y)*sqrt((|z|-x)/2).
+ *
+ * Computing the smaller component as a bare sqrt of a difference cancels
+ * catastrophically (|z|-x for x>0, |z|+x for x<0) -- even 240 bits is not enough
+ * near an axis, which would make the *reference* wrong.  Instead compute only
+ * the larger component (always sqrt((|z|+|x|)/2), no cancellation) and derive
+ * the smaller from the exact identity re*|im| = |y|/2. */
+static inline void ref_csqrtf(float x, float y, float *re, float *im)
+{
+    mpfr_t mx, ax, ay, m, big, small;
+    mpfr_inits2(CMPFR_PREC, mx, ax, ay, m, big, small, (mpfr_ptr)0);
+    mpfr_set_flt(mx, x, MPFR_RNDN);
+    mpfr_abs(ax, mx, MPFR_RNDN);
+    mpfr_set_flt(ay, y, MPFR_RNDN);
+    mpfr_abs(ay, ay, MPFR_RNDN);
+    mpfr_hypot(m, mx, ay, MPFR_RNDN);
+
+    /* big = sqrt((|z| + |x|) / 2): the larger output magnitude, no cancellation. */
+    mpfr_add(big, m, ax, MPFR_RNDN);
+    mpfr_div_2ui(big, big, 1, MPFR_RNDN);
+    mpfr_sqrt(big, big, MPFR_RNDN);
+
+    if (mpfr_zero_p(big)) {
+        *re = 0.0f;
+        *im = y;                 /* z == 0: csqrt(0) = 0 with imag sign of y */
+    } else {
+        /* small = |y| / (2*big), the smaller output magnitude. */
+        mpfr_div(small, ay, big, MPFR_RNDN);
+        mpfr_div_2ui(small, small, 1, MPFR_RNDN);
+
+        if (signbit(x)) {
+            *re = mpfr_get_flt(small, MPFR_RNDN);
+            *im = copysignf(mpfr_get_flt(big, MPFR_RNDN), y);
+        } else {
+            *re = mpfr_get_flt(big, MPFR_RNDN);
+            *im = copysignf(mpfr_get_flt(small, MPFR_RNDN), y);
+        }
+    }
+
+    mpfr_clears(mx, ax, ay, m, big, small, (mpfr_ptr)0);
 }
 
 #endif
