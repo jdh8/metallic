@@ -79,8 +79,52 @@ jobs:
           name: bench-libm
           path: bench_libm.txt
 
+  # Honest ship-target bench: wasm32 + wasmtime, same FMA-less footing for both
+  # Metallic and CORE-MATH (no hardware FMA on wasm).  Runs in parallel with the
+  # native jobs; shares the pinned CORE-MATH cache.
+  bench-wasm:
+    name: Benchmark wasm
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install clang + llvm-link
+        run: sudo apt-get update && sudo apt-get install -y clang llvm-18
+
+      - name: Install wasmtime
+        run: |
+          curl -sSf https://wasmtime.dev/install.sh | bash
+          echo "$HOME/.wasmtime/bin" >> $GITHUB_PATH
+
+      - name: Cache CORE-MATH
+        id: coremath
+        uses: actions/cache@v5
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
+      - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
+        run: |
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
+
+      # bench.wasm builds metallic.a first, then the 19 wasm bench binaries, then
+      # runs them serially under wasmtime (parallel runs on a shared runner would
+      # add noise; each binary writes one self-contained line).
+      - name: Run wasm benchmarks
+        run: make bench.wasm 2>&1 | tee bench_wasm.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-wasm
+          path: bench_wasm.txt
+
   publish:
-    needs: [bench-cr, bench-libm]
+    needs: [bench-cr, bench-libm, bench-wasm]
     runs-on: ubuntu-latest
 
     steps:
@@ -113,7 +157,7 @@ jobs:
 
       - name: Parse benchmark output to JSON
         run: |
-          cat bench_fma.txt bench_nofma.txt bench_libm.txt \
+          cat bench_fma.txt bench_nofma.txt bench_libm.txt bench_wasm.txt \
             | python3 scripts/parse_bench.py > bench.json
           cat bench.json
 
