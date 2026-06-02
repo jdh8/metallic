@@ -65,6 +65,13 @@ hammers the published hard-to-round cases plus a broad random sample. See
   `asinh` `acosh` `atanh` `erf`.
 * **`double`, faithfully rounded (< 1 ulp).** `sin` `cos` `tan` `sinh` `cosh`
   `tanh` `atan2` `erfc` `lgamma` `tgamma` — pending a wider accurate path.
+* **Complex `float`, correctly rounded (≤ 0.5 ulp per part), sampler evidence.**
+  Each of the real and imaginary parts is the correctly-rounded `float` of the
+  exact value (the 2⁶⁴ domain cannot be swept, so this is a random + near-axis
+  MPFR sampler, as for the bivariate floats): `cabsf` `cargf` `csqrtf` `cexpf`
+  `clogf`.  See `test/oracle/math/float/complex/` and `make check.oracle.complex`.
+  The remaining complex `float` functions (the trig/hyperbolic and inverse
+  families, `cpowf`) are still composed from the real kernels and faithful.
 * **Complex `double`** (`cabs`, `cexp`, `clog`, `csqrt`, the trig/hyperbolic
   families, …) is composed from the real kernels and inherits their accuracy.
 
