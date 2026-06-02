@@ -60,7 +60,7 @@ check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 # generic arch) mirroring the no-FMA wasm target.  Output format: bench/README.md.
 CR_FUNCS := expf logf log2f log10f log1pf sinf cosf tanf \
             asinf acosf atanf asinhf acoshf atanhf exp2f expm1f cbrtf \
-            tgammaf lgammaf
+            tgammaf lgammaf powf
 BENCH.cr   := $(addprefix bench/float/,$(addsuffix .c,$(CR_FUNCS)))
 # Functions without a CORE-MATH apples-to-apples comparison here (all double
 # benches plus float functions not yet correctly rounded): legacy 2-way vs libm.
@@ -116,13 +116,13 @@ check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
 # job per name).  A correctly-rounded function must agree with CORE-MATH's cr_*
 # everywhere, so for regression detection this is equivalent to the MPFR sweep
 # but ~10x faster (no bignum per call).  Unary functions are exhaustive over all
-# 2^32 inputs; the bivariate pair (atan2f, hypotf) is sampled + worst-case files
-# (an exhaustive 2^64 proof is infeasible -- the same way CORE-MATH validates
-# them).  powf is excluded: notoriously hard, not yet correctly rounded.
+# 2^32 inputs; the bivariate trio (atan2f, hypotf, powf) is sampled + worst-case
+# files (an exhaustive 2^64 proof is infeasible -- the same way CORE-MATH
+# validates them).
 ORACLE.cr := expf_cr logf_cr log2f_cr log10f_cr log1pf_cr sinf_cr cosf_cr tanf_cr \
              asinf_cr acosf_cr atanf_cr asinhf_cr acoshf_cr atanhf_cr \
              exp2f_cr expm1f_cr cbrtf_cr coshf_cr sinhf_cr tanhf_cr erff_cr erfcf_cr \
-             lgamma_cr tgamma_cr atan2f_cr hypotf_cr
+             lgamma_cr tgamma_cr atan2f_cr hypotf_cr powf_cr
 check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
 
 # Independent ground-truth AUDIT (not gated; slow, opt-in): the exhaustive MPFR

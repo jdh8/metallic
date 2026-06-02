@@ -236,8 +236,13 @@ static float powf_core_(double x, double y)
 
 static float unsigned_(float x, float y)
 {
+    /* C11 §7.12.7.4: pow(1,y)=1 and pow(x,0)=1 for ALL x,y including NaN. */
     if (x == 1)
         return 1;
+
+    /* Propagate NaN after the x==1 exception. */
+    if (isnan(x) || isnan(y))
+        return x + y;
 
     if (x == 0)
         return signbit(y) ? HUGE_VALF : 0;
