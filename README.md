@@ -59,8 +59,7 @@ hammers the published hard-to-round cases plus a broad random sample. See
   `expf` `exp2f` `expm1f` `logf` `log2f` `log10f` `log1pf` `sinf` `cosf` `tanf`
   `asinf` `acosf` `atanf` `asinhf` `acoshf` `atanhf` `sinhf` `coshf` `tanhf`
   `cbrtf` `erff` `erfcf` `lgammaf` `tgammaf`.  Bivariate (sampler evidence, since
-  the 2⁶⁴ domain cannot be swept): `atan2f` `hypotf`.
-* **`float`, faithfully rounded (< 1 ulp).** `powf`.
+  the 2⁶⁴ domain cannot be swept): `atan2f` `hypotf` `powf`.
 * **`double`, correctly rounded (≤ 0.5 ulp), sampler evidence.** `exp` `exp2`
   `expm1` `log` `log2` `log10` `log1p` `cbrt` `atan` `asin` `acos` `hypot`
   `asinh` `acosh` `atanh` `erf`.
