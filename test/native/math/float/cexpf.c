@@ -1,5 +1,5 @@
 #include "src/math/float/cexpf.c"
-#include "src/math/float/rem_pio2f.c"
+#include "src/math/double/rem_pio2.c"
 #include "complex.h"
 #include <assert.h>
 

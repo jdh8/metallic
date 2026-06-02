@@ -87,4 +87,20 @@ static inline void ref_csqrtf(float x, float y, float *re, float *im)
     mpfr_clears(mx, ax, ay, m, big, small, (mpfr_ptr)0);
 }
 
+/* cexpf: re = exp(x)*cos(y), im = exp(x)*sin(y). */
+static inline void ref_cexpf(float x, float y, float *re, float *im)
+{
+    mpfr_t mx, my, ex, c, s;
+    mpfr_inits2(CMPFR_PREC, mx, my, ex, c, s, (mpfr_ptr)0);
+    mpfr_set_flt(mx, x, MPFR_RNDN);
+    mpfr_set_flt(my, y, MPFR_RNDN);
+    mpfr_exp(ex, mx, MPFR_RNDN);
+    mpfr_sin_cos(s, c, my, MPFR_RNDN);
+    mpfr_mul(c, ex, c, MPFR_RNDN);
+    mpfr_mul(s, ex, s, MPFR_RNDN);
+    *re = mpfr_get_flt(c, MPFR_RNDN);
+    *im = mpfr_get_flt(s, MPFR_RNDN);
+    mpfr_clears(mx, my, ex, c, s, (mpfr_ptr)0);
+}
+
 #endif
