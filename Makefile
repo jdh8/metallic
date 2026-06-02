@@ -104,12 +104,14 @@ CORE_MATH ?= $(HOME)/src/core-math-sys/vendor/src
 ORACLE_CFLAGS := -std=c11 -iquote . -O3 -ffp-contract=off -mno-fma -fno-builtin -fopenmp -Wall -DCORE_MATH='"$(CORE_MATH)"'
 ORACLE_LDLIBS := -lmpfr -lgmp -lm
 
-SOURCES.check.oracle.float  := $(wildcard test/oracle/math/float/*.c)
-SOURCES.check.oracle.double := $(wildcard test/oracle/math/double/*.c)
+SOURCES.check.oracle.float   := $(wildcard test/oracle/math/float/*.c)
+SOURCES.check.oracle.double  := $(wildcard test/oracle/math/double/*.c)
+SOURCES.check.oracle.complex := $(wildcard test/oracle/math/float/complex/*.c)
 
-check.oracle: check.oracle.float check.oracle.double
-check.oracle.float:  $(SOURCES.check.oracle.float:.c=.exe-)
-check.oracle.double: $(SOURCES.check.oracle.double:.c=.exe-)
+check.oracle: check.oracle.float check.oracle.double check.oracle.complex
+check.oracle.float:   $(SOURCES.check.oracle.float:.c=.exe-)
+check.oracle.double:  $(SOURCES.check.oracle.double:.c=.exe-)
+check.oracle.complex: $(SOURCES.check.oracle.complex:.c=.exe-)
 
 # The correct-rounding GATE: fast cr_* bit-for-bit cross-checks
 # (test/oracle/math/float/<fn>_cr.c), run by the `oracle` CI workflow (one matrix
@@ -145,6 +147,12 @@ print.oracle.cr:
 # stem is shorter than the generic rule's).
 test/oracle/math/float/%_cr.exe: test/oracle/math/float/%_cr.c
 	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< -lm
+
+# Complex drivers reference the metallic source directly and an MPFR oracle;
+# no CORE-MATH dependency.  The longer literal prefix makes this rule win over
+# the generic float rule below for files under complex/.
+test/oracle/math/float/complex/%.exe: test/oracle/math/float/complex/%.c
+	$(CC) $(ORACLE_CFLAGS) -o $@ $< $(ORACLE_LDLIBS)
 
 test/oracle/math/float/%.exe: test/oracle/math/float/%.c
 	$(CC) $(ORACLE_CFLAGS) -I $(CORE_MATH) -I $(CORE_MATH)/binary32/support -o $@ $< $(ORACLE_LDLIBS)
