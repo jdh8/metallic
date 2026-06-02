@@ -1,53 +1,8 @@
+#include "dd.h"
 #include "../double/shift.h"
-#include "../reinterpret.h"
 #include <float.h>
 #include <math.h>
 #include <stdint.h>
-
-typedef struct { double hi, lo; } sum_t;
-
-static inline sum_t dd_2sum_(double a, double b)
-{
-    double hi = a + b;
-    double diff = hi - a;
-    double lo = (a - (hi - diff)) + (b - diff);
-    return (sum_t){ hi, lo };
-}
-
-static inline sum_t dd_product_(double a, double b)
-{
-    double hi = a * b;
-    return (sum_t){ hi, fma(a, b, -hi) };
-}
-
-static inline sum_t dd_quotient_(double a, double b)
-{
-    double hi = a / b;
-    return (sum_t){ hi, fma(hi, -b, a) / b };
-}
-
-static inline sum_t dd_add_(sum_t a, sum_t b)
-{
-    sum_t s = dd_2sum_(a.hi, b.hi);
-    double lo = s.lo + (a.lo + b.lo);
-    /* Fast2Sum: |s.hi| >= |lo| guaranteed after the 2Sum */
-    double hi = s.hi + lo;
-    return (sum_t){ hi, lo - (hi - s.hi) };
-}
-
-static inline sum_t dd_mul_dd_(sum_t a, sum_t b)
-{
-    sum_t p = dd_product_(a.hi, b.hi);
-    double lo = fma(a.hi, b.lo, p.lo);
-    lo = fma(a.lo, b.hi, lo);
-    return (sum_t){ p.hi, lo };
-}
-
-static inline sum_t dd_mul_f64_(sum_t a, double b)
-{
-    sum_t p = dd_product_(a.hi, b);
-    return (sum_t){ p.hi, fma(a.lo, b, p.lo) };
-}
 
 /* Double-double minimax of 2·log₂e·atanh(t)/t in u = t², low-degree first.
  * Degree 12, max error 2⁻⁹⁴ on u ∈ [0, 0.0295]. */
@@ -120,16 +75,6 @@ static const double exp2_fp_c_[11] = {
     7.072585949269223e-9,
 };
 
-/* Horner evaluation of a double-double polynomial at a double-double argument.
- * coeffs[0] is the constant term; coeffs[n-1] is the leading term. */
-static inline sum_t poly_dd_(sum_t u, const sum_t c[], int n)
-{
-    sum_t acc = c[n - 1];
-    for (int k = n - 2; k >= 0; --k)
-        acc = dd_add_(dd_mul_dd_(acc, u), c[k]);
-    return acc;
-}
-
 /* Horner evaluation of an f64 polynomial. coeffs[0] is constant term. */
 static inline double poly_f64_(double x, const double c[], int n)
 {
@@ -137,36 +82,6 @@ static inline double poly_f64_(double x, const double c[], int n)
     for (int k = n - 2; k >= 0; --k)
         acc = fma(acc, x, c[k]);
     return acc;
-}
-
-/* Round a positive normal-range double-double to the nearest float.
- * Uses round-to-odd on the f64 high word to prevent double-rounding at
- * float midpoints (every midpoint has ≥28 trailing zero bits in f64). */
-static inline float round_dd_(sum_t v)
-{
-    uint64_t bits = reinterpret(uint64_t, v.hi);
-    double odd;
-    if (v.lo == 0.0 || (bits & 1))
-        odd = v.hi;
-    else if (v.lo > 0.0)
-        odd = reinterpret(double, bits + 1);
-    else
-        odd = reinterpret(double, bits - 1);
-    return (float)odd;
-}
-
-/* Like round_dd_ but safe for subnormal outputs (v.hi < FLT_MIN). */
-static inline float round_dd_general_(sum_t v)
-{
-    if (v.hi >= (double)FLT_MIN)
-        return round_dd_(v);
-
-    /* Quantize on the 2⁻¹⁴⁹ subnormal grid to avoid double-rounding. */
-    double h = v.hi * 0x1p149;
-    double l = v.lo * 0x1p149;
-    double n = rint(h);
-    n += rint((h - n) + l);
-    return (float)(n * 0x1p-149);
 }
 
 /* log₂(x) as a double-double for finite positive x. */
