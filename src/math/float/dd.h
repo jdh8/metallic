@@ -126,4 +126,13 @@ static inline float round_dd_general_(sum_t v)
     return (float)(n * 0x1p-149);
 }
 
+/* round_dd_general_ extended to signed double-doubles: round the magnitude and
+ * reattach the sign (round_dd_ assumes a positive value). */
+static inline float round_dd_signed_(sum_t v)
+{
+    if (v.hi < 0.0 || (v.hi == 0.0 && v.lo < 0.0))
+        return -round_dd_general_((sum_t){ -v.hi, -v.lo });
+    return round_dd_general_(v);
+}
+
 #endif

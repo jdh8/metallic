@@ -83,14 +83,6 @@ static sum_t expf_mant_dd_(double x, int64_t *qout)
     return (sum_t){ p.hi, p.lo };
 }
 
-/* Round a signed double-double to the nearest float (round-to-odd on |v|). */
-static inline float round_dd_signed_(sum_t v)
-{
-    if (v.hi < 0.0 || (v.hi == 0.0 && v.lo < 0.0))
-        return -round_dd_general_((sum_t){ -v.hi, -v.lo });
-    return round_dd_general_(v);
-}
-
 /* Correctly-rounded exp(x) as a float (the y == 0 real part). */
 static float expf_cr_(float x)
 {

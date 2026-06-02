@@ -103,4 +103,20 @@ static inline void ref_cexpf(float x, float y, float *re, float *im)
     mpfr_clears(mx, my, ex, c, s, (mpfr_ptr)0);
 }
 
+/* clogf: re = log|z| = 0.5*log(x^2+y^2), im = atan2(y,x).  log(hypot) avoids the
+ * x^2+y^2 cancellation near |z|=1 at 240 bits. */
+static inline void ref_clogf(float x, float y, float *re, float *im)
+{
+    mpfr_t mx, my, m, t;
+    mpfr_inits2(CMPFR_PREC, mx, my, m, t, (mpfr_ptr)0);
+    mpfr_set_flt(mx, x, MPFR_RNDN);
+    mpfr_set_flt(my, y, MPFR_RNDN);
+    mpfr_hypot(m, mx, my, MPFR_RNDN);
+    mpfr_log(m, m, MPFR_RNDN);
+    mpfr_atan2(t, my, mx, MPFR_RNDN);
+    *re = mpfr_get_flt(m, MPFR_RNDN);
+    *im = mpfr_get_flt(t, MPFR_RNDN);
+    mpfr_clears(mx, my, m, t, (mpfr_ptr)0);
+}
+
 #endif
