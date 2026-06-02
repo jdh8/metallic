@@ -74,13 +74,25 @@ bench.libm: $(BENCH.libm:.c=.exe) $(BENCH.libm:.c=.exe-)
 
 # Float bench files include the implementation source directly (`src/math/float/*.c`).
 # Keep bench binaries in sync when those implementation files change.
-bench/float/%.exe bench/float/%.fma.exe bench/float/%.nofma.exe: src/math/float/%.c
+bench/float/%.exe bench/float/%.fma.exe bench/float/%.nofma.exe bench/float/%.wasm.out: src/math/float/%.c
 
 bench/float/%.fma.exe: bench/float/%.c
 	$(CC) -iquote test/native -iquote . -I $(CORE_MATH) $(CFLAGS) -march=native -DBENCH_COREMATH -DBENCH_LABEL='"fma"' -o $@ $< $(LDLIBS)
 
 bench/float/%.nofma.exe: bench/float/%.c
 	$(CC) -iquote test/native -iquote . -I $(CORE_MATH) $(CFLAGS) -ffp-contract=off -mno-fma -DBENCH_COREMATH -DBENCH_LABEL='"nofma"' -o $@ $< $(LDLIBS)
+
+# Honest ship-target bench: the 19 correctly-rounded float unary functions on the
+# REAL wasm32 target under wasmtime, metallic vs CORE-MATH.  Native bench (.fma/.nofma)
+# gives CORE-MATH hardware FMA it won't have on wasm; here both are FMA-less and
+# CORE-MATH's __builtin_fma[f] lower to libcalls into metallic's software fma -- exactly
+# what we ship.  -DBENCH_WASM links metallic.a (its libc/libm + software fma) and emits
+# a 2-column metallic-vs-CORE-MATH row (no libm column on wasm; see bench/README.md).
+bench/float/%.wasm.out: bench/float/%.c metallic.a
+	$(CC.wasm) -I include -D__STDC_NO_THREADS__=1 -iquote test/native -iquote . -I $(CORE_MATH) $(CFLAGS) $(LDFLAGS) -DBENCH_COREMATH -DBENCH_WASM -DBENCH_LABEL='"wasm"' -o $@ $^
+
+.PHONY: bench.wasm
+bench.wasm: $(BENCH.cr:.c=.wasm.run)
 
 # Correct-rounding oracle (native, MPFR-backed; NOT part of the wasm gate).
 # Verifies math functions against CORE-MATH's correctly-rounded MPFR reference

@@ -1,4 +1,6 @@
+#ifndef BENCH_WASM  /* on wasm, metallic.a already defines __rem_pio2f */
 #include "src/math/float/rem_pio2f.c"
+#endif
 #include "common.h"
 #include <math.h>
 #include <stdio.h>
