@@ -63,6 +63,23 @@ double asinh(double x)
          * Compute logtab_ln_dd_(ax) and add ln2 as a double-double. */
         r = logtab_ln_dd_(ax);
         r = exptab_add_(r, (exptab_sum_){ logtab_ln2_hi_, logtab_ln2_lo_ });
+    } else if (ax >= 64.0) {
+        /* Sqrt-free asymptotic: asinh(x) = ln(2x) + f(v), v = 1/x².
+         * f(v) = v/4 - 3v²/32 + 5v³/96 - 35v⁴/1024 + 63v⁵/2560.
+         * Degree-5 expansion; truncation error < 2⁻⁷² for |x| >= 64.
+         * Avoids an expensive sqrt over the [64, 2^511) range. */
+        static const double asymp[5] = {
+             0.25,                /* 1/4      */
+            -0.09375,             /* -3/32    */
+             5.0/96.0,            /* 5/96     */
+            -0.034179687500000,   /* -35/1024 */
+             0.024609375000000,   /* 63/2560  */
+        };
+        double v = 1.0 / (ax * ax);
+        double correction = v * ((((asymp[4]*v + asymp[3])*v + asymp[2])*v + asymp[1])*v + asymp[0]);
+        r = logtab_ln_dd_(ax);
+        r = exptab_add_(r, (exptab_sum_){ logtab_ln2_hi_, logtab_ln2_lo_ });
+        r = exptab_fast2sum_(r.hi, r.lo + correction);
     } else if (ax <= 0.5) {
         /* Stable for small x: arg = 1 + x + x^2/(1+sqrt(1+x^2)).
          * The result is close to 1, so we use logtab_ln_dd_ directly.
