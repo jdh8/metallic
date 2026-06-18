@@ -52,6 +52,19 @@ double tanh(double x)
     int64_t q;
     exptab_sum_ m = sinhtab_exp_dd_(2.0 * s, &q);
 
+    /* For |x| >= 3.683: tanh = 1 − 2/(e²ˣ+1).  The correction
+     * 2/(e²ˣ+1) ≤ ~0.013 is small enough that a plain-f64 e²ˣ high word and
+     * one division round tanh correctly (Ziv-gated).  CORE-MATH's approach. */
+    if (s >= 3.683) {
+        double exp2s = shift_(m.hi, q);      /* scalar e^(2s) high word */
+        double corr  = 2.0 / (exp2s + 1.0);
+        double e     = corr * 0x1.1p-49;    /* TANH_LARGE_ZIV relative bound */
+        double lo    = 1.0 - (corr + e);
+        double hi    = 1.0 - (corr - e);
+        if (lo == hi)
+            return copysign(lo, x);
+    }
+
     /* Scale mantissa m by 2^q (exact: multiplying by a power of 2). */
     double mhi_scaled = shift_(m.hi, q);
     double mlo_scaled = shift_(m.lo, q);
