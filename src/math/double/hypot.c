@@ -162,6 +162,11 @@ double hypot(double x, double y)
     double a = reinterpret(double, ux);
     double b = reinterpret(double, uy);
 
+    /* Negligible smaller leg: when b < a·2⁻²⁷ the correction b²/(2a) < ½ulp(a),
+     * so √(a²+b²) rounds to a.  Mirrors CORE-MATH's lean common path. */
+    if (b < a * 7.450580596923828e-9)
+        return a;
+
     int64_t ae = (int64_t)(ux >> 52);
 
     if (ae == 0) {
