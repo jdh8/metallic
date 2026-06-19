@@ -359,33 +359,183 @@ static inline double erf_db_(const erf_hard_t *t, int n, double x)
 #define ERFC_HARD_N ((int)(sizeof erfc_hard_ / sizeof *erfc_hard_))
 #define ERF_SMALL_N ((int)(sizeof erf_small_dd_ / sizeof *erf_small_dd_))
 
-/* Select the erfc t-bridge segment for x ≥ 0.4375: its anchor and Q table. */
-static inline const sum_t *erfc_segment_(double x, double *anchor, int *n)
+/* Fast-leg dd tables (lower degree, err ≈ 2^-73): generated from metallic-rs
+ * erf.rs.  The Ziv gate accepts the fast leg unless its error interval straddles
+ * a rounding boundary, else the accurate path above resolves it. */
+static const sum_t erf_small_fast_[] = {
+    { 1.1283791670955126, 1.533545278214139e-17 },
+    { -0.37612638903183754, 1.3400534378241897e-17 },
+    { 0.11283791670955126, -5.8231177902760304e-18 },
+    { -0.026866170645131103, -1.4844550912107413e-18 },
+    { 0.005223977625436028, 3.1372627882040133e-19 },
+    { -0.0008548327021947103, 9.1017920370759e-21 },
+    { 0.000120553327528045, -2.061800885865239e-21 },
+    { -1.492562794601489e-05, 5.246582608852405e-22 },
+    { 1.6460703039923511e-06, -9.013357578406715e-23 },
+    { -1.6310490278943735e-07, -2.744612567485127e-24 },
+    { 1.3570810993535321e-08, -1.7588057602646025e-25 },
+};
+
+static const sum_t erfc_qf0_[] = {
+    { -0.4441404018250839, -9.413571623416256e-18 },
+    { 1.3753538140565607, 2.01907876319407e-17 },
+    { -0.010952662344169308, 5.2602609340083754e-20 },
+    { -0.39943303510523914, 3.783506563601499e-18 },
+    { 0.07843054850472489, -8.742234798414336e-19 },
+    { 0.23793230005249114, 6.141978798249759e-18 },
+    { -0.16291716934869277, 1.1360269290729113e-17 },
+    { -0.11567699950806917, -1.533141545185197e-18 },
+    { 0.2135371623855158, -1.2259236688866044e-17 },
+    { -0.029308898740981592, -9.577843992683643e-19 },
+    { -0.18447366718987593, -7.907518024584856e-18 },
+    { 0.16334252681139813, 5.888171924016564e-18 },
+    { 0.05404475797394964, 1.3131493136145105e-18 },
+    { -0.1979874054269295, -9.528690121998993e-18 },
+    { 0.12404776237794504, -2.4887993633919456e-18 },
+};
+
+static const sum_t erfc_qf1_[] = {
+    { -0.6717940840566923, 1.0502376103114448e-17 },
+    { 1.3452864479553135, 9.245893713088854e-17 },
+    { 0.189373227367616, 6.0084769224396755e-18 },
+    { -0.37516488184947394, -1.0935631738445955e-17 },
+    { -0.15796302986170332, -1.3419977106012667e-17 },
+    { 0.28239803383689793, -2.6554461672342862e-17 },
+    { 0.11257174762689019, -3.2581261506461437e-19 },
+    { -0.30026399895826955, -2.765614529326533e-17 },
+    { -0.03743927983262288, -2.636054402308022e-18 },
+    { 0.3449257874443551, -1.891403366838235e-17 },
+    { -0.0960226753467256, 3.0605986101511697e-18 },
+    { -0.356514026738353, 2.4832213866777348e-17 },
+    { 0.2884551321749626, 2.5124872909337443e-17 },
+    { 0.2851282333542925, 5.474700806776177e-18 },
+    { -0.6046022620881454, 2.0025432090467322e-17 },
+    { 0.3264978607019354, 1.0976171470159206e-17 },
+};
+
+static const sum_t erfc_qf2_[] = {
+    { -0.8891660234348968, -2.2007431021260536e-17 },
+    { 1.2547840686031693, 1.9680989202741723e-17 },
+    { 0.33960111954263306, 1.1493381590167724e-17 },
+    { -0.20905256625382587, 9.28746672052993e-18 },
+    { -0.3052983187450225, -1.4809001520695418e-17 },
+    { 0.03695153749302028, -2.0826110409650896e-18 },
+    { 0.3086739822952209, -1.2562121564848919e-17 },
+    { 0.04214926349874961, 6.34529021956204e-19 },
+    { -0.36054321789928484, -2.2393092755739615e-17 },
+    { -0.09294972121196617, -2.391259511928581e-18 },
+    { 0.47483404928246353, 1.9484519259825492e-17 },
+    { 0.11044408301093449, 6.9306849702702615e-18 },
+    { -0.6869507904988973, -1.2343140304915807e-17 },
+    { -0.01601867004311672, 1.4301510477097097e-18 },
+    { 1.0597311710134574, 1.6832446964212672e-17 },
+    { -0.8076644091341626, 4.1864767388733236e-17 },
+};
+
+static const sum_t erfc_qf3_[] = {
+    { -1.050034058371061, -9.469120319403637e-17 },
+    { 1.1559530034446581, -5.288091444738644e-17 },
+    { 0.3911549146038322, 1.744626990946188e-17 },
+    { -0.05305693644298708, -9.195277573239204e-19 },
+    { -0.2580967666475242, -2.30702480159379e-17 },
+    { -0.15448858090045336, -9.389868602221076e-18 },
+    { 0.13461741429049737, 2.4226477055469738e-18 },
+    { 0.2632191009192392, -2.660183815102158e-17 },
+    { 0.00038630438545178016, -1.5222179080913286e-20 },
+    { -0.35217089122468953, -2.1141305584399652e-17 },
+    { -0.17550138648636449, -1.05028498714739e-17 },
+    { 0.42246749122416605, -2.4542438290189543e-17 },
+    { 0.6131045694399055, -4.35004023316743e-17 },
+    { -1.229510719708045, 7.312751233393504e-17 },
+    { 0.4501686397084009, -2.2181190412639284e-17 },
+};
+
+static const sum_t erfc_qf4_[] = {
+    { -1.1952992386078944, -7.412831991727512e-18 },
+    { 1.052368154525527, -6.454020849270659e-17 },
+    { 0.3892038699910062, 3.2720751814025094e-18 },
+    { 0.05252453765501899, 1.1879066132038152e-18 },
+    { -0.14101369755986407, 1.2054770491941131e-17 },
+    { -0.1758323206304412, -1.3487108584253005e-17 },
+    { -0.057211352064103105, -1.969251332961876e-18 },
+    { 0.12010950113285201, -6.042791999713952e-18 },
+    { 0.1893704933141736, -3.002669202098016e-19 },
+    { 0.038947459382043415, 1.7810514655574603e-18 },
+    { -0.22740978110188811, -9.145227227682586e-18 },
+    { -0.2527168111302227, -1.3904371790630048e-17 },
+    { -0.027808797201266132, -1.4135183140727587e-18 },
+    { 1.0567076837582308, 9.690035128804747e-17 },
+    { -0.8020777689283721, -2.974060326089948e-17 },
+};
+
+static const sum_t *const erfc_q_[]   = { erfc_q0_, erfc_q1_, erfc_q2_, erfc_q3_, erfc_q4_ };
+static const int        erfc_q_n_[]   = { 23, 24, 25, 24, 24 };
+static const sum_t *const erfc_qf_[]  = { erfc_qf0_, erfc_qf1_, erfc_qf2_, erfc_qf3_, erfc_qf4_ };
+static const int        erfc_qf_n_[]  = { 15, 16, 16, 15, 15 };
+
+#define ERF_SMALL_FAST_N ((int)(sizeof erf_small_fast_ / sizeof *erf_small_fast_))
+
+/* Ziv gates: accept a fast leg only when its error interval rounds unambiguously.
+ * ERFC_ZIV_EPS is absolute (the mantissa ∈ [1, 2)); the reflection/bridge gates
+ * are relative (|e.hi|·EPS) since 1 ± erfc spans many magnitudes. */
+#define ERFC_ZIV_EPS    0x1p-62
+#define ERF_REFLECT_EPS 0x1p-60
+#define ERF_SMALL_EPS   0x1p-66
+
+/* Select the erfc t-bridge segment for x ≥ 0.4375. */
+static inline int erfc_segment_(double x)
 {
-    const sum_t *c;
-    int i;
+    if (x <= 1.0) return 0;
+    if (x <= 2.0) return 1;
+    if (x <= 4.0) return 2;
+    if (x <= 8.0) return 3;
+    return 4;
+}
 
-    if (x <= 1.0)      { c = erfc_q0_; i = 0; }
-    else if (x <= 2.0) { c = erfc_q1_; i = 1; }
-    else if (x <= 4.0) { c = erfc_q2_; i = 2; }
-    else if (x <= 8.0) { c = erfc_q3_; i = 3; }
-    else               { c = erfc_q4_; i = 4; }
+/* a + b without renormalizing, Fast2Sum on the high words (needs
+ * |a.hi| ≥ |b.hi|), folding both low words in — the fast-leg polynomial folds. */
+static inline sum_t dd_add_ordered_(sum_t a, sum_t b)
+{
+    sum_t s = exptab_fast2sum_(a.hi, b.hi);
+    return (sum_t){ s.hi, s.lo + (a.lo + b.lo) };
+}
 
-    /* Each table's length differs; recover it from the segment index. */
-    static const int len[] = { 23, 24, 25, 24, 24 };
-    *anchor = erfc_anchors_[i];
-    *n = len[i];
-    return c;
+/* a + b, 2Sum on the high words (any magnitudes). */
+static inline sum_t dd_add_loose_(sum_t a, sum_t b)
+{
+    sum_t s = exptab_twosum_(a.hi, b.hi);
+    return (sum_t){ s.hi, s.lo + (a.lo + b.lo) };
+}
+
+/* Fast-leg Q(v) = Σ c[k]·v^k with the degree-≥4 tail in plain f64.  Since |v| is
+ * small the tail is a tiny fraction of Q, so f64 there costs no extra Ziv
+ * fallbacks while halving the double-double work; the four leaves are
+ * independent, keeping the dependency chain shallow.  Requires n > 4. */
+static inline sum_t poly_dd_split_(sum_t v, const sum_t c[], int n)
+{
+    double tail = c[n - 1].hi;
+    for (int k = n - 2; k >= 4; --k)
+        tail = tail * v.hi + c[k].hi;
+
+    sum_t v2 = exptab_mul_(v, v);
+    sum_t vk = exptab_mul_(v2, v2);
+    sum_t s01 = dd_add_ordered_(c[0], exptab_mul_(v, c[1]));
+    sum_t s23 = dd_add_loose_(c[2], exptab_mul_(v, c[3]));
+    sum_t inner = dd_add_ordered_(exptab_mul_(v2, s23), exptab_mul_(vk, (sum_t){ tail, 0.0 }));
+    return dd_add_ordered_(s01, inner);
 }
 
 /* erfc(x) for x ∈ [0.4375, ERFC_ZERO_THRESHOLD] as (mantissa ∈ [1, 2), q),
- * erfc(x) = mantissa · 2^q.  erfc(x) = t·exp(Q(t) − x²), t = 2/(2+x). */
-static inline sum_t erfc_eval_(double x, double anchor, const sum_t *c, int n, int64_t *qout)
+ * erfc(x) = mantissa · 2^q.  erfc(x) = t·exp(Q(t) − x²), t = 2/(2+x).  `fast`
+ * selects the lower-degree Q via poly_dd_split_; both legs share the exp. */
+static inline sum_t erfc_eval_(double x, int seg, int fast, int64_t *qout)
 {
+    double anchor = erfc_anchors_[seg];
     sum_t d = exptab_twosum_(2.0, x);                       /* 2 + x, exact */
     sum_t t = exptab_mul_(erf_recip_(d), (sum_t){ 2.0, 0.0 });
     sum_t v = exptab_add_(t, (sum_t){ -anchor, 0.0 });
-    sum_t q = erf_poly_(v, c, n);
+    sum_t q = fast ? poly_dd_split_(v, erfc_qf_[seg], erfc_qf_n_[seg])
+                   : erf_poly_(v, erfc_q_[seg], erfc_q_n_[seg]);
     sum_t x2 = exptab_prod_(x, x);                          /* x², exact */
     sum_t w = exptab_add_(q, erf_neg_(x2));                 /* Q − x² */
 
@@ -399,11 +549,13 @@ static inline sum_t erfc_eval_(double x, double anchor, const sum_t *c, int n, i
 }
 
 /* erf(x) = x·P(x²) as a double-double for |x| < 0.4375 (the 1 − erf bridge for
- * the small erfc branch). */
-static inline sum_t erf_small_dd_eval_(double x)
+ * the small erfc branch and the small-erf fast leg).  `fast` picks the
+ * lower-degree split polynomial. */
+static inline sum_t erf_small_dd_eval_(double x, int fast)
 {
     sum_t u = exptab_prod_(x, x);
-    sum_t p = erf_poly_(u, erf_small_dd_, ERF_SMALL_N);
+    sum_t p = fast ? poly_dd_split_(u, erf_small_fast_, ERF_SMALL_FAST_N)
+                   : erf_poly_(u, erf_small_dd_, ERF_SMALL_N);
     return exptab_mul_(p, (sum_t){ x, 0.0 });
 }
 
