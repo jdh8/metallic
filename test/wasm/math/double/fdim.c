@@ -17,7 +17,11 @@ int main(void)
         for (uint64_t i = j; i < 0x7FF0000000000000; i += 0x000EBE116CAB22F4)
             run(reinterpret(double, i), reinterpret(double, j));
 
-    assert(reinterpret(uint64_t, fdim(INFINITY, INFINITY)) == 0);
-    assert(reinterpret(uint64_t, fdim(-INFINITY, -INFINITY)) == 0);
+    /* clang's constant folder mis-evaluates fdim(inf, inf) as NaN — it must be
+     * +0 (inf > inf is false).  The library's runtime path is correct, so route
+     * the infinities through volatile to exercise it instead of the folder. */
+    volatile double inf = INFINITY;
+    assert(reinterpret(uint64_t, fdim(inf, inf)) == 0);
+    assert(reinterpret(uint64_t, fdim(-inf, -inf)) == 0);
 }
 

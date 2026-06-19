@@ -29,8 +29,6 @@ check.wasm: $(SOURCES.check.wasm:.c=.run)
 # subset that filters them out.
 KNOWN_BROKEN_WASM := \
     test/wasm/math/long-double/sqrtl.c \
-	test/wasm/math/double/fdim.c \
-	test/wasm/math/float/fdimf.c \
 	test/wasm/soft/float/divtf3.c \
     test/wasm/soft/float/fixtfdi.c \
     test/wasm/soft/float/fixtfsi.c \

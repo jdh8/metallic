@@ -17,6 +17,10 @@ int main(void)
         for (uint32_t i = j; i < 0x7F800000; i += 0x00098765)
             run(reinterpret(float, i), reinterpret(float, j));
 
-    assert(reinterpret(uint32_t, fdimf(INFINITY, INFINITY)) == 0);
-    assert(reinterpret(uint32_t, fdimf(-INFINITY, -INFINITY)) == 0);
+    /* clang's constant folder mis-evaluates fdimf(inf, inf) as NaN — it must be
+     * +0 (inf > inf is false).  The library's runtime path is correct, so route
+     * the infinities through volatile to exercise it instead of the folder. */
+    volatile float inf = INFINITY;
+    assert(reinterpret(uint32_t, fdimf(inf, inf)) == 0);
+    assert(reinterpret(uint32_t, fdimf(-inf, -inf)) == 0);
 }
