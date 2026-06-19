@@ -44,14 +44,22 @@ double acos(double x)
     if (x == -1.0)
         return atantab_pi_2_hi_ + atantab_pi_2_hi_;  /* 2 * pi/2_hi is exact: pi_hi */
 
-    /* |x| < 2^-27: acos(x) ≈ pi/2 - x + O(x^3).
-     * The O(x^3) term is < (2^-27)^3/6 < 2^-82 < 0.5 ulp of the result.
-     * Compute pi/2 - x as a double-double (including pi/2_lo) so the result
-     * is correctly rounded for all |x| in [0, 2^-27). */
+    /* |x| < 2^-27: acos(x) = pi/2 - x - x^3/6 - ...  Carry pi/2 - x as a
+     * double-double (pi/2_hi - x exact via Fast2Sum, + pi/2_lo).  The neglected
+     * terms — the rounding of r_lo, pi/2's third word (~2^-108), and the cubic
+     * x^3/6 — are tiny but can still flip a near-midpoint case (e.g.
+     * x = -0x1.cb3b399d747f3p-55, where r_lo rounds to exactly 1/2 ulp and the
+     * dropped bits decide round-half-to-even the wrong way).  Ziv-gate on a
+     * sound bound of those terms and fall back to the dint path on a straddle. */
     if (ax < 0x1p-27) {
         double r_hi = atantab_pi_2_hi_ - x;
         double r_lo = (atantab_pi_2_hi_ - r_hi) - x + atantab_pi_2_lo_;
-        return r_hi + r_lo;
+        double err = fabs(r_lo) * 0x1p-52 + ax * ax * ax + 0x1p-100;
+        double left = r_hi + (r_lo - err);
+        double right = r_hi + (r_lo + err);
+        if (left == right)
+            return left;
+        return acos_accurate_(ax, x < 0.0);
     }
 
     /* General case: |x| in [2^-27, 1). */
