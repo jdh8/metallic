@@ -1,4 +1,5 @@
 #include "kernel/asin.h"
+#include "kernel/atan2tint.h"
 #include "kernel/exptab.h"
 #include <math.h>
 
@@ -8,7 +9,7 @@
  * incurs an extra |atan'(q) * delta_q| <= 0.5 * 2^-52 absolute error since
  * atan'(q) * q <= 0.5 for all q >= 0.  The quadrant offset is a double-double
  * so that step is exact.  Total fast-path error <= 2^-59 + 2^-54 < 2^-53.
- * Using 2^-52 as ERR pushes near-midpoints to the dint path. */
+ * Using 2^-52 as ERR pushes near-midpoints to the accurate path. */
 #define ATAN2_ERR 0x1p-52
 
 /* pi/2 and pi as double-double constants. */
@@ -17,80 +18,12 @@ static const double atan2_pi_2_lo_ = 0x1.1a62633145c07p-54;
 static const double atan2_pi_hi_   = 0x1.921fb54442d18p+1;  /* pi */
 static const double atan2_pi_lo_   = 0x1.1a62633145c07p-53;
 
-/* pi for the dint accurate path (pi/2 no longer needed in the accurate path:
- * atan(ay/ax) is computed directly, avoiding pi/2 - atan(ax/ay)). */
-static const dint_t atan2_pi_dint_ = { 0, 1,
-    ((unsigned __int128)0xc90fdaa22168c234ULL << 64) | 0xc4c6628b80dc1cd1ULL };
-
-/* Accurate path: compute atan2(y, x) using dint arithmetic.
- * Uses the atan table engine (atantab_atan_dint_xd_) with a precise quotient
- * from Dekker exact division.  For the ax<ay branch, atan(ay/ax) is computed
- * directly (avoiding explicit pi/2 subtraction) via the same engine.
- * Preconditions: y, x both finite and nonzero. */
+/* Accurate path: the 192-bit Tint fallback (kernel/atan2tint.h), correctly
+ * rounded down to atan2's hardest ~2^-154 ties -- beyond the 128-bit dint
+ * path's ~2^-126 reach.  Preconditions: y, x both finite and nonzero. */
 static double atan2_accurate_(double y, double x)
 {
-    double ay = fabs(y), ax = fabs(x);
-    dint_t r;
-
-    /* Scale when BOTH inputs are subnormal so dint operations stay in range. */
-    double ay_n = ay, ax_n = ax;
-    if (ay < 0x1p-1022 && ax < 0x1p-1022) {
-        ay_n *= 0x1p52;
-        ax_n *= 0x1p52;
-    }
-
-    int use_dint_quot = (ay_n >= 0x1p-1022 && ax_n >= 0x1p-1022);
-
-    /* Dekker split of ax_n requires |ax_n| < 2^996 to avoid overflow. */
-    double ax_s = ax_n, ay_s = ay_n;
-    if (ax_n >= 0x1p996) {
-        ax_s = ax_n * 0x1p-512;
-        ay_s = ay_n * 0x1p-512;
-    }
-
-    uint64_t sticky = 0;
-
-    if (ax >= ay) {
-        double q = ay / ax;
-        if (use_dint_quot && q >= 0x1p-1022) {
-            exptab_sum_ prod = exptab_prod_(q, ax_s);
-            double q_lo = (ay_s - prod.hi - prod.lo) / ax_s;
-            dint_t qd = atantab_dint_from_dd_(q, q_lo);
-            r = atantab_atan_dint_xd_ex_(&qd, q, &sticky);
-        } else {
-            dint_t qd = dint_from_f64_(q);
-            r = atantab_atan_dint_xd_ex_(&qd, q, &sticky);
-        }
-    } else {
-        /* Compute atan(ay/ax) directly (angle in (pi/4, pi/2]). */
-        double q = ay / ax;
-        if (use_dint_quot && q < 0x1p1023) {
-            exptab_sum_ prod = exptab_prod_(q, ax_s);
-            double q_lo = (ay_s - prod.hi - prod.lo) / ax_s;
-            dint_t qd = atantab_dint_from_dd_(q, q_lo);
-            r = atantab_atan_dint_xd_ex_(&qd, q, &sticky);
-        } else {
-            dint_t qd = dint_from_f64_(q);
-            r = atantab_atan_dint_xd_ex_(&qd, q, &sticky);
-        }
-    }
-
-    /* Quadrant correction for x < 0: pi - r. */
-    if (x < 0.0) {
-        r.sgn = !r.sgn;
-        r = dint_add_(&atan2_pi_dint_, &r);
-        sticky = 0;
-    }
-
-    double result;
-    if (r.ex >= -1022) {
-        result = dint_to_f64_ex_(&r, sticky);
-    } else {
-        dint_t scaled = r;
-        scaled.ex += 64;
-        result = scalbn(dint_to_f64_ex_(&scaled, sticky), -64);
-    }
-    return copysign(result, y);
+    return copysign(atan2_tint_mag_(fabs(x), fabs(y), x < 0.0), y);
 }
 
 double atan2(double y, double x)
