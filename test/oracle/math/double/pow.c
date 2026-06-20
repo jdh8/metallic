@@ -9,6 +9,13 @@ int main(void)
 {
     uint64_t bad = 0;
 
+    /* ref_pow computes at precision 53 then mpfr_subnormalize; without the
+     * binary64 exponent range that idiom DOUBLE-ROUNDS in the subnormal range,
+     * reporting spurious 1-ulp misses.  Constrain MPFR to binary64 so the
+     * reference is genuinely correctly rounded everywhere. */
+    mpfr_set_emin(-1073);
+    mpfr_set_emax(1024);
+
     /* The published hardest-to-round pow(x,y) pairs. */
     bad |= sample_wc_f64_2(fut, ref, CORE_MATH "/binary64/pow/pow.wc");
 
