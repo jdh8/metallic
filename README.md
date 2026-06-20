@@ -46,7 +46,9 @@ lowers to plain operations on single-threaded WASI.
 
 ## Math accuracy
 
-Correct rounding is the math library's goal, and most transcendentals reach it.
+Correct rounding is the math library's goal, and every real `float` and `double`
+transcendental now reaches it (the complex functions are composed from those
+kernels and inherit their accuracy).
 A function is **correctly rounded** when its result is the true value rounded to
 the nearest representable number (error ≤ 0.5 ulp); **faithfully rounded** is the
 weaker guarantee of one of the two nearest (error < 1 ulp). For `float`, correct
@@ -60,11 +62,11 @@ hammers the published hard-to-round cases plus a broad random sample. See
   `asinf` `acosf` `atanf` `asinhf` `acoshf` `atanhf` `sinhf` `coshf` `tanhf`
   `cbrtf` `erff` `erfcf` `lgammaf` `tgammaf`.  Bivariate (sampler evidence, since
   the 2⁶⁴ domain cannot be swept): `atan2f` `hypotf` `powf`.
-* **`double`, correctly rounded (≤ 0.5 ulp), sampler evidence.** `exp` `exp2`
-  `expm1` `log` `log2` `log10` `log1p` `cbrt` `atan` `asin` `acos` `hypot`
-  `asinh` `acosh` `atanh` `erf`.
-* **`double`, faithfully rounded (< 1 ulp).** `sin` `cos` `tan` `sinh` `cosh`
-  `tanh` `atan2` `erfc` `lgamma` `tgamma` — pending a wider accurate path.
+* **`double`, correctly rounded (≤ 0.5 ulp), sampler evidence.** Unary: `exp`
+  `exp2` `expm1` `log` `log2` `log10` `log1p` `sin` `cos` `tan` `asin` `acos`
+  `atan` `asinh` `acosh` `atanh` `sinh` `cosh` `tanh` `cbrt` `erf` `erfc`
+  `lgamma` `tgamma`.  Bivariate (sampler evidence, since the 2⁶⁴ domain cannot
+  be swept): `atan2` `hypot` `pow`.
 * **Complex `float`, correctly rounded (≤ 0.5 ulp per part), sampler evidence.**
   Each of the real and imaginary parts is the correctly-rounded `float` of the
   exact value (the 2⁶⁴ domain cannot be swept, so this is a random + near-axis
