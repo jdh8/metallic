@@ -140,6 +140,103 @@ static inline uint64_t sample_wc_f64(double fut(double), double ref(double), con
     return bad;
 }
 
+/* --- binary64 bivariate (pow) ------------------------------------------- */
+
+/* Draw `n` random binary64 pairs and compare to the oracle.  `x` is drawn over
+ * the exponent band [exmin, exmax] and `y` over [eymin, eymax] -- pow wants very
+ * different natural ranges for base and exponent, so they are independent. */
+static inline uint64_t sample_f64_2(double fut(double, double), double ref(double, double),
+                             int exmin, int exmax, int eymin, int eymax, int signed_, uint64_t n)
+{
+    int64_t worst = 0;
+    double worst_x = 0, worst_y = 0;
+    uint64_t bad = 0, shown = 0;
+
+    for (uint64_t k = 0; k < n; ++k) {
+        double x = sample_draw_(exmin, exmax, signed_);
+        double y = sample_draw_(eymin, eymax, 1);
+        int64_t d = sample_ulp_(fut(x, y), ref(x, y));
+
+        if (!d)
+            continue;
+
+        ++bad;
+
+        if (d > worst) {
+            worst = d;
+            worst_x = x;
+            worst_y = y;
+        }
+
+        if (shown < 10) {
+            ++shown;
+            fprintf(stderr, "  x=%a y=%a  got=%a  want=%a  (%lld ulp)\n",
+                x, y, fut(x, y), ref(x, y), (long long)d);
+        }
+    }
+
+    fprintf(stderr, "  random x[2^%d,2^%d] y[2^%d,2^%d] x%llu: %llu bad, worst %lld ulp at x=%a y=%a\n",
+        exmin, exmax, eymin, eymax, (unsigned long long)n, (unsigned long long)bad,
+        (long long)worst, worst_x, worst_y);
+    return bad;
+}
+
+/* Test every pair in a CORE-MATH bivariate `*.wc` file (lines "x,y"; lines with
+ * signaling NaNs are skipped). */
+static inline uint64_t sample_wc_f64_2(double fut(double, double), double ref(double, double), const char *path)
+{
+    FILE *f = fopen(path, "r");
+
+    if (!f) {
+        fprintf(stderr, "  (no worst-case file %s)\n", path);
+        return 0;
+    }
+
+    char line[256];
+    int64_t worst = 0;
+    double worst_x = 0, worst_y = 0;
+    uint64_t bad = 0, total = 0, shown = 0;
+
+    while (fgets(line, sizeof line, f)) {
+        if (line[0] == '#' || line[0] == '\n' || strstr(line, "snan"))
+            continue;
+
+        char *comma = strchr(line, ',');
+
+        if (!comma)
+            continue;
+
+        *comma = 0;
+        double x = strtod(line, NULL);
+        double y = strtod(comma + 1, NULL);
+        ++total;
+        int64_t d = sample_ulp_(fut(x, y), ref(x, y));
+
+        if (!d)
+            continue;
+
+        ++bad;
+
+        if (d > worst) {
+            worst = d;
+            worst_x = x;
+            worst_y = y;
+        }
+
+        if (shown < 10) {
+            ++shown;
+            fprintf(stderr, "  x=%a y=%a  got=%a  want=%a  (%lld ulp)\n",
+                x, y, fut(x, y), ref(x, y), (long long)d);
+        }
+    }
+
+    fclose(f);
+    fprintf(stderr, "  worst-cases %s (%llu pairs): %llu bad, worst %lld ulp at x=%a y=%a\n",
+        path, (unsigned long long)total, (unsigned long long)bad,
+        (long long)worst, worst_x, worst_y);
+    return bad;
+}
+
 /* --- binary32 bivariate (hypotf, atan2f, powf) -------------------------- */
 
 static inline int64_t sample_ulp_f_(float a, float b)
