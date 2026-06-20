@@ -1,198 +1,273 @@
-/* lgamma(x) = ln|Γ(x)|
+/* lgamma(x) = ln|Γ(x)|, correctly rounded (<= 0.5 ulp).
  *
- * Method: Lanczos approximation (g=7, n=9; Boost lanczos13m53 coefficients)
- * combined with polynomial near x=1 and x=2 (where lgamma=0) to avoid
- * catastrophic cancellation.
+ * Ported from metallic-rs (src/f64_/gamma.rs), adapted for WASM in
+ * kernel/gamma.h (double-double products use fma() residuals).
  *
- * For x >= 1.5 or x <= 0 (non-integer) reflected to >= 1.5:
- *   Use Lanczos: lgamma(x) = (x-0.5)*log(x+g-0.5) - (x+g-0.5) + log(A_g(x-1))
+ * For 1/2 <= z < 8 a recurrence-free CORE-MATH piecewise minimax; for z >= 8
+ * direct Stirling; for z < 1/2 the reflection ln π − ln|sin πz| − ln Γ(1−z).
+ * Near the roots z = 1, 2 a result-anchored Taylor series carries the tiny
+ * value with no cancellation.  A double-double fast leg is Ziv-gated against a
+ * double-double middle tier and a triple-double accurate path (~2^-150), the
+ * latter using a ported CORE-MATH triple-double ln and ln|sin πz|.
  *
- * For |x-1| <= 0.5 (x in [0.5, 1.5]):
- *   lgamma(x) = kernel_lgamma1p_(x-1): 52-term Maclaurin series for lgamma(1+t)/t.
- *
- * For |x-2| <= 0.5 (x in [1.5, 2.5]):
- *   lgamma(x) = lgamma(x-1) + log1p(x-2)  (recurrence Γ(z+1)=z*Γ(z)).
- *   lgamma(x-1) = kernel_lgamma1p_(x-2).
- *
- * For very large x (x > 2^1014) where lcoeff would overflow:
- *   Use Stirling: lgamma(x) ≈ x*(ln(x)-1) - 0.5*ln(x) + 0.5*ln(2π)
- *
- * For x < 0.5 (reflection):
- *   lgamma(x) = log(π) - log|sin(πx)| - log(series(-x)) - lcoeff(-x)
- *   Split log prevents overflow when |sin(πx)| is subnormal for tiny x.
- *
- * Accuracy: faithfully rounded (worst case < 1 ulp over the domain).
+ * Special cases (C11/Annex F):
+ *   lgamma(1)=lgamma(2)=+0, lgamma(+-inf)=+inf, lgamma(+-0)=+inf,
+ *   lgamma(non-positive integer)=+inf, overflow to +inf past ~2.5e305.
  */
 
-#include "kernel/lanczos.h"
-#include "kernel/sincos.h"
-#include "../reinterpret.h"
+#include "kernel/gamma.h"
 #include <math.h>
-#include <stdint.h>
 
-/* sin(π*x) for arbitrary finite double x via quadrant reduction. */
-static double sinpi_(double x)
+#define LGAMMA_OVERFLOW 0x1.754d9278b51a8p+1014
+
+typedef struct { dd_t value; double gate; } leg_t;
+
+/* ── CORE-MATH piecewise lnΓ over [1/2, 8) ────────────────────────────────── */
+
+/* Select the LGAMMA_PIECE region for ax in [0.5, 8.29541] (CORE-MATH hash). */
+static int lgamma_piece_region_(double ax)
 {
-    double r = x - 2.0 * rint(0.5 * x);
-    double q_f = rint(2.0 * r);
-    int q = (int)q_f & 3;
-    double t = r - 0.5 * q_f;
-    const double pi = 3.14159265358979323846;
-    double a = pi * t;
-    switch (q) {
-        case 0: return  kernel_sin_(a, 0.0);
-        case 1: return  kernel_cos_(a, 0.0);
-        case 2: return -kernel_sin_(a, 0.0);
-        case 3: return -kernel_cos_(a, 0.0);
+    uint32_t au = (uint32_t)((reinterpret(uint64_t, ax) << 1) >> 38);
+    uint32_t ou = au - LGAMMA_PIECE_BORDERS[0];
+    uint64_t t32 = (uint64_t)(uint32_t)(ou * 0x150du);
+    uint64_t m = ((0x157ced865ull - t32) * (uint64_t)ou + 0x128000000000ull) >> 45;
+    int j = (int)m;
+    return j - (au < LGAMMA_PIECE_BORDERS[j] ? 1 : 0);
+}
+
+static leg_t lgamma_piecewise_(dd_t y)
+{
+    double ax = y.hi;
+    int j = lgamma_piece_region_(ax);
+    const dd_t *cell = LGAMMA_PIECE_CH[j];
+    double z = ax - LGAMMA_PIECE_OFFS[j];
+    double tail = z * gpoly_(z, LGAMMA_PIECE_CL[j], 8);
+    dd_t value = c_polydddfst_(z, cell, 5, (dd_t){ tail, 0.0 });
+
+    if (y.lo != 0.0) {
+        double deriv = ((4.0 * cell[4].hi * z + 3.0 * cell[3].hi) * z + 2.0 * cell[2].hi) * z + cell[1].hi;
+        value = exptab_add_(value, (dd_t){ deriv * y.lo, 0.0 });
     }
-    __builtin_unreachable();
+    if (j == 4)
+        value = gdd_mul_(value, exptab_add_((dd_t){ 1.0, 0.0 }, gdd_neg_(y)));
+    else if (j == 10)
+        value = gdd_mul_(value, exptab_add_(y, (dd_t){ -2.0, 0.0 }));
+
+    double gate = fabs(value.hi) * LGAMMA_PIECE_REL + LGAMMA_PIECE_ABS;
+    return (leg_t){ value, gate };
 }
 
-/* half_ln2pi = 0.5 * ln(2π) */
-static const double half_ln2pi_ = 0.9189385332046727417803;
-
-/* lgamma_lanczos_(z) computes lgamma(z+1) for z >= -0.5 (i.e., x = z+1 >= 0.5)
- * using the restructured Lanczos formula that reduces catastrophic cancellation:
- *
- *   lgamma(z+1) = (z+0.5)*(log(base)-1) - g + 0.5*log(2π) + log(A_g(z))
- *
- * where base = z + g + 0.5.  The rewrite avoids cancellation between
- * (z+0.5)*log(base) and base by factoring out: base = (z+0.5) + g, so
- * (z+0.5)*log(base) - base = (z+0.5)*(log(base)-1) - g. */
-static double lgamma_lanczos_(double z)
+/* Root-anchored series within 1/8 of z = 1 or 2; *out set & returns 1 on hit. */
+static int lgamma_root_fast_(double z, leg_t *out)
 {
-    double base = lanczos_g_ + 0.5 + z;
-    return (0.5 + z) * (log(base) - 1.0) - lanczos_g_ + half_ln2pi_ + log(lanczos_sum_(z));
+    dd_t series;
+    if (fabs(z - 1.0) < LGAMMA_ROOT_WINDOW)
+        series = g_poly_dd_of_td_((dd_t){ z - 1.0, 0.0 }, LGAMMA_ROOT1_TD, 42);
+    else if (fabs(z - 2.0) < LGAMMA_ROOT_WINDOW)
+        series = g_poly_dd_of_td_((dd_t){ z - 2.0, 0.0 }, LGAMMA_ROOT2_TD, 34);
+    else
+        return 0;
+    *out = (leg_t){ series, LGAMMA_ROOT_ZIV_REL * fabs(series.hi) };
+    return 1;
 }
 
-/* lgamma(1+t) for |t| <= 0.5, via 52-term Maclaurin series.
- * c[k] = coeff of t^(k+1): c[0] = -γ, c[k] = (-1)^(k+1)*ζ(k+1)/(k+1) for k>=1.
- * Generated from mpmath with prec=200; accuracy < 0.25 ulp at |t|=0.5. */
-static double kernel_lgamma1p_(double t)
+static dd_t lgamma_stirling_fast_(double z, double tail)
 {
-    static const double c[] = {
-        -0x1.2788cfc6fb619p-1,  /* -γ (Euler-Mascheroni) */
-         0x1.a51a6625307d3p-1,  /* π²/12 = ζ(2)/2 */
-        -0x1.9a4d55beab2d7p-2,  /* -ζ(3)/3 */
-         0x1.151322ac7d848p-2,  /* ζ(4)/4 */
-        -0x1.a8b9c17aa6149p-3,  /* -ζ(5)/5 */
-         0x1.5b40cb100c306p-3,  /* ζ(6)/6 */
-        -0x1.2703a1dcea3aep-3,  /* -ζ(7)/7 */
-         0x1.010b36af86397p-3,  /* ζ(8)/8 */
-        -0x1.c806706d57db4p-4,  /* -ζ(9)/9 */
-         0x1.9a01e385d5f8fp-4,  /* ζ(10)/10 */
-        -0x1.748c33114c6d6p-4,  /* -ζ(11)/11 */
-         0x1.556ad63243bc4p-4,  /* ζ(12)/12 */
-        -0x1.3b1d971fc5985p-4,  /* -ζ(13)/13 */
-         0x1.2496df8320c5fp-4,  /* ζ(14)/14 */
-        -0x1.11133476e7fe0p-4,  /* -ζ(15)/15 */
-         0x1.00010064cdeb2p-4,  /* ζ(16)/16 */
-        -0x1.e1e2d311e8abdp-5,  /* -ζ(17)/17 */
-         0x1.c71ce3a20b419p-5,  /* ζ(18)/18 */
-        -0x1.af28a1b5688a0p-5,  /* -ζ(19)/19 */
-         0x1.9999b3352d5bap-5,  /* ζ(20)/20 */
-        -0x1.86186db77bfbfp-5,  /* -ζ(21)/21 */
-         0x1.745d1d1778df9p-5,  /* ζ(22)/22 */
-        -0x1.642c88591b66dp-5,  /* -ζ(23)/23 */
-         0x1.555556aaafdcdp-5,  /* ζ(24)/24 */
-        -0x1.47ae151eb9fb7p-5,  /* -ζ(25)/25 */
-         0x1.3b13b189d925ep-5,  /* ζ(26)/26 */
-        -0x1.2f684c00002bcp-5,  /* -ζ(27)/27 */
-         0x1.24924936db7bcp-5,  /* ζ(28)/28 */
-        -0x1.1a7b961a7b9aap-5,  /* -ζ(29)/29 */
-         0x1.111111155556dp-5,  /* ζ(30)/30 */
-        -0x1.08421086318cep-5,  /* -ζ(31)/31 */
-         0x1.0000000100002p-5,  /* ζ(32)/32 */
-        -0x1.f07c1f08ba2eap-6,  /* -ζ(33)/33 */
-         0x1.e1e1e1e25a5a6p-6,  /* ζ(34)/34 */
-        -0x1.d41d41d457c58p-6,  /* -ζ(35)/35 */
-         0x1.c71c71c738e39p-6,  /* ζ(36)/36 */
-        -0x1.bacf914c29837p-6,  /* -ζ(37)/37 */
-         0x1.af286bca21af3p-6,  /* ζ(38)/38 */
-        -0x1.a41a41a41d89ep-6,  /* -ζ(39)/39 */
-         0x1.999999999b333p-6,  /* ζ(40)/40 */
-        -0x1.8f9c18f9c2577p-6,  /* -ζ(41)/41 */
-         0x1.8618618618c31p-6,  /* ζ(42)/42 */
-        -0x1.7d05f417d08eep-6,  /* -ζ(43)/43 */
-         0x1.745d1745d18bap-6,  /* ζ(44)/44 */
-        -0x1.6c16c16c16ccdp-6,  /* -ζ(45)/45 */
-         0x1.642c8590b21bdp-6,  /* ζ(46)/46 */
-        -0x1.5c9882b931083p-6,  /* -ζ(47)/47 */
-         0x1.555555555556bp-6,  /* ζ(48)/48 */
-        -0x1.4e5e0a72f0544p-6,  /* -ζ(49)/49 */
-         0x1.47ae147ae1480p-6,  /* ζ(50)/50 */
-        -0x1.4141414141417p-6,  /* -ζ(51)/51 */
-         0x1.3b13b13b13b15p-6,  /* ζ(52)/52 */
-    };
-
-    /* Horner evaluation: lgamma(1+t) = t * (c[0] + c[1]*t + ... + c[51]*t^51) */
-    double s = c[51];
-    for (int i = 50; i >= 0; --i)
-        s = s * t + c[i];
-    return s * t;
+    dd_t base = gdd_mul_f64_(g_ln_dd_(z), z - 0.5);
+    base = gdd_add_ordered_(base, (dd_t){ -z, 0.0 });
+    base = gdd_add_ordered_(base, HALF_LN_2PI);
+    return gdd_add_ordered_(base, (dd_t){ tail, 0.0 });
 }
 
-/* Stirling approximation for x >> 1, when lgamma_lanczos_ would overflow. */
-static double lgamma_stirling_(double x)
+static dd_t lgamma_stirling_dd_(dd_t y, double inv_t)
 {
-    double lnx = log(x);
-    return x * (lnx - 1.0) - 0.5 * lnx + half_ln2pi_ + 1.0 / (12.0 * x);
+    double u = inv_t * inv_t;
+    double tail = gpoly_(u, LGAMMA_TAIL_F64, 10) * inv_t;
+    dd_t lw = g_ln_dd_(y.hi);
+    dd_t base = gdd_mul_f64_(lw, y.hi - 0.5);
+    base = gdd_add_ordered_(base, (dd_t){ -y.hi, 0.0 });
+    base = gdd_add_ordered_(base, HALF_LN_2PI);
+    base = gdd_add_ordered_(base, (dd_t){ tail, 0.0 });
+    double digamma = lw.hi - inv_t * (u * (1.0 / 12.0) + 0.5);
+    return (dd_t){ base.hi, digamma * y.lo + base.lo };
 }
 
-/* lgamma(x) for x >= 0.5.  Factored out so the reflection formula can reuse it
- * for lgamma(1-x) when x < 0.5, getting the same accuracy as the direct path. */
-static double lgamma_pos_(double x)
+static leg_t lgamma_pos_fast_(dd_t y)
 {
-    /* For x in [0.5, 4.5], reduce via the recurrence lgamma(x) = lgamma(x-1) + log(x-1)
-     * until the base argument falls in [0.5, 1.5] where the polynomial is accurate.
-     * This avoids catastrophic cancellation in the Lanczos base term. */
-    if (x <= 1.5)
-        return kernel_lgamma1p_(x - 1.0);
-
-    if (x <= 2.5)
-        return kernel_lgamma1p_(x - 2.0) + log1p(x - 2.0);
-
-    if (x <= 3.5)
-        return kernel_lgamma1p_(x - 3.0) + log(x - 2.0) + log1p(x - 2.0);
-
-    if (x <= 4.5)
-        return kernel_lgamma1p_(x - 4.0) + log(x - 3.0) + log(x - 2.0) + log1p(x - 2.0);
-
-    /* Large x: avoid intermediate overflow in lgamma_lanczos_. */
-    if (x > 0x1p1014)
-        return lgamma_stirling_(x);
-
-    return lgamma_lanczos_(x - 1.0);
+    if (y.hi < LGAMMA_FAST_CUTOFF)
+        return lgamma_piecewise_(y);
+    double inv_t = 1.0 / y.hi;
+    return (leg_t){ lgamma_stirling_dd_(y, inv_t), g_lgamma_stirling_ziv_(y.hi, inv_t) };
 }
 
-double lgamma(double x)
+static leg_t lgamma_fast_(double z)
 {
-    const double pi = 3.14159265358979323846;
+    if (z < 0.5) {
+        dd_t w = exptab_twosum_(1.0, -z);
+        dd_t sinpi = g_abs_sinpi_dd_lean_(z);
+        if (w.hi < LGAMMA_FAST_CUTOFF) {
+            leg_t p = lgamma_piecewise_(w);
+            dd_t ln_sin = g_ln_sum_dd_(sinpi);
+            dd_t value = gdd_add_loose_(LN_PI, gdd_neg_(gdd_add_loose_(ln_sin, p.value)));
+            double gate = fabs(ln_sin.hi) * LGAMMA_REFLECT_SIN_REL
+                          + (2.0 * p.gate + LGAMMA_REFLECT_SIN_ABS);
+            return (leg_t){ value, gate };
+        }
+        leg_t p = lgamma_pos_fast_(w);
+        dd_t value = gdd_add_loose_(LN_PI, gdd_neg_(gdd_add_loose_(g_ln_sum_dd_(sinpi), p.value)));
+        return (leg_t){ value, p.gate };
+    }
+    if (z < LGAMMA_FAST_CUTOFF) {
+        leg_t r;
+        if (lgamma_root_fast_(z, &r))
+            return r;
+        return lgamma_piecewise_((dd_t){ z, 0.0 });
+    }
+    double inv = 1.0 / z;
+    double u = inv * inv;
+    double tail = (z < LGAMMA_CUTOFF ? gpoly_(u, LGAMMA_TAIL_F64, 10)
+                                     : gpoly_(u, LGAMMA_TAIL_F64_FAR, 6)) * inv;
+    return (leg_t){ lgamma_stirling_fast_(z, tail), g_lgamma_stirling_ziv_(z, inv) };
+}
 
-    if (isnan(x))
-        return x;
+/* ── double-double middle Ziv tier ────────────────────────────────────────── */
 
-    if (isinf(x))
+static dd_t lgamma_stirling_mid_(dd_t t)
+{
+    dd_t inv = gdd_recip_(t);
+    dd_t u = gdd_mul_(inv, inv);
+    dd_t tail = gdd_mul_(g_poly_dd_of_td_(u, LGAMMA_TAIL_TD, 10), inv);
+
+    dd_t r = gdd_mul_(g_ln_sum_dd_(t), exptab_add_(t, (dd_t){ -0.5, 0.0 }));
+    r = exptab_add_(r, gdd_neg_(t));
+    r = exptab_add_(r, HALF_LN_2PI);
+    return exptab_add_(r, tail);
+}
+
+static leg_t lgamma_pos_mid_(dd_t y)
+{
+    if (fabs(y.hi - 1.0) < LGAMMA_ROOT_WINDOW) {
+        dd_t s = g_poly_dd_of_td_(exptab_add_(y, (dd_t){ -1.0, 0.0 }), LGAMMA_ROOT1_TD, 42);
+        return (leg_t){ s, LGAMMA_ROOT_ZIV_REL * fabs(s.hi) };
+    }
+    if (fabs(y.hi - 2.0) < LGAMMA_ROOT_WINDOW) {
+        dd_t s = g_poly_dd_of_td_(exptab_add_(y, (dd_t){ -2.0, 0.0 }), LGAMMA_ROOT2_TD, 34);
+        return (leg_t){ s, LGAMMA_ROOT_ZIV_REL * fabs(s.hi) };
+    }
+    int64_t steps = (int64_t)fmax(ceil(LGAMMA_CUTOFF - y.hi), 0.0);
+    dd_t t = exptab_add_(y, (dd_t){ (double)steps, 0.0 });
+    dd_t stirling = lgamma_stirling_mid_(t);
+    if (steps > 0) {
+        dd_t ln_prod = g_ln_sum_dd_(g_recurrence_product_dd_(y, steps));
+        double mag = fabs(stirling.hi) + fabs(ln_prod.hi);
+        return (leg_t){ exptab_add_(stirling, gdd_neg_(ln_prod)), LGAMMA_MID_ZIV_REL * mag };
+    }
+    return (leg_t){ stirling, LGAMMA_MID_ZIV_REL * fabs(stirling.hi) };
+}
+
+static leg_t lgamma_mid_(double z)
+{
+    if (z < 0.5) {
+        leg_t p = lgamma_pos_mid_(exptab_twosum_(1.0, -z));
+        dd_t ln_sin = g_ln_sum_dd_(g_abs_sinpi_dd_(z));
+        dd_t value = exptab_add_(LN_PI, gdd_neg_(exptab_add_(ln_sin, p.value)));
+        double gate = LGAMMA_MID_ZIV_REL * fabs(ln_sin.hi) + p.gate;
+        return (leg_t){ value, gate };
+    }
+    return lgamma_pos_mid_((dd_t){ z, 0.0 });
+}
+
+/* ── triple-double accurate path ──────────────────────────────────────────── */
+
+static td_t lgamma_central_td_(dd_t d)
+{
+    return g_ln_sum_td3_(g_poly_td_(g_dd_to_td_(d), TGAMMA_TD, 39));
+}
+
+static td_t lgamma_recurrence_log_td_(dd_t y, int64_t i)
+{
+    if (i > 0) {
+        dd_t yc = exptab_add_(y, (dd_t){ -(double)i, 0.0 });
+        return g_ln_sum_td3_(g_recurrence_product_dd_td_(yc, i));
+    }
+    if (i < 0)
+        return g_td_neg_(g_ln_sum_td3_(g_recurrence_product_dd_td_(y, -i)));
+    return (td_t){ 0.0, 0.0, 0.0 };
+}
+
+static td_t lgamma_pos_td_(dd_t y)
+{
+    if (y.hi < LGAMMA_FAST_CUTOFF) {
+        if (fabs(y.hi - 1.0) < LGAMMA_ROOT_WINDOW)
+            return g_poly_td_(g_dd_to_td_(exptab_add_(y, (dd_t){ -1.0, 0.0 })), LGAMMA_ROOT1_TD, 42);
+        if (fabs(y.hi - 2.0) < LGAMMA_ROOT_WINDOW)
+            return g_poly_td_(g_dd_to_td_(exptab_add_(y, (dd_t){ -2.0, 0.0 })), LGAMMA_ROOT2_TD, 34);
+        double fi = rint(y.hi - LGAMMA_CENTER);
+        int64_t i = (int64_t)fi;
+        dd_t d = exptab_add_(y, (dd_t){ -(LGAMMA_CENTER + fi), 0.0 });
+        return g_td_add_exact_(lgamma_central_td_(d), lgamma_recurrence_log_td_(y, i));
+    }
+
+    int64_t steps = (int64_t)fmax(ceil(LGAMMA_CUTOFF - y.hi), 0.0);
+    dd_t t = exptab_add_(y, (dd_t){ (double)steps, 0.0 });
+
+    td_t inv_t = g_td_recip_(g_dd_to_td_(t));
+    td_t u = g_td_mul_(inv_t, inv_t);
+    td_t tail = g_td_mul_(g_poly_td_(u, LGAMMA_TAIL_TD, 10), inv_t);
+
+    td_t ln_t_m1 = g_td_add_f64_(g_ln_sum_td_(t), -1.0);
+    td_t t_m_half = g_dd_to_td_(exptab_add_(t, (dd_t){ -0.5, 0.0 }));
+    td_t stirling = g_td_add_(g_td_add_(g_td_mul_(ln_t_m1, t_m_half), HALF_LN_2PI_M_HALF_TD), tail);
+
+    if (steps > 0)
+        return g_td_add_exact_(stirling, g_td_neg_(g_ln_sum_td3_(g_recurrence_product_dd_td_(y, steps))));
+    return stirling;
+}
+
+static double lgamma_accurate_(double z)
+{
+    if (z < 0.5) {
+        td_t ln_sin = g_ln_abs_sinpi_td_(z);
+        td_t pos = lgamma_pos_td_(exptab_twosum_(1.0, -z));
+        return g_td_round_(g_td_add_exact_(LN_PI_TD, g_td_neg_(g_td_add_exact_(ln_sin, pos))));
+    }
+    return g_td_round_(lgamma_pos_td_((dd_t){ z, 0.0 }));
+}
+
+double lgamma(double z)
+{
+    if (z == 0.0 || z >= LGAMMA_OVERFLOW)
         return INFINITY;
+    if (isnan(z))
+        return z;
 
-    /* Poles at non-positive integers: return +infinity.
-     * All doubles with |x| >= 2^52 are integers, so check separately. */
-    if (x <= 0.0) {
-        if (x <= -0x1p52 || x == (double)(long long)x)
-            return INFINITY;
+    /* Non-positive integers are poles; Γ(1)=Γ(2)=1 give the exact zeros. */
+    if (z < 0.5 && z == floor(z))
+        return INFINITY;
+    if (z == 1.0 || z == 2.0)
+        return 0.0;
 
-        /* Reflection: lgamma(x) = log(π/|sin(πx)|) - lgamma(1-x).
-         * Splitting log avoids overflow when |sin(πx)| is subnormal (tiny x).
-         * lgamma(1-x) uses lgamma_pos_(1-x) for the same accuracy as the direct path. */
-        double sinpx = sinpi_(x);
-        return log(pi) - log(fabs(sinpx)) - lgamma_pos_(1.0 - x);
+    /* Near a negative integer / tiny z the fast leg's dd sin underflows; the
+     * gate cannot see it, so skip straight to the accurate path there. */
+    int sin_ok = z >= 0.5;
+    if (!sin_ok) {
+        double r = z - rint(2.0 * z) * 0.5;
+        sin_ok = 3.14159265358979323846 * fabs(r) >= LGAMMA_SIN_RELIABLE;
     }
 
-    /* Reflection for 0 < x < 0.5: 1-x > 0.5 so lgamma_pos_ applies. */
-    if (x < 0.5) {
-        double sinpx = sinpi_(x);
-        return log(pi) - log(fabs(sinpx)) - lgamma_pos_(1.0 - x);
+    if (sin_ok && z > -LGAMMA_FAST_BOUND && z < LGAMMA_FAST_BOUND) {
+        leg_t f = lgamma_fast_(z);
+        double lo = f.value.hi + (f.value.lo - f.gate);
+        double hi = f.value.hi + (f.value.lo + f.gate);
+        if (lo == hi)
+            return lo;
+
+        leg_t m = lgamma_mid_(z);
+        lo = m.value.hi + (m.value.lo - m.gate);
+        hi = m.value.hi + (m.value.lo + m.gate);
+        if (lo == hi)
+            return lo;
     }
 
-    return lgamma_pos_(x);
+    return lgamma_accurate_(z);
 }

@@ -21,6 +21,7 @@
 typedef exptab_sum_ dd_t;                       /* { double hi, lo; } */
 typedef struct { double hi, mid, lo; } td_t;    /* non-overlapping triple */
 typedef struct { dd_t c0, c1, c2, c3; double tail[8]; } gamma_cell_t;
+typedef struct { uint16_t c0; int16_t c1; } logd_b_t;  /* ln_td index correction */
 
 #include "gammatab.h"
 
@@ -352,6 +353,303 @@ static inline td_t g_recurrence_product_z_td_(double z, int64_t first, int64_t s
     for (; m < n; ++m)
         p0 = g_dd_mul_td_(exptab_twosum_(z, (double)(first + step * m)), p0);
     return g_td_mul_(g_td_mul_(p0, p1), g_td_mul_(p2, p3));
+}
+
+/* ════════════════════ lgamma machinery ════════════════════════════════════ */
+
+/* dd / scalar */
+static inline dd_t gdd_div_f64_(dd_t a, double b)
+{
+    double hi = a.hi / b;
+    return (dd_t){ hi, (fma(hi, -b, a.hi) + a.lo) / b };
+}
+
+/* dd + dd renormalizing (alias) and dd of a positive dd's natural log */
+static inline dd_t g_ln_sum_dd_(dd_t s)
+{
+    return exptab_add_(g_ln_dd_(s.hi), (dd_t){ s.lo / s.hi, 0.0 });
+}
+
+/* Estrin evaluation of a dd polynomial (coeffs low-degree first) */
+static inline dd_t g_poly_dd_(dd_t u, const dd_t *coeffs, int n)
+{
+    dd_t buf[44];
+    for (int i = 0; i < n; ++i)
+        buf[i] = coeffs[i];
+    int len = n;
+    dd_t power = u;
+    while (len > 1) {
+        int half = (len + 1) / 2;
+        for (int i = 0; i < half; ++i)
+            buf[i] = (2 * i + 1 < len)
+                ? exptab_add_(buf[2 * i], gdd_mul_(power, buf[2 * i + 1]))
+                : buf[2 * i];
+        len = half;
+        power = gdd_mul_(power, power);
+    }
+    return buf[0];
+}
+
+/* Estrin over dd reading each td coefficient as its leading dd (hi+mid) */
+static inline dd_t g_poly_dd_of_td_(dd_t x, const td_t *coeffs, int n)
+{
+    dd_t buf[44];
+    for (int i = 0; i < n; ++i)
+        buf[i] = (dd_t){ coeffs[i].hi, coeffs[i].mid };
+    int len = n;
+    dd_t power = x;
+    while (len > 1) {
+        int half = (len + 1) / 2;
+        for (int i = 0; i < half; ++i)
+            buf[i] = (2 * i + 1 < len)
+                ? exptab_add_(buf[2 * i], gdd_mul_(power, buf[2 * i + 1]))
+                : buf[2 * i];
+        len = half;
+        power = gdd_mul_(power, power);
+    }
+    return buf[0];
+}
+
+/* CORE-MATH dd primitives (fma-based), used by the ported ln_td so the
+ * transcription stays 1:1 with as_logd_accurate. (a,b) pairs are dd_t. */
+
+static inline dd_t c_muldd_(double xh, double xl, double ch, double cl)
+{
+    double ahhh = ch * xh;
+    double l = (ch * xl + cl * xh) + fma(ch, xh, -ahhh);
+    return (dd_t){ ahhh, l };
+}
+
+static inline dd_t c_sumdd_(double xh, double xl, double yh, double yl)
+{
+    dd_t s = (fabs(xh) > fabs(yh)) ? exptab_fast2sum_(xh, yh) : exptab_fast2sum_(yh, xh);
+    return (dd_t){ s.hi, s.lo + (xl + yl) };
+}
+
+static inline dd_t c_fastsum_(double xh, double xl, double yh, double yl)
+{
+    dd_t s = exptab_fast2sum_(xh, yh);
+    return (dd_t){ s.hi, (xl + yl) + s.lo };
+}
+
+static inline dd_t c_mulddd_(double x, double ch, double cl)
+{
+    double ahhh = ch * x;
+    return (dd_t){ ahhh, fma(cl, x, fma(ch, x, -ahhh)) };
+}
+
+static inline dd_t c_polydddfst_(double x, const dd_t *c, int n, dd_t seed)
+{
+    dd_t r = exptab_fast2sum_(c[n - 1].hi, seed.hi);
+    double ch = r.hi, cl = r.lo + seed.lo + c[n - 1].lo;
+    for (int k = n - 2; k >= 0; --k) {
+        dd_t m = c_mulddd_(x, ch, cl);
+        dd_t s = c_fastsum_(c[k].hi, c[k].lo, m.hi, m.lo);
+        ch = s.hi; cl = s.lo;
+    }
+    return (dd_t){ ch, cl };
+}
+
+static inline dd_t c_polydd_(double xh, double xl, const dd_t *c, int n, dd_t seed)
+{
+    dd_t r = exptab_fast2sum_(c[n - 1].hi, seed.hi);
+    double ch = r.hi, cl = r.lo + seed.lo + c[n - 1].lo;
+    for (int k = n - 2; k >= 0; --k) {
+        dd_t m = c_muldd_(xh, xl, ch, cl);
+        dd_t s = c_fastsum_(c[k].hi, c[k].lo, m.hi, m.lo);
+        ch = s.hi; cl = s.lo;
+    }
+    return (dd_t){ ch, cl };
+}
+
+/* Cancellation-robust td + td: distill all six limbs (descending |.|), two
+ * VecSum passes, then renorm3 of the leading three. */
+static inline td_t g_td_add_exact_(td_t a, td_t b)
+{
+    double v[6] = { a.hi, b.hi, a.mid, b.mid, a.lo, b.lo };
+    for (int i = 1; i < 6; ++i) {       /* insertion sort by descending |.| */
+        double x = v[i];
+        int j = i - 1;
+        while (j >= 0 && fabs(v[j]) < fabs(x)) { v[j + 1] = v[j]; --j; }
+        v[j + 1] = x;
+    }
+    for (int pass = 0; pass < 2; ++pass)
+        for (int i = 5; i >= 1; --i) {
+            dd_t s = exptab_twosum_(v[i - 1], v[i]);
+            v[i - 1] = s.hi;
+            v[i] = s.lo;
+        }
+    return g_renorm3_(v[0], v[1], v[2] + (v[3] + (v[4] + v[5])));
+}
+
+static const double GAMMA_LN2_TD[3] = {
+    0.6931471805598903, 5.49792301870721e-14, 1.1612227229362532e-26,
+};
+
+/* ln of a positive f64 as a triple-double (~2^-150), ported from CORE-MATH
+ * as_logd_accurate. */
+static inline td_t g_ln_td_(double x)
+{
+    uint64_t bits = reinterpret(uint64_t, x);
+    int64_t ex = (int64_t)(bits >> 52);
+    if (ex == 0) {
+        int k = __builtin_clzll(bits);
+        bits <<= k - 11;
+        ex -= k - 12;
+    }
+    int64_t e = ex - 0x3ff;
+    uint64_t mantissa = bits & (~0ull >> 12);
+    double ed = (double)e;
+
+    int i = (int)(mantissa >> (52 - 5));
+    int64_t d = (int64_t)(mantissa & (~0ull >> 17));
+    logd_b_t b = LOGD_B[i];
+    int j = (int)((mantissa + ((uint64_t)b.c0 << 33)
+                            + (uint64_t)((int64_t)b.c1 * (d >> 16))) >> (52 - 10));
+    double m = reinterpret(double, mantissa | (0x3ffull << 52));
+
+    int i1 = j >> 5, i2 = j & 0x1f;
+    double r = LOGD_R1[i1] * LOGD_R2[i2];
+    double o = r * m;
+    double dxl0 = fma(r, m, -o);
+    double dxh0 = o - 1.0;
+
+    double tail = dxh0 * (LOGD_C[6].hi + dxh0 * (LOGD_C[7].hi + dxh0 * LOGD_C[8].hi));
+    dd_t dx = exptab_fast2sum_(dxh0, dxl0);
+    dd_t f = c_polydd_(dx.hi, dx.lo, LOGD_C, 6, (dd_t){ tail, 0.0 });
+    f = c_muldd_(dx.hi, dx.lo, f.hi, f.lo);
+
+    double s2 = LOGD_H1[i1][2] + LOGD_H2[i2][2];
+    double s1 = LOGD_H1[i1][1] + LOGD_H2[i2][1];
+    double s0 = LOGD_H1[i1][0] + LOGD_H2[i2][0];
+    double l0 = GAMMA_LN2_TD[0] * ed + s2;
+    dd_t l = c_sumdd_(GAMMA_LN2_TD[1] * ed, GAMMA_LN2_TD[2] * ed, s1, s0);
+    l = c_sumdd_(l.hi, l.lo, f.hi, f.lo);
+
+    dd_t t0 = exptab_fast2sum_(l0, l.hi);
+    dd_t t1 = exptab_fast2sum_(t0.lo, l.lo);
+    return (td_t){ t0.hi, t1.hi, t1.lo };
+}
+
+/* ln(1 + r) for a small dd r (|r| <~ 2^-51) as a td */
+static inline td_t g_ln1p_small_td_(dd_t r)
+{
+    static const td_t THIRD_TD = { 0.3333333333333333, 1.850371707708594e-17, 1.0271626370065257e-33 };
+    td_t r_td = g_dd_to_td_(r);
+    td_t r2 = g_td_mul_(r_td, r_td);
+    td_t r3 = g_td_mul_(r2, r_td);
+    td_t r4 = g_td_mul_(r2, r2);
+    td_t hr2 = { r2.hi * -0.5, r2.mid * -0.5, r2.lo * -0.5 };
+    td_t qr4 = { r4.hi * -0.25, r4.mid * -0.25, r4.lo * -0.25 };
+    return g_td_add_(g_td_add_(r_td, hr2), g_td_add_(g_td_mul_(r3, THIRD_TD), qr4));
+}
+
+/* ln(s) for a positive dd s, as a td */
+static inline td_t g_ln_sum_td_(dd_t s)
+{
+    dd_t r = gdd_from_quotient_(s.lo, s.hi);
+    return g_td_add_(g_ln_td_(s.hi), g_ln1p_small_td_(r));
+}
+
+/* ln(s) for a positive td s, as a td */
+static inline td_t g_ln_sum_td3_(td_t s)
+{
+    dd_t num = exptab_twosum_(s.mid, s.lo);
+    dd_t r = gdd_div_f64_(num, s.hi);
+    return g_td_add_(g_ln_td_(s.hi), g_ln1p_small_td_(r));
+}
+
+/* accurate |sin(pi*x)| as a dd (~2^-122) for the lgamma middle tier */
+static inline dd_t g_sin_kernel_dd_(dd_t r) { return gdd_mul_(r, g_poly_dd_(gdd_mul_(r, r), GAMMA_SIN_KERNEL, 13)); }
+static inline dd_t g_cos_kernel_dd_(dd_t r) { return g_poly_dd_(gdd_mul_(r, r), GAMMA_COS_KERNEL, 13); }
+
+static inline dd_t g_abs_sinpi_dd_(double x)
+{
+    double q = rint(2.0 * x);
+    dd_t theta = gdd_mul_f64_(PI_DD, x - q * 0.5);
+    int64_t qi = (int64_t)q & 3;
+    dd_t v;
+    switch (qi & 3) {
+        case 0: v = g_sin_kernel_dd_(theta); break;
+        case 1: v = g_cos_kernel_dd_(theta); break;
+        case 2: v = gdd_neg_(g_sin_kernel_dd_(theta)); break;
+        default: v = gdd_neg_(g_cos_kernel_dd_(theta)); break;
+    }
+    return v.hi < 0.0 ? gdd_neg_(v) : v;
+}
+
+/* ln|sin(pi*z)| as a td (~2^-150 absolute), sharp near integers */
+static inline td_t g_ln_abs_sinpi_td_(double z)
+{
+    double q = rint(2.0 * z);
+    double r = z - q * 0.5;
+    int64_t qi = (int64_t)q;
+    td_t w = { r * r, fma(r, r, -(r * r)), 0.0 };
+    if ((qi & 1) == 0) {
+        td_t pi_s = g_dd_mul_td_(PI_DD, g_poly_td_(w, SINPI_OVER_ARG_TD, 21));
+        return g_td_add_exact_(g_ln_td_(fabs(r)), g_ln_sum_td3_(pi_s));
+    }
+    return g_ln_sum_td3_(g_poly_td_(w, COSPI_TD, 21));
+}
+
+/* prod_{j=0}^{n-1} (y + j) as a dd / td, four parallel lanes (n >= 1) */
+static inline dd_t g_recurrence_product_dd_(dd_t y, int64_t n)
+{
+    dd_t p0 = { 1.0, 0.0 }, p1 = { 1.0, 0.0 }, p2 = { 1.0, 0.0 }, p3 = { 1.0, 0.0 };
+    int64_t j = 0;
+    for (; j + 4 <= n; j += 4) {
+        p0 = gdd_mul_(p0, exptab_add_(y, (dd_t){ (double)j, 0.0 }));
+        p1 = gdd_mul_(p1, exptab_add_(y, (dd_t){ (double)(j + 1), 0.0 }));
+        p2 = gdd_mul_(p2, exptab_add_(y, (dd_t){ (double)(j + 2), 0.0 }));
+        p3 = gdd_mul_(p3, exptab_add_(y, (dd_t){ (double)(j + 3), 0.0 }));
+    }
+    for (; j < n; ++j)
+        p0 = gdd_mul_(p0, exptab_add_(y, (dd_t){ (double)j, 0.0 }));
+    return gdd_mul_(gdd_mul_(p0, p1), gdd_mul_(p2, p3));
+}
+
+static inline td_t g_recurrence_product_dd_td_(dd_t y, int64_t n)
+{
+    td_t p0 = { 1.0, 0.0, 0.0 }, p1 = { 1.0, 0.0, 0.0 },
+         p2 = { 1.0, 0.0, 0.0 }, p3 = { 1.0, 0.0, 0.0 };
+    int64_t j = 0;
+    for (; j + 4 <= n; j += 4) {
+        p0 = g_dd_mul_td_(exptab_add_(y, (dd_t){ (double)j, 0.0 }), p0);
+        p1 = g_dd_mul_td_(exptab_add_(y, (dd_t){ (double)(j + 1), 0.0 }), p1);
+        p2 = g_dd_mul_td_(exptab_add_(y, (dd_t){ (double)(j + 2), 0.0 }), p2);
+        p3 = g_dd_mul_td_(exptab_add_(y, (dd_t){ (double)(j + 3), 0.0 }), p3);
+    }
+    for (; j < n; ++j)
+        p0 = g_dd_mul_td_(exptab_add_(y, (dd_t){ (double)j, 0.0 }), p0);
+    return g_td_mul_(g_td_mul_(p0, p1), g_td_mul_(p2, p3));
+}
+
+/* ── lgamma constants ─────────────────────────────────────────────────────── */
+
+#define LGAMMA_CENTER 2.875
+#define LGAMMA_FAST_CUTOFF 8.0
+#define LGAMMA_CUTOFF 40.0
+#define LGAMMA_FAST_BOUND 256.0
+#define LGAMMA_ROOT_WINDOW 0.125
+
+static const double LGAMMA_TABLE_ERR = 2.168404344971009e-19;        /* 2^-62 */
+static const double LGAMMA_ROOT_ZIV_REL = 0x1p-95;
+static const double LGAMMA_MID_ZIV_REL = 0x1p-93;
+static const double LGAMMA_PIECE_REL = 8.3e-20;
+static const double LGAMMA_PIECE_ABS = 1e-24;
+static const double LGAMMA_REFLECT_SIN_REL = 0x1p-65;
+static const double LGAMMA_REFLECT_SIN_ABS = 0x1p-65;
+static const double LGAMMA_STIRLING_ZIV_RECIP = 1.37e-16;            /* ~2^-52.7 */
+static const double LGAMMA_STIRLING_ZIV_LIN = 1.3552527156068805e-20; /* 2^-66 */
+static const double LGAMMA_SIN_RELIABLE = 0x1p-900;
+
+static const dd_t LN_PI = { 1.1447298858494002, 1.0265951162707826e-17 };
+static const td_t HALF_LN_2PI_M_HALF_TD = { 0.4189385332046728, -3.8782941580672414e-17, -1.323971596849807e-33 };
+static const td_t LN_PI_TD = { 1.1447298858494002, 1.0265951162707826e-17, -1.3722612652165766e-34 };
+
+static inline double g_lgamma_stirling_ziv_(double t, double inv_t)
+{
+    return (t - 0.5) * LGAMMA_STIRLING_ZIV_LIN + LGAMMA_STIRLING_ZIV_RECIP * inv_t;
 }
 
 #endif
