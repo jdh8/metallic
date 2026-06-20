@@ -419,4 +419,291 @@ static inline _Bool rounding_test_2_(const dint_t *r)
     return (lo64 + 28) > 56;
 }
 
+/* === Phase 3: 256-bit qint accurate path ================================= */
+
+/* exp(z) for |z| < 0.00016923 as a qint (port of q_3). */
+static inline qint_t q_3_(const qint_t *y)
+{
+    qint_t r = qint_mul_11_(y, &pc_q_3[0]);
+    r = qint_add_22_(&pc_q_3[1], &r);
+    int k = 2;
+    for (; k < 7; k++) {
+        r = qint_mul_22_(y, &r);
+        r = qint_add_22_(&pc_q_3[k], &r);
+    }
+    for (; k < 12; k++) {
+        r = qint_mul_33_(y, &r);
+        r = qint_add_(&pc_q_3[k], &r);
+    }
+    for (; k < 15; k++) {
+        r = qint_mul_(y, &r);
+        r = qint_add_(&pc_q_3[k], &r);
+    }
+    return r;
+}
+
+/* log(1+z) for |z| <= 2^-13, upper limb only (port of p_3). */
+static inline qint_t p_3_(const qint_t *z)
+{
+    qint_t r = qint_mul_11_(&pc_p_3[0], z);
+    r = qint_add_22_(&pc_p_3[1], &r);
+    for (int k = 2; k < 4; k++) {
+        r = qint_mul_11_(&r, z);
+        r = qint_add_22_(&pc_p_3[k], &r);
+    }
+    for (int k = 4; k < 8; k++) {
+        r = qint_mul_21_(&r, z);
+        r = qint_add_22_(&pc_p_3[k], &r);
+    }
+    for (int k = 8; k < 14; k++) {
+        r = qint_mul_31_(&r, z);
+        r = qint_add_(&pc_p_3[k], &r);
+    }
+    for (int k = 14; k < 18; k++) {
+        r = qint_mul_41_(&r, z);
+        r = qint_add_(&pc_p_3[k], &r);
+    }
+    return qint_mul_41_(&r, z);
+}
+
+/* log(x) as a qint, relative error < 2^-250.74 (port of log_3). */
+static inline qint_t log_3_(const qint_t *xin)
+{
+    qint_t x = *xin;
+    int64_t big_e = x.ex;
+    uint64_t hh = (uint64_t)(x.hi >> 64);
+    size_t i;
+    if (hh > 0xb504f333f9de6484ULL) {
+        big_e += 1;
+        i = (size_t)(hh >> (63 + 1 - 7));
+    } else {
+        i = (size_t)(hh >> (63 - 7));
+    }
+    x.ex -= big_e;
+
+    qint_t z = qint_mul_(&x, &pc_inverse_3_1[i - 90]); /* exact */
+    uint64_t zhh = (uint64_t)(z.hi >> 64);
+    size_t j = (size_t)(zhh >> (uint32_t)(63 - 13 - z.ex));
+    z = qint_mul_(&z, &pc_inverse_3_2[j - 8128]); /* exact */
+    z = qint_add_(&pc_m_one_q, &z); /* exact */
+
+    qint_t r = qint_mul_int_(&pc_log2_q, big_e);
+    qint_t p = p_3_(&z);
+    p = qint_add_(&pc_log_inv_3_2[j - 8128], &p);
+    p = qint_add_(&pc_log_inv_3_1[i - 90], &p);
+    return qint_add_(&p, &r);
+}
+
+/* exp(x) as a qint, for |x| < 744.45 (port of exp_3). */
+static inline qint_t exp_3_(const qint_t *x)
+{
+    qint_t big_k = qint_mul_11_(x, &pc_log2_inv_q); /* exact */
+    int64_t k = qint_to_i64_(&big_k);
+    qint_t kk = qint_mul_int_(&pc_log2_q, k);
+    kk.ex -= 12;
+    kk.sgn = !kk.sgn;
+    qint_t y = qint_add_(x, &kk); /* exact (Sterbenz) */
+
+    int64_t big_m = k >> 12;
+    size_t i2 = (size_t)((k >> 6) & 0x3f);
+    size_t i1 = (size_t)(k & 0x3f);
+
+    qint_t r = q_3_(&y);
+    r = qint_mul_(&pc_t1_3[i2], &r);
+    r = qint_mul_(&pc_t2_3[i1], &r);
+    r.ex += big_m;
+    return r;
+}
+
+/* Phase-3 rounding test (port of the ENABLE_ZIV3 rd computation). */
+static inline _Bool rounding_test_3_(const qint_t *qz)
+{
+    uint64_t hh = (uint64_t)(qz->hi >> 64), hl = (uint64_t)qz->hi;
+    uint64_t lh = (uint64_t)(qz->lo >> 64), ll = (uint64_t)qz->lo;
+    uint64_t r1 = (hh << 54) | (hl >> 10);
+    uint64_t r2 = (hl << 54) | (lh >> 10);
+    uint64_t r3 = (lh << 54) | (ll >> 10);
+    return !((r1 == 0 && r2 == 0 && r3 <= 60)
+             || (r1 == ~0ULL && r2 == ~0ULL && (r3 + 120) <= 60));
+}
+
+/* === Exact / midpoint detection (CORE-MATH extract/pow2/round_54/exact_pow) */
+
+/* true iff x is an integer (round-to-even). */
+static inline _Bool pow_is_int_(double x)
+{
+    return x == rint(x);
+}
+
+/* x = 2^E * m with m odd (port of extract). */
+static inline void pow_extract_(int64_t *e_out, uint64_t *m_out, double x)
+{
+    uint64_t u = reinterpret(uint64_t, x);
+    int64_t e = (int64_t)((u >> 52) & 0x7ff);
+    uint64_t m = (u & (~0ULL >> 12)) + (e ? (1ULL << 52) : 0);
+    int t = __builtin_ctzll(m);
+    m >>= t;
+    e = e + t - (0x433 - (e == 0));
+    *e_out = e;
+    *m_out = m;
+}
+
+/* Multiply x by 2^e exactly when in range (port of pow2). */
+static inline double pow_pow2_(double x, int64_t e)
+{
+    if (e & 1)
+        x *= 0x1p1;
+    double e2 = reinterpret(double, (((uint64_t)((e >> 1) + 0x3ff)) & 0x7ff) << 52);
+    return (x * e2) * e2;
+}
+
+/* Round a dint to 54 bits assuming an all-ones / all-zeros tail (port of
+ * round_54).  Returns the value as k * 2^G. */
+static inline void pow_round_54_(int64_t *G, int64_t *k, const dint_t *x)
+{
+    uint64_t hi = (uint64_t)(x->m >> 64);
+    *G = x->ex - 53;
+    *k = (int64_t)((hi >> 10) + ((hi >> 9) & 1));
+}
+
+/* Detect exact / midpoint cases (port of exact_pow).  Writes the exact f64 to
+ * *out and returns true when (x, y) is in CORE-MATH's set S.  z is the phase-2
+ * approximation of x^y with its sign already set to the final result sign. */
+static inline _Bool exact_pow_(double x, double y, const dint_t *z, double *out)
+{
+    _Bool neg = z->sgn;
+    int64_t s_int = neg ? -1 : 1;
+
+    int64_t big_e;
+    uint64_t m;
+    pow_extract_(&big_e, &m, fabs(x));
+
+    if (m == 1) {
+        /* x is a power of 2. */
+        double big_g = (double)big_e * y;
+        if (pow_is_int_(big_g)) {
+            double r = neg ? -1.0 : 1.0;
+            *out = pow_pow2_(r, (int64_t)big_g);
+            return 1;
+        }
+        return 0;
+    }
+
+    if (y < 0.0 || y > 34.0)
+        return 0;
+
+    int64_t big_f;
+    uint64_t n;
+    pow_extract_(&big_f, &n, y);
+    if (n > 34 || big_f < -5)
+        return 0;
+
+    if (big_f < 0) {
+        /* Case (b). */
+        if (((uint64_t)big_e) & (~0ULL >> (uint32_t)(64 + big_f)))
+            return 0;
+        int64_t g = (big_e >> (-big_f)) * (int64_t)n;
+
+        int64_t big_g, k;
+        pow_round_54_(&big_g, &k, z);
+        uint32_t cnt = (uint32_t)__builtin_clzll((uint64_t)k);
+        dint_t d = { !neg, big_g + 63 - (int64_t)cnt, (unsigned __int128)((uint64_t)k << cnt) << 64 };
+        d = d_add_(&d, z); /* exact (Sterbenz) */
+        d.ex += 116;
+        if (d_cmp_abs_(&d, z) >= 0) /* |2^G k - z| >= 2^-116 z: reject */
+            return 0;
+        if (big_g > g)
+            return 0;
+
+        uint32_t shift = (uint32_t)(g - big_g);
+        if (shift >= 64)
+            return 0;
+        uint64_t k_u = (uint64_t)k;
+        if ((k_u & ~(~1ULL << shift)) == (1ULL << shift)) {
+            double r = (double)((int64_t)(k_u >> shift) * s_int);
+            *out = pow_pow2_(r, g);
+            return 1;
+        }
+        return 0;
+    }
+
+    /* Case (a): 2 <= y <= 34 integer, y = n << F. */
+    int64_t t = (int64_t)(n << big_f);
+    int64_t k = 1;
+    int64_t t_rem = t;
+    uint64_t mm = m;
+    while (t_rem != 0) {
+        if (t_rem & 1) {
+            unsigned __int128 v = (unsigned __int128)mm * (uint64_t)k;
+            if (v > (unsigned __int128)INT64_MAX)
+                return 0;
+            k = (int64_t)v;
+        }
+        t_rem >>= 1;
+        if (t_rem != 0) {
+            unsigned __int128 v = (unsigned __int128)mm * mm;
+            if (v > (unsigned __int128)UINT64_MAX)
+                return 0;
+            mm = (uint64_t)v;
+        }
+    }
+    if ((uint64_t)k >> 54)
+        return 0;
+    double r = (double)(k * s_int);
+    int64_t big_g = big_e * (int64_t)(n << big_f);
+    *out = pow_pow2_(r, big_g);
+    return 1;
+}
+
+/* === Top-level accurate path ============================================= */
+
+/* Accurate |x|^y * s for finite positive x != 1, finite y, s = +-1.  x is
+ * |base|; x0 is the original (possibly negative) base for exact_pow's 2^E*m
+ * test; s is the result sign. */
+static inline double pow_accurate_(double x, double y, double x0, double s)
+{
+    /* Phase 2: dint. */
+    dint_t big_x = dint_from_f64_(x);
+    big_x.sgn = 0;
+    dint_t big_y = dint_from_f64_(y);
+
+    dint_t r = log_2_(&big_x);
+    r = d_mul_21_(&r, &big_y);
+    r = exp_2_(&r);
+
+    _Bool rd = rounding_test_2_(&r);
+    r.sgn = s < 0.0;
+    if (rd)
+        return d_tod_(&r);
+
+    /* Exact / midpoint detection (r.sgn already carries the result sign). */
+    double exact;
+    if (exact_pow_(x0, y, &r, &exact))
+        return exact;
+
+    /* Phase 3: qint. */
+    qint_t qx = qint_from_f64_(x);
+    qx.sgn = 0;
+    qint_t qy = qint_from_f64_(y);
+
+    qint_t qr = log_3_(&qx);
+    qr = qint_mul_41_(&qr, &qy);
+    qint_t qz = exp_3_(&qr);
+
+    if (rounding_test_3_(&qz)) {
+        qz.sgn = s < 0.0;
+        qz.lo &= (~(unsigned __int128)0) << 10; /* clear low 10 bits of ll */
+        return qint_to_f64_(qz);
+    }
+
+    /* x^y very close to 1: |qr| < 2^-56. */
+    if (qr.ex < -56) {
+        double tiny = reinterpret(double, 0x3990000000000000ULL); /* 2^-100 */
+        return qr.sgn ? 1.0 - tiny : 1.0 + tiny;
+    }
+
+    /* Unreachable for valid worst cases; fall back to the dint result. */
+    return d_tod_(&r);
+}
+
 #endif
