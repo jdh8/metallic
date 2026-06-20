@@ -1,168 +1,211 @@
-/* tgamma(x) = Γ(x)
+/* tgamma(x) = Γ(x), correctly rounded (<= 0.5 ulp).
  *
- * Method: Lanczos approximation (g=7, n=9; Boost lanczos13m53 coefficients).
+ * Ported from metallic-rs (src/f64_/gamma.rs), adapted for WASM in
+ * kernel/gamma.h (double-double products use fma() residuals, which are
+ * overflow-safe at the near-DBL_MAX magnitudes the recurrence reaches).
  *
- * For x >= 0.5:
- *   Γ(x) = exp(lgamma_lanczos_(x-1))
- *   The restructured formula avoids intermediate overflow for x up to ~171.6.
- *
- * For x in [0.5, 1.5]: use exp(kernel_lgamma1p_(x-1)) for near-cancellation accuracy.
- * For x in [1.5, 4.5]: use recurrence to reduce to [0.5,1.5] and multiply.
- *
- * For x < 0.5 (reflection):
- *   Γ(x) = π / (sin(πx) * Γ(1-x))
- *   For large |x| where Γ(1-x) overflows, use exp form instead.
+ * Reduce z into [2.375, 3.375] (centre 2.875), evaluate Γ(2.875 + d) from a
+ * per-cell minimax table, then walk the recurrence Γ(z) = Γ(z-i)·∏ up or down.
+ * A double-double fast leg (table eval, Stirling for large z, reflection for
+ * z<0) is Ziv-gated against a triple-double accurate path (degree-38 minimax
+ * through a triple-double recurrence, ~2^-135) that clears the hardest ties.
  *
  * Special cases (C11/Annex F):
- *   tgamma(+∞) = +∞
- *   tgamma(-∞) = NaN
- *   tgamma(±0) = ±∞ (pole)
- *   tgamma(negative integer) = NaN (pole)
- *   tgamma(x) = +∞ for x > 171.6247...
+ *   tgamma(+inf)=+inf, tgamma(-inf)=NaN, tgamma(+-0)=+-inf,
+ *   tgamma(negative integer)=NaN, overflow to +inf past ~171.62.
  */
 
-#include "kernel/lanczos.h"
-#include "kernel/sincos.h"
-#include "../reinterpret.h"
+#include "kernel/gamma.h"
 #include <math.h>
 
-/* sin(π*x) for arbitrary finite double x. */
-static double sinpi_(double x)
+typedef struct { double i; dd_t d; } reduce_t;
+typedef struct { dd_t value; int64_t e2; } recur_t;
+typedef struct { td_t value; int64_t e2; } recur_td_t;
+
+/* Reduce z for the recurrence: zr = z - i in [2.375, 3.375]; Γ(z)=Γ(zr)·∏. */
+static reduce_t tgamma_reduce_(double z)
 {
-    double r = x - 2.0 * rint(0.5 * x);
-    double q_f = rint(2.0 * r);
-    int q = (int)q_f & 3;
-    double t = r - 0.5 * q_f;
-    const double pi = 3.14159265358979323846;
-    double a = pi * t;
-    switch (q) {
-        case 0: return  kernel_sin_(a, 0.0);
-        case 1: return  kernel_cos_(a, 0.0);
-        case 2: return -kernel_sin_(a, 0.0);
-        case 3: return -kernel_cos_(a, 0.0);
-    }
-    __builtin_unreachable();
+    if (z >= 2.0 && z < TGAMMA_TABLE_HI)
+        return (reduce_t){ 0.0, (dd_t){ z, 0.0 } };
+    double i = rint(z - TGAMMA_CENTER);
+    return (reduce_t){ i, exptab_twosum_(z, -i) };
 }
 
-/* half_ln2pi = 0.5 * ln(2π) */
-static const double half_ln2pi_ = 0.9189385332046727417803;
-
-/* lgamma_lanczos_(z) = lgamma(z+1) via Lanczos (restructured to reduce overflow).
- * Valid for z >= -0.5 (x = z+1 >= 0.5). */
-static double lgamma_lanczos_(double z)
+/* Reduce z into [2.375,3.375] for the accurate path: d = z - (2.875 + i). */
+static reduce_t tgamma_reduce_center_(double z)
 {
-    double base = lanczos_g_ + 0.5 + z;
-    return (0.5 + z) * (log(base) - 1.0) - lanczos_g_ + half_ln2pi_ + log(lanczos_sum_(z));
+    double i = rint(z - TGAMMA_CENTER);
+    return (reduce_t){ i, exptab_twosum_(z, -(TGAMMA_CENTER + i)) };
 }
 
-/* 52-term Maclaurin series for lgamma(1+t)/t, accurate < 0.25 ulp for |t| <= 0.5. */
-static double kernel_lgamma1p_(double t)
+/* Walk the recurrence: Γ(z) = value · 2^e2 from value = Γ(z-i). */
+static recur_t tgamma_recurrence_(double z, double i, dd_t value)
 {
-    static const double c[] = {
-        -0x1.2788cfc6fb619p-1,   0x1.a51a6625307d3p-1,  -0x1.9a4d55beab2d7p-2,
-         0x1.151322ac7d848p-2,  -0x1.a8b9c17aa6149p-3,   0x1.5b40cb100c306p-3,
-        -0x1.2703a1dcea3aep-3,   0x1.010b36af86397p-3,  -0x1.c806706d57db4p-4,
-         0x1.9a01e385d5f8fp-4,  -0x1.748c33114c6d6p-4,   0x1.556ad63243bc4p-4,
-        -0x1.3b1d971fc5985p-4,   0x1.2496df8320c5fp-4,  -0x1.11133476e7fe0p-4,
-         0x1.00010064cdeb2p-4,  -0x1.e1e2d311e8abdp-5,   0x1.c71ce3a20b419p-5,
-        -0x1.af28a1b5688a0p-5,   0x1.9999b3352d5bap-5,  -0x1.86186db77bfbfp-5,
-         0x1.745d1d1778df9p-5,  -0x1.642c88591b66dp-5,   0x1.555556aaafdcdp-5,
-        -0x1.47ae151eb9fb7p-5,   0x1.3b13b189d925ep-5,  -0x1.2f684c00002bcp-5,
-         0x1.24924936db7bcp-5,  -0x1.1a7b961a7b9aap-5,   0x1.111111155556dp-5,
-        -0x1.08421086318cep-5,   0x1.0000000100002p-5,  -0x1.f07c1f08ba2eap-6,
-         0x1.e1e1e1e25a5a6p-6,  -0x1.d41d41d457c58p-6,   0x1.c71c71c738e39p-6,
-        -0x1.bacf914c29837p-6,   0x1.af286bca21af3p-6,  -0x1.a41a41a41d89ep-6,
-         0x1.999999999b333p-6,  -0x1.8f9c18f9c2577p-6,   0x1.8618618618c31p-6,
-        -0x1.7d05f417d08eep-6,   0x1.745d1745d18bap-6,  -0x1.6c16c16c16ccdp-6,
-         0x1.642c8590b21bdp-6,  -0x1.5c9882b931083p-6,   0x1.555555555556bp-6,
-        -0x1.4e5e0a72f0544p-6,   0x1.47ae147ae1480p-6,  -0x1.4141414141417p-6,
-         0x1.3b13b13b13b15p-6,
-    };
-    double s = c[51];
-    for (int i = 50; i >= 0; --i)
-        s = s * t + c[i];
-    return s * t;
-}
+    int64_t steps = (int64_t)fabs(i);
 
-/* lgamma_pos_(x) for x >= 0.5: uses polynomial for x in [0.5,4.5] and Lanczos for x>4.5. */
-static double lgamma_pos_(double x)
-{
-    if (x <= 1.5)
-        return kernel_lgamma1p_(x - 1.0);
-    if (x <= 2.5)
-        return kernel_lgamma1p_(x - 2.0) + log1p(x - 2.0);
-    if (x <= 3.5)
-        return kernel_lgamma1p_(x - 3.0) + log(x - 2.0) + log1p(x - 2.0);
-    if (x <= 4.5)
-        return kernel_lgamma1p_(x - 4.0) + log(x - 3.0) + log(x - 2.0) + log1p(x - 2.0);
-    if (x > 0x1p1014)
-        return x * (log(x) - 1.0) - 0.5 * log(x) + half_ln2pi_ + 1.0 / (12.0 * x);
-    return lgamma_lanczos_(x - 1.0);
-}
-
-/* tgamma(x) for x >= 0.5 via exp(lgamma_pos_(x)).
- * For x in [0.5, 4.5]: use recurrence to avoid exp(large) precision loss. */
-static double gamma_pos_(double x)
-{
-    /* For small x, the polynomial is accurate enough to just exp it. */
-    if (x <= 1.5)
-        return exp(kernel_lgamma1p_(x - 1.0));
-
-    /* For x in (1.5, 4.5]: use recurrence Γ(x) = (x-1)*Γ(x-1) until x <= 1.5.
-     * The recurrence introduces at most a few ulp per step (3 steps max). */
-    if (x <= 4.5) {
-        double t = x;
-        double result = 1.0;
-        while (t > 1.5) {
-            t -= 1.0;
-            result *= t;
+    if (i > 0.0)
+        return (recur_t){ gdd_mul_(value, g_recurrence_product_z_(z, -1, -1, steps)), 0 };
+    if (i < 0.0 && steps <= TGAMMA_DOWNWARD_DIRECT)
+        return (recur_t){ gdd_mul_(value, gdd_recip_(g_recurrence_product_z_(z, 0, 1, steps))), 0 };
+    if (i < 0.0) {
+        dd_t product = { z, 0.0 };
+        int64_t e2 = 0;
+        double k = 0.0;
+        for (int64_t s = 1; s < steps; ++s) {
+            k += 1.0;
+            product = gdd_mul_(product, exptab_twosum_(z, k));
+            if (fabs(product.hi) > PRODUCT_RESCALE) {
+                product = (dd_t){ shift_(product.hi, -512), shift_(product.lo, -512) };
+                e2 += 512;
+            }
         }
-        return result * exp(kernel_lgamma1p_(t - 1.0));
+        return (recur_t){ gdd_mul_(value, gdd_recip_(product)), -e2 };
     }
-
-    /* Large x: use lgamma via Lanczos then exp.
-     * The Lanczos formula has ~5 ulp in lgamma, which translates to
-     * ~5*lgamma(x) ulp in tgamma for large x (fundamental limitation of g=7 n=9). */
-    return exp(lgamma_pos_(x));
+    return (recur_t){ value, 0 };
 }
 
-double tgamma(double x)
+static recur_td_t tgamma_recurrence_td_(double z, double i, td_t value)
 {
-    const double pi = 3.14159265358979323846;
+    int64_t steps = (int64_t)fabs(i);
 
-    if (isnan(x))
-        return x;
+    if (i > 0.0)
+        return (recur_td_t){ g_td_mul_(value, g_recurrence_product_z_td_(z, -1, -1, steps)), 0 };
+    if (i < 0.0 && steps <= TGAMMA_DOWNWARD_DIRECT)
+        return (recur_td_t){ g_td_mul_(value, g_td_recip_(g_recurrence_product_z_td_(z, 0, 1, steps))), 0 };
+    if (i < 0.0) {
+        td_t product = { z, 0.0, 0.0 };
+        int64_t e2 = 0;
+        double k = 0.0;
+        for (int64_t s = 1; s < steps; ++s) {
+            k += 1.0;
+            product = g_dd_mul_td_(exptab_twosum_(z, k), product);
+            if (fabs(product.hi) > PRODUCT_RESCALE) {
+                product = (td_t){ shift_(product.hi, -512), shift_(product.mid, -512), shift_(product.lo, -512) };
+                e2 += 512;
+            }
+        }
+        return (recur_td_t){ g_td_mul_(value, g_td_recip_(product)), -e2 };
+    }
+    return (recur_td_t){ value, 0 };
+}
 
-    /* tgamma(+inf) = +inf, tgamma(-inf) = NaN */
-    if (isinf(x))
-        return x > 0 ? INFINITY : NAN;
+/* lnΓ(z) as a dd for z >= 36 (Stirling), feeding the exp fast leg. */
+static dd_t tgamma_lngamma_stirling_(double z)
+{
+    dd_t inv = gdd_from_quotient_(1.0, z);
+    double u = inv.hi * inv.hi;
+    dd_t tail = gdd_add_ordered_(gdd_mul_(inv, TWELFTH),
+        (dd_t){ inv.hi * (u * gpoly_(u, TGAMMA_STIRLING_TAIL_REST, 13)), 0.0 });
 
-    /* tgamma(±0) = ±inf (pole) */
-    if (x == 0.0)
-        return copysign(INFINITY, x);
+    dd_t base = gdd_mul_f64_(g_ln_dd_(z), z - 0.5);
+    base = gdd_add_ordered_(base, (dd_t){ -z, 0.0 });
+    base = gdd_add_ordered_(base, HALF_LN_2PI);
+    return gdd_add_ordered_(base, tail);
+}
 
-    /* Negative integers: pole, return NaN */
-    if (x < 0.0 && (x <= -0x1p52 || x == (double)(long long)x))
-        return NAN;
+static dd_t tgamma_stirling_fast_(double z, int64_t *q)
+{
+    return g_exp_dd_of_dd_fast_(tgamma_lngamma_stirling_(z), q);
+}
 
-    /* Overflow: Γ(x) > DBL_MAX for x beyond the point where lgamma(x) > log(DBL_MAX).
-     * The threshold is x ≈ 171.6243769... Use a hex constant just above the last
-     * representable finite x: 0x1.573fae561f648p+7 ≈ 171.6243769... */
-    if (x >= 0x1.573fae561f648p+7)
+static double tgamma_stirling_ziv_rel_(double z)
+{
+    return z * TGAMMA_STIRLING_ZIV_LIN + TGAMMA_STIRLING_ZIV_BASE;
+}
+
+/* Γ(1-z) from the wide table, cell-local arg formed exactly. */
+static dd_t tgamma_reflect_gamma_(double z, double wf)
+{
+    double kf = rint(8.0 * wf);
+    int64_t k = (int64_t)kf;
+    const gamma_cell_t *cell = &TGAMMA_TABLE[k - TGAMMA_TABLE_KLO];
+    double h = (1.0 - 0.125 * kf) - z;   /* (1 - k/8) - z, exact */
+    return g_eval_cell_(cell, (dd_t){ h, 0.0 });
+}
+
+/* Γ(z) = +-pi / (sin(pi z)·Γ(1-z)) via raw reciprocal-multiply. */
+static dd_t tgamma_reflect_value_(double z, double wf)
+{
+    dd_t denom = gdd_mul_(g_abs_sinpi_dd_lean_(z), tgamma_reflect_gamma_(z, wf));
+    double rcp = 1.0 / denom.hi;
+    double rh = rcp * PI_DD.hi;
+    double resid = fma(rh, denom.hi, -PI_DD.hi);
+    double rl = rcp * ((PI_DD.lo - denom.lo * rh) - resid);
+    dd_t mag = { rh, rl };
+    return ((int64_t)floor(z) & 1) ? gdd_neg_(mag) : mag;
+}
+
+/* Reflection fast leg; returns 1 and *out on a certified Ziv hit, else 0. */
+static int tgamma_reflect_fast_(double z, double *out)
+{
+    double wf = 1.0 - z;
+    if (wf < 2.0 || wf >= TGAMMA_TABLE_HI)
+        return 0;
+    dd_t value = tgamma_reflect_value_(z, wf);
+    double err = fabs(value.hi) * TGAMMA_REFLECT_ZIV;
+    double lo = value.hi + (value.lo - err);
+    double hi = value.hi + (value.lo + err);
+    if (lo == hi) {
+        *out = lo;
+        return 1;
+    }
+    return 0;
+}
+
+/* Accurate triple-double leg (degree-38 minimax + td recurrence). */
+static double tgamma_accurate_(double z)
+{
+    reduce_t r = tgamma_reduce_center_(z);
+    td_t seed = g_poly_td_(g_dd_to_td_(r.d), TGAMMA_TD, 39);
+    recur_td_t rec = tgamma_recurrence_td_(z, r.i, seed);
+    return g_round_td_signed64_(rec.value, rec.e2);
+}
+
+double tgamma(double z)
+{
+    if (isnan(z))
+        return z;
+    if (z == INFINITY)
         return INFINITY;
 
-    if (x >= 0.5)
-        return gamma_pos_(x);
+    /* Γ(+-0)=+-inf, and Γ(z)~1/z overflows for |z| <= 2^-1024. */
+    if (fabs(z) <= TGAMMA_TINY)
+        return copysign(INFINITY, z);
 
-    /* Reflection: Γ(x) = π / (sin(πx) * Γ(1-x)) */
-    double sinpx = sinpi_(x);
+    if (z >= TGAMMA_OVERFLOW)
+        return INFINITY;
 
-    /* For x <= -170.5, 1-x >= 171.5, and Γ(1-x) overflows.
-     * Use log-space: Γ(x) = exp(log(π) - log|sin(πx)| - lgamma_pos_(1-x)) * sign */
-    if (x <= -170.5) {
-        double lgtx = log(pi) - log(fabs(sinpx)) - lgamma_pos_(1.0 - x);
-        return copysign(exp(lgtx), sinpx);
+    if (z < 0.0) {
+        if (z == floor(z))           /* non-positive integer (and -inf) */
+            return NAN;
+        if (z <= TGAMMA_UNDERFLOW)   /* every hump rounds to a signed zero */
+            return ((int64_t)floor(z) & 1) ? -0.0 : 0.0;
+        double v;
+        if (tgamma_reflect_fast_(z, &v))
+            return v;
     }
 
-    return pi / (sinpx * gamma_pos_(1.0 - x));
+    /* Large positive z: O(1) Stirling leg. */
+    if (z >= TGAMMA_STIRLING_CUTOFF) {
+        int64_t q;
+        dd_t m = tgamma_stirling_fast_(z, &q);
+        double err = m.hi * tgamma_stirling_ziv_rel_(z);
+        double lo = m.hi + (m.lo - err);
+        double hi = m.hi + (m.lo + err);
+        if (lo == hi)
+            return shift_(lo, q);
+    }
+
+    reduce_t red = tgamma_reduce_(z);
+    recur_t rec = tgamma_recurrence_(z, red.i, g_tgamma_table_eval_(red.d));
+    if (rec.e2 == 0) {
+        dd_t value = rec.value;
+        double err = fabs(value.hi) * TGAMMA_ZIV_EPS;
+        double lo = value.hi + (value.lo - err);
+        double hi = value.hi + (value.lo + err);
+        if (lo == hi && fabs(lo) >= 0x1p-1021)
+            return lo;
+    }
+
+    return tgamma_accurate_(z);
 }
