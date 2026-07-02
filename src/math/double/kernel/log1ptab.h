@@ -8,15 +8,17 @@
  * log1p needs this ~150-bit (triple-double) refinement instead.
  *
  * WASM adaptation: CORE-MATH fuses every product with a hardware FMA.  WASM has
- * no scalar FMA, so each fused multiply-add here calls metallic's
- * correctly-rounded software fma() (src/math/double/fma.c).  This is the rare
- * Ziv fallback, so the software-FMA cost is paid only on near-midpoint inputs;
- * a correctly-rounded fma keeps CORE-MATH's error analysis (and thus the
- * correct rounding) intact.  roundeven_finite -> rint (WASM f64.nearest). */
+ * no scalar FMA, and metallic's software fma() (src/math/double/fma.c) costs
+ * ~100 cycles, so the fma(a, b, -a*b) product residuals -- exact numbers --
+ * are computed with Dekker splits instead (bit-identical; every operand here
+ * is O(1), far from the ~2^997 split overflow, and every residual is normal).
+ * The one genuine fused op, the tiny-|x| nudge fma(|x|, -2^-54, x), keeps the
+ * software fma.  roundeven_finite -> rint (WASM f64.nearest). */
 #ifndef METALLIC_KERNEL_LOG1PTAB_H
 #define METALLIC_KERNEL_LOG1PTAB_H
 
 #include "../../reinterpret.h"
+#include "../split.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -50,17 +52,25 @@ static inline double log1ptab_sum_(double xh, double xl, double ch, double cl, d
     return sh;
 }
 
+/* Exact residual x*y - hi for hi = x*y rounded, via Dekker's split. */
+static inline double log1ptab_prodlo_(double x, double y, double hi)
+{
+    double xh = split_(x), xl = x - xh;
+    double yh = split_(y), yl = y - yh;
+    return ((xh * yh - hi) + xh * yl + xl * yh) + xl * yl;
+}
+
 static inline double log1ptab_muldd_(double xh, double xl, double ch, double cl, double *l)
 {
     double ahhh = ch * xh;
-    *l = (cl * xh + ch * xl) + fma(ch, xh, -ahhh);
+    *l = (cl * xh + ch * xl) + log1ptab_prodlo_(ch, xh, ahhh);
     return ahhh;
 }
 
 static inline double log1ptab_mulddd_(double x, double ch, double cl, double *l)
 {
     double ahhh = ch * x;
-    *l = cl * x + fma(ch, x, -ahhh);
+    *l = cl * x + log1ptab_prodlo_(ch, x, ahhh);
     return ahhh;
 }
 
@@ -208,7 +218,7 @@ static inline double log1ptab_refine_(double x, double a)
                 return x;
             return fma(fabs(x), -0x1p-54, x);
         }
-        double x2h = x * x, x2l = fma(x, x, -x2h);
+        double x2h = x * x, x2l = log1ptab_prodlo_(x, x, x2h);
         double x3l, x3h = log1ptab_mulddd_(x, x2h, x2l, &x3l);
         double sl = x * ((czl[0] + x * czl[1]) + x2h * (czl[2] + x * czl[3]));
         double sh = log1ptab_polyddd_(x, 5, cz, &sl);
@@ -242,14 +252,14 @@ static inline double log1ptab_refine_(double x, double a)
         t.u -= (uint64_t)je << 52;
 
         double t12 = log1ptab_rt_[0][j1] * log1ptab_rt_[1][j2], t34 = log1ptab_rt_[2][j3] * log1ptab_rt_[3][j4];
-        double th = t12 * t34, tl = fma(t12, t34, -th);
-        double dh = th * t.f, dl = fma(th, t.f, -dh);
-        double sh = tl * t.f, sl = fma(tl, t.f, -sh);
+        double th = t12 * t34, tl = log1ptab_prodlo_(t12, t34, th);
+        double dh = th * t.f, dl = log1ptab_prodlo_(th, t.f, dh);
+        double sh = tl * t.f, sl = log1ptab_prodlo_(tl, t.f, sh);
         double xl, xh = log1ptab_fasttwosum_(dh - 1, dl, &xl);
         xh = log1ptab_fastsum_(xh, xl, sh, sl, &xl);
         if (dt.u) {
             dt.u -= (uint64_t)je << 52;
-            double ddh = th * dt.f, ddl = fma(th, dt.f, -ddh) + tl * dt.f;
+            double ddh = th * dt.f, ddl = log1ptab_prodlo_(th, dt.f, ddh) + tl * dt.f;
             xh = log1ptab_fastsum_(xh, xl, ddh, ddl, &xl);
         }
         sl = xh * ((cl[0] + xh * cl[1]) + (xh * xh) * (cl[2] + xh * cl[3]));
