@@ -55,6 +55,12 @@ double cosh(double x)
     if (!(x <= 0x1.633ce8fb9f87dp+9))
         return x * HUGE_VAL;
 
+    /* |x| < 2^-26: cosh(x) = 1 + x²/2 + … with x²/2 < 2^-53, so it rounds to
+     * exactly 1.0 (the x⁴/24 tail keeps it below the 2^-53 midpoint).  Skips the
+     * full double-double path for the vast tiny-|x| range, mirroring sinh. */
+    if (x < 0x1p-26)
+        return 1.0;
+
     /* cosh(x) = ½(e^x + e^-x) = 2^e · mantissa; the sum never cancels. */
     int64_t e;
     exptab_sum_ mantissa = sinhtab_combine_(x, 1, &e);
