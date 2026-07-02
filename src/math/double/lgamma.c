@@ -1,7 +1,8 @@
 /* lgamma(x) = ln|Γ(x)|, correctly rounded (<= 0.5 ulp).
  *
  * Ported from metallic-rs (src/f64_/gamma.rs), adapted for WASM in
- * kernel/gamma.h (double-double products use fma() residuals).
+ * kernel/gamma.h (hot double-double products use Dekker splits — fma() is a
+ * software call here; only the near-DBL_MAX sites keep fma() residuals).
  *
  * For 1/2 <= z < 8 a recurrence-free CORE-MATH piecewise minimax; for z >= 8
  * direct Stirling; for z < 1/2 the reflection ln π − ln|sin πz| − ln Γ(1−z).

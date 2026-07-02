@@ -1,8 +1,8 @@
 /* tgamma(x) = Γ(x), correctly rounded (<= 0.5 ulp).
  *
  * Ported from metallic-rs (src/f64_/gamma.rs), adapted for WASM in
- * kernel/gamma.h (double-double products use fma() residuals, which are
- * overflow-safe at the near-DBL_MAX magnitudes the recurrence reaches).
+ * kernel/gamma.h (hot double-double products use Dekker splits — fma() is a
+ * software call here; only the near-DBL_MAX sites keep fma() residuals).
  *
  * Reduce z into [2.375, 3.375] (centre 2.875), evaluate Γ(2.875 + d) from a
  * per-cell minimax table, then walk the recurrence Γ(z) = Γ(z-i)·∏ up or down.
@@ -43,8 +43,10 @@ static recur_t tgamma_recurrence_(double z, double i, dd_t value)
 {
     int64_t steps = (int64_t)fabs(i);
 
+    /* The upward product ~ Γ(z)/Γ(zr) approaches DBL_MAX, past the ~2^996
+     * Dekker-split bound, so this one combine keeps the fma() residual. */
     if (i > 0.0)
-        return (recur_t){ gdd_mul_(value, g_recurrence_product_z_(z, -1, -1, steps)), 0 };
+        return (recur_t){ gdd_mul_big_(value, g_recurrence_product_z_(z, -1, -1, steps)), 0 };
     if (i < 0.0 && steps <= TGAMMA_DOWNWARD_DIRECT)
         return (recur_t){ gdd_mul_(value, gdd_recip_(g_recurrence_product_z_(z, 0, 1, steps))), 0 };
     if (i < 0.0) {
@@ -129,7 +131,10 @@ static dd_t tgamma_reflect_value_(double z, double wf)
     dd_t denom = gdd_mul_(g_abs_sinpi_dd_lean_(z), tgamma_reflect_gamma_(z, wf));
     double rcp = 1.0 / denom.hi;
     double rh = rcp * PI_DD.hi;
-    double resid = fma(rh, denom.hi, -PI_DD.hi);
+    /* rh·denom.hi − π.hi exactly: Dekker product, then p.hi − π.hi is exact by
+     * Sterbenz (rh·denom.hi ≈ π.hi), sparing the software fma. */
+    dd_t p = exptab_prod_(rh, denom.hi);
+    double resid = (p.hi - PI_DD.hi) + p.lo;
     double rl = rcp * ((PI_DD.lo - denom.lo * rh) - resid);
     dd_t mag = { rh, rl };
     return ((int64_t)floor(z) & 1) ? gdd_neg_(mag) : mag;

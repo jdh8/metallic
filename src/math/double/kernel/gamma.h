@@ -27,22 +27,31 @@ typedef struct { uint16_t c0; int16_t c1; } logd_b_t;  /* ln_td index correction
 
 /* ── double-double ops ──────────────────────────────────────────────────────
  * twosum/fast2sum/add come from exptab.h (addition never overflows via a split).
- * Products use fma() for the residual instead of Dekker's split: the split's
- * (2^27+1)*x overflows for |x| >~ 2^996, which the gamma recurrence/Stirling
- * products reach (Γ approaches DBL_MAX).  fma() is software here but correct and
- * overflow-free; the hot table path only ever forms tiny products anyway. */
+ * The hot dd products use Dekker splits (exptab_prod_): fma() is a software
+ * call on WASM, and the fast legs spend most of their time in these products.
+ * The split's (2^27+1)*x overflows for |x| >~ 2^996, which only the Γ-scale
+ * magnitudes reach (Γ approaches DBL_MAX): those few sites — the tgamma upward
+ * recurrence combine, the td machinery via gprod_, and the *_big_ variants
+ * below — keep the overflow-free fma() residual instead. */
 
 static inline dd_t gdd_neg_(dd_t a) { return (dd_t){ -a.hi, -a.lo }; }
 
-/* exact product x*y as a dd (fma residual, no split overflow) */
+/* exact product x*y as a dd (fma residual, no split overflow; td machinery
+ * feeds it Γ-scale operands in tgamma's accurate tier) */
 static inline dd_t gprod_(double x, double y)
 {
     double hi = x * y;
     return (dd_t){ hi, fma(x, y, -hi) };
 }
 
-/* dd * dd */
+/* dd * dd, split products: requires |a.hi|, |b.hi| < 2^996 */
 static inline dd_t gdd_mul_(dd_t a, dd_t b)
+{
+    return exptab_mul_(a, b);
+}
+
+/* dd * dd for Γ-scale operands (fma residual, no split overflow) */
+static inline dd_t gdd_mul_big_(dd_t a, dd_t b)
 {
     dd_t p = gprod_(a.hi, b.hi);
     double lo = fma(a.hi, b.lo, p.lo);
@@ -50,8 +59,15 @@ static inline dd_t gdd_mul_(dd_t a, dd_t b)
     return (dd_t){ p.hi, lo };
 }
 
-/* dd * scalar */
+/* dd * scalar, split product: requires |a.hi|, |b| < 2^996 */
 static inline dd_t gdd_mul_f64_(dd_t a, double b)
+{
+    dd_t p = exptab_prod_(a.hi, b);
+    return (dd_t){ p.hi, a.lo * b + p.lo };
+}
+
+/* dd * scalar for Γ-scale operands (fma residual, no split overflow) */
+static inline dd_t gdd_mul_f64_big_(dd_t a, double b)
 {
     dd_t p = gprod_(a.hi, b);
     return (dd_t){ p.hi, fma(a.lo, b, p.lo) };
@@ -71,7 +87,7 @@ static inline dd_t gdd_add_loose_(dd_t a, dd_t b)
     return (dd_t){ s.hi, s.lo + (a.lo + b.lo) };
 }
 
-/* 1 / a via one Newton step from the f64 seed 1/a.hi */
+/* 1 / a via one Newton step from the f64 seed 1/a.hi; |a.hi| < 2^996 */
 static inline dd_t gdd_recip_(dd_t a)
 {
     double y = 1.0 / a.hi;
@@ -80,8 +96,25 @@ static inline dd_t gdd_recip_(dd_t a)
     return gdd_mul_f64_(t, y);
 }
 
-/* x / y as a dd (x, y plain f64) */
+/* 1 / a for Γ-scale a (lgamma's Stirling td sees |z| up to ~2.5e305) */
+static inline dd_t gdd_recip_big_(dd_t a)
+{
+    double y = 1.0 / a.hi;
+    dd_t t = gdd_mul_f64_big_(a, -y);
+    t = exptab_add_(t, (dd_t){ 2.0, 0.0 });
+    return gdd_mul_f64_big_(t, y);
+}
+
+/* x / y as a dd (x, y plain f64); |y| < 2^996 */
 static inline dd_t gdd_from_quotient_(double x, double y)
+{
+    double hi = x / y;
+    dd_t p = exptab_prod_(hi, y);
+    return (dd_t){ hi, (((x - p.hi) - p.lo)) / y };
+}
+
+/* x / y for Γ-scale y (fma residual, no split overflow) */
+static inline dd_t gdd_from_quotient_big_(double x, double y)
 {
     double hi = x / y;
     return (dd_t){ hi, fma(hi, -y, x) / y };
@@ -149,7 +182,7 @@ static inline td_t g_td_mul_(td_t a, td_t b)
 
 static inline td_t g_td_recip_(td_t t)
 {
-    dd_t seed = gdd_recip_((dd_t){ t.hi, t.mid });
+    dd_t seed = gdd_recip_big_((dd_t){ t.hi, t.mid });
     td_t s = g_dd_to_td_(seed);
     td_t two = { 2.0, 0.0, 0.0 };
     return g_td_mul_(s, g_td_add_(two, g_td_neg_(g_td_mul_(t, s))));
@@ -434,8 +467,8 @@ static inline dd_t c_fastsum_(double xh, double xl, double yh, double yl)
 
 static inline dd_t c_mulddd_(double x, double ch, double cl)
 {
-    double ahhh = ch * x;
-    return (dd_t){ ahhh, fma(cl, x, fma(ch, x, -ahhh)) };
+    dd_t p = exptab_prod_(ch, x);
+    return (dd_t){ p.hi, cl * x + p.lo };
 }
 
 static inline dd_t c_polydddfst_(double x, const dd_t *c, int n, dd_t seed)
@@ -544,10 +577,10 @@ static inline td_t g_ln1p_small_td_(dd_t r)
     return g_td_add_(g_td_add_(r_td, hr2), g_td_add_(g_td_mul_(r3, THIRD_TD), qr4));
 }
 
-/* ln(s) for a positive dd s, as a td */
+/* ln(s) for a positive dd s, as a td (s.hi may be Γ-scale: lgamma's Stirling) */
 static inline td_t g_ln_sum_td_(dd_t s)
 {
-    dd_t r = gdd_from_quotient_(s.lo, s.hi);
+    dd_t r = gdd_from_quotient_big_(s.lo, s.hi);
     return g_td_add_(g_ln_td_(s.hi), g_ln1p_small_td_(r));
 }
 
