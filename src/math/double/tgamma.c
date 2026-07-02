@@ -125,7 +125,8 @@ static dd_t tgamma_reflect_gamma_(double z, double wf)
     return g_eval_cell_(cell, (dd_t){ h, 0.0 });
 }
 
-/* Γ(z) = +-pi / (sin(pi z)·Γ(1-z)) via raw reciprocal-multiply. */
+/* Magnitude |Γ(z)| = pi / (|sin(pi z)|·Γ(1-z)) via raw reciprocal-multiply,
+ * always positive (the caller folds in sign(Γ(z)) = sign(sin πz)). */
 static dd_t tgamma_reflect_value_(double z, double wf)
 {
     dd_t denom = gdd_mul_(g_abs_sinpi_dd_lean_(z), tgamma_reflect_gamma_(z, wf));
@@ -136,8 +137,7 @@ static dd_t tgamma_reflect_value_(double z, double wf)
     dd_t p = exptab_prod_(rh, denom.hi);
     double resid = (p.hi - PI_DD.hi) + p.lo;
     double rl = rcp * ((PI_DD.lo - denom.lo * rh) - resid);
-    dd_t mag = { rh, rl };
-    return ((int64_t)floor(z) & 1) ? gdd_neg_(mag) : mag;
+    return (dd_t){ rh, rl };
 }
 
 /* Reflection fast leg; returns 1 and *out on a certified Ziv hit, else 0. */
@@ -146,15 +146,23 @@ static int tgamma_reflect_fast_(double z, double *out)
     double wf = 1.0 - z;
     if (wf < 2.0 || wf >= TGAMMA_TABLE_HI)
         return 0;
+    /* value is the positive magnitude, so the gate needs no fabs. */
     dd_t value = tgamma_reflect_value_(z, wf);
-    double err = fabs(value.hi) * TGAMMA_REFLECT_ZIV;
+    double err = value.hi * TGAMMA_REFLECT_ZIV;
     double lo = value.hi + (value.lo - err);
     double hi = value.hi + (value.lo + err);
-    if (lo == hi) {
-        *out = lo;
-        return 1;
-    }
-    return 0;
+    if (lo != hi)
+        return 0;
+    /* sign(Γ(z)) = sign(sin πz): negative on the humps where ⌊z⌋ is odd.
+     * Folded into the certified scalar as a sign-bit XOR: negation is exact
+     * and commutes with round-to-nearest, so the bits match negating the
+     * double-double before the gate — without the 50/50 parity branch that
+     * mispredicts on random input (metallic-rs ffb264b).  z ∈ (−35, −1]
+     * keeps the cast exact. */
+    uint64_t sign = (uint64_t)((int64_t)floor(z) & 1) << 63;
+    uint64_t bits = reinterpret(uint64_t, lo) ^ sign;
+    *out = reinterpret(double, bits);
+    return 1;
 }
 
 /* Accurate triple-double leg (degree-38 minimax + td recurrence). */
