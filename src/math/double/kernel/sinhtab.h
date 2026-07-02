@@ -90,24 +90,34 @@ static inline exptab_sum_ sinhtab_combine_(double x, int add, int64_t *e_out)
     return sinhtab_normalize_(combined, q - 1, e_out);
 }
 
-/* tanh mantissa: tanh(x) = E/(E+2) with E = e^(2x) - 1 = 2^q*m - 1.  Returns
- * the result normalized to a [1,2) mantissa with the binary exponent in *e_out.
- * Valid for x >= 1/8 (E >= e^0.25 - 1 ≈ 0.28, so E/(E+2) never cancels). */
-static inline exptab_sum_ sinhtab_tanh_combine_(double x, int64_t *e_out)
+/* tanh mantissa from e^(2x) = 2^q*m, q >= 0 (valid for x >= 1/8): form
+ * tanh(x) = 1 - 2/(e^(2x) + 1) — the same value as E/(E+2), E = e^(2x) - 1,
+ * over the same denominator, but every fold is ordered and the quotient is one
+ * fused division, replacing the -1/+2 TwoSum chains, the two-division dd
+ * reciprocal, and the closing dd×dd multiply (port of metallic-rs
+ * tanh_combine_fast):
+ *   - 2^q*m is an exact multiply (not shift_: m.lo may be exactly zero),
+ *   - ⊕1 is ordered (e^(2x) >= e^(1/4) > 1),
+ *   - 1 ⊕ (-corr) is ordered (corr <= 2/(e^(1/4)+1) < 0.876).
+ * The folds add only ~2^-100, below the exp kernel's own slip.  Returns the
+ * result normalized to a [1,2) mantissa with the binary exponent in *e_out. */
+static inline exptab_sum_ sinhtab_tanh_combine_(exptab_sum_ m, int64_t q, int64_t *e_out)
 {
-    int64_t q;
-    exptab_sum_ m = sinhtab_exp_dd_(2.0 * x, &q);
-    double mhi = shift_(m.hi, q), mlo = shift_(m.lo, q);   /* e^(2x) as a pair */
+    double scale = reinterpret(double, (uint64_t)(q + 1023) << 52);   /* 2^q, q in [0,57] */
+    exptab_sum_ denom = exptab_fast2sum_(m.hi * scale, 1.0);
+    denom.lo += m.lo * scale;
 
-    exptab_sum_ e = exptab_twosum_(mhi, -1.0);
-    e.lo += mlo;
-    /* E + 2 must keep the carry of E.hi + 2 — a Fast2Sum on (E.hi + 2) would
-     * round it away, capping the path at ~2^-53 (the old tanh.c bug). */
-    exptab_sum_ e2 = exptab_twosum_(e.hi, 2.0);
-    e2.lo += e.lo;
+    /* corr = 2/denom with a single division: the Dekker product recovers the
+     * exact division residual 1 - denom.hi*ihi (1 - p.hi is exact by Sterbenz),
+     * and denom.lo folds in to first order; th = 2*ihi is an exact scaling. */
+    double ihi = 1.0 / denom.hi;
+    exptab_sum_ p = exptab_prod_(denom.hi, ihi);
+    double r = (1.0 - p.hi) - p.lo - denom.lo * ihi;
+    double th = 2.0 * ihi;
 
-    exptab_sum_ inv = sinhtab_recip_(e2);
-    return sinhtab_normalize_(exptab_mul_(e, inv), 0, e_out);
+    exptab_sum_ res = exptab_fast2sum_(1.0, -th);
+    res.lo -= th * r;
+    return sinhtab_normalize_(res, 0, e_out);
 }
 
 /* Ziv-gated round of the normalized mantissa (value = 2^e * mant).  Sets *out

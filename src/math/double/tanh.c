@@ -104,12 +104,14 @@ double tanh(double x)
     if (s < TANH_SMALL)
         return copysign(tanh_small_(s), x);
 
+    /* |x| ∈ [⅛, 20): e^2x = 2^q·m, computed once for both legs below. */
+    int64_t q;
+    exptab_sum_ m = sinhtab_exp_dd_(2.0 * s, &q);
+
     /* |x| >= 3.683: tanh = 1 − 2/(e^2x + 1), the correction ≤ ~1.3e-3 small
      * enough that the plain-f64 e^2x high word and one division round it
      * correctly (Ziv-gated).  CORE-MATH's cheap large-|x| leg. */
     if (s >= TANH_LARGE) {
-        int64_t q;
-        exptab_sum_ m = sinhtab_exp_dd_(2.0 * s, &q);
         double corr = 2.0 / (shift_(m.hi, q) + 1.0);
         double err = corr * 0x1.1p-49;
         double lo = 1.0 - (corr + err);
@@ -118,9 +120,9 @@ double tanh(double x)
             return copysign(lo, x);
     }
 
-    /* |x| ∈ [⅛, 20): tanh = E/(E+2), E = e^2x − 1; never cancels here. */
+    /* |x| ∈ [⅛, 20): tanh = 1 − 2/(e^2x + 1); never cancels here. */
     int64_t e;
-    exptab_sum_ mantissa = sinhtab_tanh_combine_(s, &e);
+    exptab_sum_ mantissa = sinhtab_tanh_combine_(m, q, &e);
 
     double out;
     if (sinhtab_round_(mantissa, e, &out))
