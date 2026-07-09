@@ -46,9 +46,14 @@ int main(void)
 
 extern uintptr_t __metallic_brk;
 
+/* First byte past everything the linker placed: wasm-ld links stack-first,
+ * so linear memory is [shadow stack | data | __heap_base...].  Seeding the
+ * break any lower lets the heap silently overwrite the stack and data. */
+extern unsigned char __heap_base;
+
 _Noreturn void _start(void)
 {
-    __metallic_brk = ((uintptr_t)__builtin_frame_address(0) & 0xFF) + 1;
+    __metallic_brk = (uintptr_t)&__heap_base;
     __wasm_call_ctors();
 
     int rc = main();

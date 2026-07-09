@@ -44,8 +44,8 @@ static void environ_init(void)
 
     /* WASI host validates that the pointer-array address is aligned for
      * `uint8_t**` (4 bytes on wasm32).  `__sbrk` returns whatever value
-     * `__metallic_brk` currently holds, which crt1 seeds with an unaligned
-     * sentinel; we explicitly realign here. */
+     * `__metallic_brk` currently holds, which prior increments may have
+     * left unaligned; we explicitly realign here. */
     const size_t align = _Alignof(uint8_t*);
     void* head = __sbrk(0);
     uintptr_t addr = (uintptr_t)head;
