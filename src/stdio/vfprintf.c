@@ -9,6 +9,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include <wchar.h>
 
 /* Decimal digits needed for the magnitude of any T: value bits × log10(2),
@@ -80,14 +81,15 @@ static int write_(FILE stream[restrict static 1], const void* restrict buffer, s
 
 static int pad_(FILE stream[static 1], uint8_t c, size_t length)
 {
-    uint64_t vector = c * 0x0101010101010101u;
+    char buffer[256];
+    size_t chunk = length < sizeof(buffer) ? length : sizeof(buffer);
 
-    for (size_t i = 0; i < length / sizeof(uint64_t); ++i)
-        TRY(write_(stream, &vector, sizeof(uint64_t)));
+    memset(buffer, c, chunk);
 
-    TRY(write_(stream, &vector, length % sizeof(uint64_t)));
+    for (; length > sizeof(buffer); length -= sizeof(buffer))
+        TRY(write_(stream, buffer, sizeof(buffer)));
 
-    return 0;
+    return write_(stream, buffer, length);
 }
 
 static char* octal_(uintmax_t x, char* s)
