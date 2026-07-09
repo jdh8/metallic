@@ -1,16 +1,10 @@
-#include "../../math/double/shift.h"
 #include "../../math/reinterpret.h"
+#include "../../soft/integer/clzti2.h"
 #include "bigint.h"
 #include "decimal.h"
 #include "pow5.h"
 #include <math.h>
 #include <stdint.h>
-
-static int clz_u128_(unsigned __int128 x)
-{
-    uint64_t hi = x >> 64;
-    return hi ? __builtin_clzll(hi) : 64 + __builtin_clzll((uint64_t)x);
-}
 
 /* Divide a 256-bit dividend (n_hi:n_lo) by a 128-bit divisor d, returning a
  * 128-bit quotient and the 128-bit remainder.  Requires n_hi < d so that
@@ -55,7 +49,7 @@ static double decimal_to_double_(const decimal_t* d)
     if (d->dec_exp < -380)
         return 0;
 
-    int leading = clz_u128_(d->mant);
+    int leading = clzti2_(d->mant);
     unsigned __int128 mant = d->mant << leading;
     int binexp = -leading + d->dec_exp;
     _Bool sticky_lo = d->truncated;

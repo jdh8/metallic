@@ -1,16 +1,11 @@
 #include "../../math/reinterpret.h"
+#include "../../soft/integer/clzti2.h"
 #include "bigint.h"
 #include "decimal.h"
 #include "pow5l.h"
 #include "u256.h"
 #include <math.h>
 #include <stdint.h>
-
-static int clz_u128_l_(unsigned __int128 x)
-{
-    uint64_t hi = x >> 64;
-    return hi ? __builtin_clzll(hi) : 64 + __builtin_clzll((uint64_t)x);
-}
 
 static int u256_lt_(u256_t a, u256_t b)
 {
@@ -79,7 +74,7 @@ static long double decimal_to_long_double_(const decimal_t* d)
     if (d->dec_exp < -5050)
         return 0;
 
-    int leading = clz_u128_l_(d->mant);
+    int leading = clzti2_(d->mant);
     u256_t mant = { d->mant << leading, 0 };
     int binexp = -leading - 128 + d->dec_exp;
     _Bool sticky_lo = d->truncated;

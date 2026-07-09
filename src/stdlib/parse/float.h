@@ -3,8 +3,6 @@
 #include <errno.h>
 #include <tgmath.h>
 
-static Scalar scientific_(Bitset, int);
-
 static int parseexp_(int c, const char s[restrict static 1], char* end[restrict static 1])
 {
     int sign = 1;
