@@ -1,8 +1,8 @@
-#include "copy.h"
 #include <stddef.h>
-#include <stdint.h>
 
 void* memcpy(void* restrict destination, const void* restrict source, size_t length)
 {
-    return copy_(destination, source, length);
+    /* Lowers to a single memory.copy: bulk-memory is in the target features,
+     * so LLVM emits the instruction here instead of a self-recursive libcall. */
+    return __builtin_memcpy(destination, source, length);
 }
