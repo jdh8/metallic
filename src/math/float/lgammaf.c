@@ -47,6 +47,54 @@ static double lgamma_poly_eval_(double x, const double *c, int n)
     return y;
 }
 
+/* Fast-path helpers ported verbatim from CORE-MATH (MIT license,
+ * Copyright (c) 2023-2025 Alexei Sibidanov), src/binary32/lgamma/lgammaf.c
+ * (as_sinpi / as_ln).  Plain f64, ~2^-43 relative error -- far inside the
+ * 2^-36 Ziv gate envelope -- and no calls into the expensive double-double
+ * log/sin kernels. */
+
+/* sin(pi x) for x in [0, 1]. */
+static double lgamma_sinpi_(double x)
+{
+    static const double c[] = {
+        0x1p+2, -0x1.de9e64df22ea4p+1, 0x1.472be122401f8p+0, -0x1.d4fcd82df91bp-3,
+        0x1.9f05c97e0aab2p-6, -0x1.f3091c427b611p-10, 0x1.b22c9bfdca547p-14, -0x1.15484325ef569p-18,
+    };
+    x -= 0.5;
+    double x2 = x * x, x4 = x2 * x2, x8 = x4 * x4;
+    return (0.25 - x2) * ((c[0] + x2 * c[1]) + x4 * (c[2] + x2 * c[3])
+        + x8 * ((c[4] + x2 * c[5]) + x4 * (c[6] + x2 * c[7])));
+}
+
+/* log x for normal positive doubles: 16-entry reciprocal/log tables indexed
+ * by the top 4 significand bits + a degree-8 polynomial in z = ix[i]*m - 1. */
+static double lgamma_ln_(double x)
+{
+    static const double c[] = {
+        0x1.fffffffffff24p-1, -0x1.ffffffffd1d67p-2, 0x1.55555537802dep-2, -0x1.ffffeca81b866p-3,
+        0x1.999611761d772p-3, -0x1.54f3e581b61bfp-3, 0x1.1e642b4cb5143p-3, -0x1.9115a5af1e1edp-4,
+    };
+    static const double il[] = {
+        0x1.59caeec280116p-57, 0x1.f0a30c01162aap-5, 0x1.e27076e2af2ebp-4, 0x1.5ff3070a793d6p-3,
+        0x1.c8ff7c79a9a2p-3, 0x1.1675cababa60fp-2, 0x1.4618bc21c5ec2p-2, 0x1.739d7f6bbd007p-2,
+        0x1.9f323ecbf984dp-2, 0x1.c8ff7c79a9a21p-2, 0x1.f128f5faf06ecp-2, 0x1.0be72e4252a83p-1,
+        0x1.1e85f5e7040d1p-1, 0x1.307d7334f10bep-1, 0x1.41d8fe84672afp-1, 0x1.52a2d265bc5abp-1,
+    };
+    static const double ix[] = {
+        0x1p+0, 0x1.e1e1e1e1e1e1ep-1, 0x1.c71c71c71c71cp-1, 0x1.af286bca1af28p-1,
+        0x1.999999999999ap-1, 0x1.8618618618618p-1, 0x1.745d1745d1746p-1, 0x1.642c8590b2164p-1,
+        0x1.5555555555555p-1, 0x1.47ae147ae147bp-1, 0x1.3b13b13b13b14p-1, 0x1.2f684bda12f68p-1,
+        0x1.2492492492492p-1, 0x1.1a7b9611a7b96p-1, 0x1.1111111111111p-1, 0x1.0842108421084p-1,
+    };
+    uint64_t u = reinterpret(uint64_t, x);
+    int e = (int)(u >> 52) - 0x3ff;
+    int i = (u >> 48) & 0xf;
+    double m = reinterpret(double, (u & (~(uint64_t)0 >> 12)) | ((uint64_t)0x3ff << 52));
+    double z = ix[i] * m - 1, z2 = z * z, z4 = z2 * z2;
+    return e * 0x1.62e42fefa39efp-1 + il[i] + z * ((c[0] + z * c[1]) + z2 * (c[2] + z * c[3])
+        + z4 * ((c[4] + z * c[5]) + z2 * (c[6] + z * c[7])));
+}
+
 /* lgammaf: correctly-rounded ln|Gamma(x)| for all binary32 inputs.
  *
  * The value is evaluated in double-double (gamma.h error-free transforms) and
@@ -153,7 +201,7 @@ static double lgamma_pos_f64_(double y)
 
     double u = 1.0 / (y * y);
     double s = 1.0 / (12.0 * y) + lgamma_poly_eval_(u, lgamma_tail_, 7) * (u / y);
-    return (y - 0.5) * log(y) - y + 0.9189385332046728 + s;
+    return (y - 0.5) * lgamma_ln_(y) - y + 0.9189385332046728 + s;
 }
 
 /* Fast ln|Gamma(z)| plus an absolute error envelope for the Ziv gate. */
@@ -180,18 +228,19 @@ static double lgamma_f64_(float z, double err[static 1])
                 - 1.0/2835) * t
                 - 1.0/180) * t
                 - 1.0/6) * t;
-            value = -log(af) - sinc_log - reflected;
+            value = -lgamma_ln_(af) - sinc_log - reflected;
         } else {
-            double s = fabs(sin(LG_PI_HI * x));
-            value = ln_pi - log(s) - reflected;
+            /* |sin(pi x)| = sin(pi |f|) since |f| <= 0.5. */
+            double s = lgamma_sinpi_(af);
+            value = ln_pi - lgamma_ln_(s) - reflected;
         }
 
-        *err = ldexp(fabs(reflected), -36) + ldexp(1.0, -44);
+        *err = fabs(reflected) * 0x1p-36 + 0x1p-44;
         return value;
     }
 
     double value = lgamma_pos_f64_((double)z);
-    *err = ldexp(fabs(value), -36) + ldexp(1.0, -44);
+    *err = fabs(value) * 0x1p-36 + 0x1p-44;
     return value;
 }
 
