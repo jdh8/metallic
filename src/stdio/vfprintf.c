@@ -74,7 +74,8 @@ static int put_(FILE stream[static 1], int c)
 
 static int write_(FILE stream[restrict static 1], const void* restrict buffer, size_t size)
 {
-    return stream->write(stream, buffer, size) != size;
+    /* Empty literal runs and zero-width pads are common; skip the host call. */
+    return size && stream->write(stream, buffer, size) != size;
 }
 
 static int pad_(FILE stream[static 1], uint8_t c, size_t length)
