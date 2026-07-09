@@ -14,6 +14,15 @@ double exp2(double x)
     if (x <= -1075)
         return 0;
 
+    /* |exp2(x) - 1| < |x|·ln2·(1 + 2^-50) < 0.694·2^-54, so exp2(x) lies
+     * strictly inside (1-2^-54, 1+2^-53) -- strictly between both rounding
+     * midpoints of 1 -- and rounds to 1, as does the computed 1 + x.  The
+     * threshold must be tighter than exp's 2^-53: for x ∈ (-2^-53.53, -2^-54)
+     * exp2 still rounds to 1 but 1 + x rounds to 1-2^-53 (ln2 < 1 skews the
+     * windows).  The nearest exp2_wc_ entry (≈2^-52.5) lies outside. */
+    if (fabs(x) < 0x1p-54)
+        return 1 + x;
+
     /* n = round(N * x), j = n mod N, q = n / N.
      * sigma = x * N - n is exact (N is a power of 2, Sterbenz). */
     double scaled = rint(x * (double)EXPTAB_N);
