@@ -57,12 +57,14 @@ static const double exp2_fp_c_[11] = {
     7.072585949269223e-9,
 };
 
-/* Horner evaluation of an f64 polynomial. coeffs[0] is constant term. */
+/* Horner evaluation of an f64 polynomial. coeffs[0] is constant term.
+ * Plain mul-add, not fma: wasm32 has no scalar FMA, so fma() is a software
+ * libcall.  The extra rounding stays far inside the Ziv gate margin below. */
 static inline double poly_f64_(double x, const double c[], int n)
 {
     double acc = c[n - 1];
     for (int k = n - 2; k >= 0; --k)
-        acc = fma(acc, x, c[k]);
+        acc = acc * x + c[k];
     return acc;
 }
 
@@ -73,7 +75,7 @@ static inline double log2_fast_(double x)
     int64_t exponent = (i - (int64_t)0x3FE6A09E667F3BCDLL) >> 52;
     double m = reinterpret(double, i - (exponent << 52));
     double t = (m - 1.0) / (m + 1.0);
-    return fma(t, poly_f64_(t * t, log2_fp_c_, 11), (double)exponent);
+    return t * poly_f64_(t * t, log2_fp_c_, 11) + (double)exponent;
 }
 
 /* 2^e correctly rounded to float, e given as a double-double. */
