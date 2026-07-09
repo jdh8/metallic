@@ -136,6 +136,17 @@ double exp(double x)
     if (x < -0x1.74910d52d3051p+9)
         return 0;
 
+    /* exp(x) = 1 + x + x²/2·(1 + x/3 + …), with 0 < x²/2·(…) < 2^-106 here.
+     * For 0 < x < 2^-53 both exp(x) and 1+x lie in (1, 1+2^-53), rounding to 1.
+     * For -2^-54 ≤ x < 0 the tie at x = -2^-54 rounds to even (1) and exp(x)
+     * sits strictly above it, so both round to 1.  For -2^-53 < x < -2^-54
+     * both lie in (1-2^-53, 1-2^-54), rounding to 1-2^-53: exp(x) stays below
+     * the midpoint since x + x²/2 < -2^-54 throughout.  1 + x reproduces each
+     * case.  The bound is strict: x = +2^-53 needs 1+2^-52 (it heads exp_wc_),
+     * and no exp_wc_ entry lies inside |x| < 2^-53. */
+    if (fabs(x) < 0x1p-53)
+        return 1 + x;
+
     /* n = round(128 * x / ln2) = 128*q + j, reducing x to r = x - n*ln2/128
      * with |r| <= ln2/256.  scaled * hi is exact (hi has 17 trailing zero bits,
      * |scaled| < 2^18); the lo/lo2 tail is folded in as a double-double so r is
