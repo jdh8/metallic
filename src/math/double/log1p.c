@@ -23,6 +23,16 @@ double log1p(double x)
     if (x == INFINITY)
         return x;
 
+    /* log1p(x) - x = -x²/2·(1 - 2x/3 + …): the true value sits strictly on
+     * the toward-zero side of x for x > 0 and the away-from-zero side for
+     * x < 0, at distance in (0, x²/2].  With |x| < 2^-53 (binade e ≤ -54)
+     * every half-gap to a neighboring midpoint is at least 2^(e-54) -- the
+     * binding corner is x = 2^e exactly, whose downward gap shrinks -- and
+     * x²/2 = 2^(2e-1) ≤ 2^(e-55) < 2^(e-54) for e ≤ -54.  No tie arises, so
+     * log1p(x) rounds to x. */
+    if (fabs(x) < 0x1p-53)
+        return x;
+
     /* Small |x|: evaluate ln(1+x) = x·P(x) directly, avoiding table cancellation. */
     if (fabs(x) < 1.0 / 256.0) {
         exptab_sum_ r = logtab_ln1p_kernel_((exptab_sum_){ x, 0.0 });
