@@ -38,10 +38,30 @@ static unsigned __int128 udiv256by128_(
  * after the subnormal shift to avoid double-rounding.  Halfway-ambiguous
  * inputs (where digit truncation could flip the rounding decision) are
  * resolved by a bigint slow path in a later commit. */
+/* 10^k is exact in double up to k = 22 (5^22 < 2^53). */
+static const double pow10_[23] = {
+    1e0,  1e1,  1e2,  1e3,  1e4,  1e5,  1e6,  1e7,  1e8,  1e9,  1e10, 1e11,
+    1e12, 1e13, 1e14, 1e15, 1e16, 1e17, 1e18, 1e19, 1e20, 1e21, 1e22,
+};
+
 static double decimal_to_double_(const decimal_t* d)
 {
     if (!d->mant)
         return 0;
+
+    /* Clinger fast path: a mantissa below 2^53 converts to double exactly,
+     * and 10^k above is exact, so one correctly-rounded multiply or divide
+     * of exact operands is the correctly-rounded result -- bit-identical
+     * to the 128-bit path below, at a fraction of the cost. */
+    if (!d->truncated && !(d->mant >> 53)) {
+        double m = (double)(uint64_t)d->mant;
+
+        if ((unsigned)d->dec_exp <= 22)
+            return m * pow10_[d->dec_exp];
+
+        if (d->dec_exp >= -22)
+            return m / pow10_[-d->dec_exp];
+    }
 
     if (d->dec_exp > 309)
         return HUGE_VAL;

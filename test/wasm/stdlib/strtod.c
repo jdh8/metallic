@@ -47,6 +47,15 @@ int main(void)
     /* Normal/subnormal junction */
     assert(RUN("2.2250738585072014e-308", "") == 0x1p-1022);             /* DBL_MIN */
 
+    /* Clinger fast-path window (mant < 2^53, |dec_exp| <= 22) and its edges */
+    assert(RUN("3.14", "") == 0x1.91eb851eb851fp+1);
+    assert(RUN("0.1", "") == 0x1.999999999999ap-4);
+    assert(RUN("1e22", "") == 0x1.0f0cf064dd592p+73);
+    assert(RUN("1e-22", "") == 0x1.e392010175ee6p-74);
+    assert(RUN("9007199254740991e22", "") == 0x1.0f0cf064dd591p+126);    /* mant = 2^53 - 1 */
+    assert(RUN("9007199254740993", "") == 0x1p+53);                      /* mant = 2^53 + 1: slow path */
+    assert(RUN("123456789012345678", "") == 0x1.b69b4ba630f35p+56);      /* 18 digits > 2^53 */
+
     /* DBL_MAX and overflow */
     assert(RUN("1.7976931348623157e+308", "") == 0x1.fffffffffffffp+1023);
     OVERFLOW(RUN("1.7976931348623159e+308", "") == INFINITY);
