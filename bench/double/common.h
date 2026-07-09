@@ -14,7 +14,6 @@ static double bench(double f(double))
     }
 
     return (double)(clock() - start) / CLOCKS_PER_SEC;
-    dummy;
 }
 
 /* Metallic vs system libm.  One row: function, the two sweep times (seconds),

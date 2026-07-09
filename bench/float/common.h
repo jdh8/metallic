@@ -115,7 +115,6 @@ static double bench(float f(float), BenchInterval iv) {
         for (int i = 0; i < BENCH_N; i++)
             dummy = f(bench_buf[i]);
     return bench_clock() - start;
-    dummy;
 }
 
 /* Metallic vs system libm.  One row: function, the two sweep times (seconds),
