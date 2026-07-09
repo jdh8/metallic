@@ -13,7 +13,11 @@
 clock_t clock(void)
 {
     __wasi_timestamp_t now = 0;
-    if (__wasi_clock_time_get(__WASI_CLOCKID_PROCESS_CPUTIME_ID, 1, &now))
+    if (__wasi_clock_time_get(__WASI_CLOCKID_PROCESS_CPUTIME_ID, 1, &now)
+        /* wasmtime rejects the cputime clocks; a single-threaded WASI
+         * process is CPU-bound while scheduled, so monotonic time is the
+         * best remaining approximation of CPU time (C11 §7.27.2.1). */
+        && __wasi_clock_time_get(__WASI_CLOCKID_MONOTONIC, 1, &now))
         return (clock_t)-1;
 
     /* CLOCKS_PER_SEC == 10^6, so divide tv_nsec by 10^3 to convert
