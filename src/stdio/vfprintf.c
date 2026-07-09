@@ -11,7 +11,9 @@
 #include <stdio.h>
 #include <wchar.h>
 
-#define DECIMAL_DIGITS(T) (((sizeof(T) * CHAR_BIT - (((T)-1 < 0)) * 30103 + 199999) / 100000))
+/* Decimal digits needed for the magnitude of any T: value bits × log10(2),
+ * rounded up.  30103/100000 > log10(2), so the quotient never underestimates. */
+#define DECIMAL_DIGITS(T) ((sizeof(T) * CHAR_BIT - ((T)-1 < 0)) * 30103 / 100000 + 1)
 #define FLAG(c) (UINT32_C(1) << ((c) - ' '))
 #define TRY(x) do if (x) return -1; while (0)
 
@@ -206,7 +208,8 @@ static int convert_i_(FILE stream[static 1], struct Spec spec, intmax_t arg)
 {
     char buffer[DECIMAL_DIGITS(intmax_t)];
     char* end = buffer + sizeof(buffer);
-    char* begin = decimal_(arg < 0 ? -arg : arg, end);
+    /* Negate in uintmax_t: -INTMAX_MIN overflows intmax_t. */
+    char* begin = decimal_(arg < 0 ? -(uintmax_t)arg : (uintmax_t)arg, end);
 
     int sign = signchar_(arg < 0, spec.flags);
     int precision = spec.precision < 0 ? 1 : spec.precision;

@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <assert.h>
 
@@ -24,6 +25,20 @@ int main(void)
     n = sprintf(buf, "%x", 0xCAFEu);
     assert(n == 4);
     assert(strcmp(buf, "cafe") == 0);
+
+    /* Full-width integers: the digit buffers must hold every magnitude
+     * (DECIMAL_DIGITS once evaluated to 1, overflowing the stack). */
+    n = snprintf(buf, sizeof buf, "%jd", INTMAX_MAX);
+    assert(n == 19);
+    assert(strcmp(buf, "9223372036854775807") == 0);
+
+    n = snprintf(buf, sizeof buf, "%jd", INTMAX_MIN);
+    assert(n == 20);
+    assert(strcmp(buf, "-9223372036854775808") == 0);
+
+    n = snprintf(buf, sizeof buf, "%ju", UINTMAX_MAX);
+    assert(n == 20);
+    assert(strcmp(buf, "18446744073709551615") == 0);
 
     return 0;
 }
