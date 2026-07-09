@@ -50,6 +50,16 @@ double expm1(double x)
     if (x < -37.42994775023704)
         return -1.0;
 
+    /* expm1(x) - x = x²/2·(1 + x/3 + …) > 0 for both signs: away from zero
+     * for x > 0 (coarse side, half-gap 2^(e-53) ≥ x²/2 for binade e ≤ -54)
+     * and toward zero for x < 0, whose binding corner x = -2^e exact has
+     * half-gap 2^(e-54) > 2^(2e-1) = x²/2 for e ≤ -54.  No tie arises, so
+     * expm1(x) rounds to x.  Strict bound: at x = -2^-53 the x³/6 term would
+     * be needed to break the tie.  Nearest expm1_wc_ entries (≈±2^-52) lie
+     * outside.  This also skips the degree-9 double-double Horner below. */
+    if (fabs(x) < 0x1p-53)
+        return x;
+
     double scaled = rint(x * exptab_n_over_ln2_);
     int64_t n = (int64_t)scaled;
 
