@@ -1,5 +1,6 @@
 #include "normalizef.h"
 #include "kernel/atanhf.h"
+#include "kernel/logtabf.h"
 #include "../reinterpret.h"
 #include <math.h>
 
@@ -24,7 +25,24 @@ float log10f(float x)
     if (i >= 0x7F800000)
         return x;
 
-    /* Hard-to-round cases the polynomial path misses by 1 ulp; found by the
+    const double log10_2 = 0x1.34413509f79ffp-2;
+    const double log10_e = 0x1.bcb7b1526e50dp-2;
+
+    int32_t n = normalizef_(i);
+    int32_t m = n & 0x007FFFFF;
+    int j = logtabf_findex_(m);
+    double z = logtabf_fz_(m, j);
+    double s = logtabf_l_[j] + z * logtabf_b_[0]
+             + (z * z) * (logtabf_b_[1] + z * logtabf_b_[2]);
+    double r = ((n >> 23) - 127) * log10_2 + log10_e * s;
+    /* Gate widened beyond log10(e)*LOGTABF_EPS: rescaling the natural log
+     * adds ~2^-46 of two-sided rounding */
+    float ub = r + 0x1p-33, lb = r - 0x1p-44;
+
+    if (ub == lb)
+        return ub;
+
+    /* Hard-to-round cases the fallback path misses by 1 ulp; found by the
      * exhaustive oracle sweep (test/oracle/math/float/log10f.c). */
     if (x == 0x1.fddcf4p-98f)
         return -0x1.d33a46p+4f;
@@ -35,5 +53,5 @@ float log10f(float x)
     if (x == 0x1.5cf1a6p-88f)
         return -0x1.a5b2aep+4f;
 
-    return finite_(normalizef_(i));
+    return finite_(n);
 }
