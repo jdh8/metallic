@@ -18,6 +18,18 @@ static const double expm1_s_[10][2] = {
     { 2.755731922398589e-07, 2.3767714622250297e-23 },
 };
 
+/* U(x) = (eˣ − 1 − x)/x² = ∑ xᵏ/(k+2)!, k = 0..5, for the plain-double fast
+ * leg of the small branch (ported from metallic-rs EXPM1_U_COEFFS).  Degree 5
+ * over |x| < ln2/256: the x⁶/8! truncation is ≈ 2⁻⁶⁵ relative to U. */
+static const double expm1_u_[6] = {
+    0.5,
+    0.16666666666666666,
+    0.041666666666666664,
+    0.008333333333333333,
+    0.001388888888888889,
+    0.0001984126984126984,
+};
+
 /* Exact half-ULP for the rounding decision at `fast`.
  * When fast is exactly ±2^k (mantissa bits all zero) and the true value e
  * is above fast, the rounding boundary sits in the NEXT binade (smaller ULP),
@@ -64,6 +76,25 @@ double expm1(double x)
     int64_t n = (int64_t)scaled;
 
     if (n == 0) {
+        /* Result-anchored plain-double fast leg: expm1(x) = x + c with the
+         * correction c = x²·U(x) > 0, so the leg's error rides the tiny c
+         * rather than the result.  Ziv gate eps = x²·2⁻⁴⁹ ≈ c·2⁻⁴⁸: the
+         * degree-5 truncation (≈ 2⁻⁶⁵·c), the plain Horner (≈ 2⁻⁵²·c), and
+         * the x·x / x²·u / c∓eps roundings (≈ 3·2⁻⁵³·c) total ≤ ~2⁻⁵⁰·⁵·c,
+         * a ≥ 5× margin.  When x + (c−eps) and x + (c+eps) round identically,
+         * that common double is the correct rounding of x + (expm1(x) − x);
+         * otherwise fall through to the double-double Horner below. */
+        double xx = x * x;
+        double u = ((((expm1_u_[5] * x + expm1_u_[4]) * x + expm1_u_[3]) * x
+                  + expm1_u_[2]) * x + expm1_u_[1]) * x + expm1_u_[0];
+        double c = xx * u;
+        double eps = xx * 0x1p-49;
+        double left = x + (c - eps);
+        double right = x + (c + eps);
+
+        if (left == right)
+            return left;
+
         /* |x| < ln2/(2N) ≈ 0.0027: evaluate expm1(x) = x · S(x) directly. */
         exptab_sum_ s = { expm1_s_[9][0], expm1_s_[9][1] };
 
