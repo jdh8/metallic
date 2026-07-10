@@ -1,5 +1,6 @@
 #include "normalizef.h"
 #include "kernel/atanhf.h"
+#include "kernel/logtabf.h"
 #include "../reinterpret.h"
 #include <math.h>
 
@@ -20,8 +21,29 @@ float log2f(float x)
     if (i <= 0)
         return i << 1 == 0 ? -INFINITY : NAN;
 
-    if (i < 0x7F800000)
-        return finite_(normalizef_(i));
+    if (i >= 0x7F800000)
+        return x;
 
-    return x;
+    const double log2e = 0x1.71547652b82fep+0;
+
+    int32_t n = normalizef_(i);
+    int32_t m = n & 0x007FFFFF;
+    int32_t e = (n >> 23) - 127;
+
+    if (m == 0)
+        return e;
+
+    int j = logtabf_findex_(m);
+    double z = logtabf_fz_(m, j);
+    double s = logtabf_l_[j] + z * logtabf_b_[0]
+             + (z * z) * (logtabf_b_[1] + z * logtabf_b_[2]);
+    double r = e + log2e * s;
+    /* Gate widened beyond log2(e)*LOGTABF_EPS: rescaling the natural log and
+     * adding e (exact, but |r| reaches 149) costs ~2^-45 both ways */
+    float ub = r + 0x1.8p-32, lb = r - 0x1p-43;
+
+    if (ub == lb)
+        return ub;
+
+    return finite_(n);
 }
