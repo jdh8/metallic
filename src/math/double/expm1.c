@@ -1,5 +1,6 @@
 #include "kernel/exptab.h"
 #include "kernel/expm1tab.h"
+#include "kernel/exp2lvl.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -113,6 +114,38 @@ double expm1(double x)
             if (wc) return wc;
         }
         return fast;
+    }
+
+    /* Lean two-level fast leg with the −1 taken in mantissa space (ported
+     * from metallic-rs expm1): exp(x) = (th + fl)·2^q on the 4096-point grid,
+     * so expm1(x) = ((th − 2^−q) + fl)·2^q with off = −2^−q built by bit
+     * pattern.  The three-way window mirrors CORE-MATH's cr_expm1: off leads
+     * the Fast2Sum for q < 53 (dominant or exact against th — the sum is even
+     * error-free for 0 ≤ q ≤ 52, both operands on the 2^−52 grid), trails it
+     * for 53 ≤ q < 75 (sub-ulp but still gate-relevant), and is dropped for
+     * q ≥ 75 (2^−q ≪ the gate; its bit pattern degenerates at q = 1024).
+     * n ≠ 0 keeps q in [−54, 1024], so `off` is finite whenever used and
+     * shift_(left, q) stays normal-exact.  The fold is ~2^−64 absolute on
+     * th + fl and low = fl + s.lo adds one rounding ≤ 2^−66; the subtraction-
+     * preserving absolute 2^−62 gate still bounds the leg. */
+    {
+        double s4 = rint(x * exp2lvl_n_over_ln2_);
+        double a = x - s4 * exp2lvl_ln2_over_n_hi_;
+        double dx = a - s4 * exp2lvl_ln2_over_n_lo_;
+        int64_t q2;
+        exptab_sum_ f = exp2lvl_fold_((int64_t)s4, dx, &q2);
+
+        double off = reinterpret(double, (2048 + 1023 - q2) << 52);
+        exptab_sum_ s = q2 < 53 ? exptab_fast2sum_(off, f.hi)
+                      : q2 < 75 ? exptab_fast2sum_(f.hi, off)
+                      : (exptab_sum_){ f.hi, 0 };
+
+        double low = f.lo + s.lo;
+        double left = s.hi + (low - EXP2LVL_EPS_);
+        double right = s.hi + (low + EXP2LVL_EPS_);
+
+        if (left == right)
+            return shift_(left, q2);
     }
 
     int j = (int)(n & (EXPTAB_N - 1));
