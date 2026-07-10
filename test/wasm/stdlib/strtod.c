@@ -47,6 +47,12 @@ int main(void)
     /* Normal/subnormal junction */
     assert(RUN("2.2250738585072014e-308", "") == 0x1p-1022);             /* DBL_MIN */
 
+    /* Long fractions outside the Clinger window: 256/128 division path */
+    assert(RUN("0.1000000000000000055511151231257827021181583404541015625", "")
+        == 0x1.999999999999ap-4);                                        /* exact expansion of 0.1 */
+    assert(RUN("0.12345678901234567890", "") == 0x1.f9add3746f65fp-4);
+    assert(RUN("1.23456789012345678901e-315", "") == 0x0.000000ee4db1bp-1022);
+
     /* Clinger fast-path window (mant < 2^53, |dec_exp| <= 22) and its edges */
     assert(RUN("3.14", "") == 0x1.91eb851eb851fp+1);
     assert(RUN("0.1", "") == 0x1.999999999999ap-4);

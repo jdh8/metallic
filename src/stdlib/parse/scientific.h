@@ -1,34 +1,60 @@
 #include "../../math/reinterpret.h"
 #include "../../soft/integer/clzti2.h"
+#include "../../soft/integer/uldivmoddi5.h"
 #include "bigint.h"
 #include "decimal.h"
 #include "pow5.h"
 #include <math.h>
 #include <stdint.h>
 
+/* One digit of Knuth Algorithm D with 64-bit limbs: divide (u:u0), a
+ * 192-bit value with u < d1:d0, by the divisor d1:d0.  The divisor comes
+ * from pow5_ and is top-bit-normalized, so no normalization shift is
+ * needed and the initial 128/64 estimate is off by at most 2.  With a
+ * two-limb divisor the correction test is exact, so no add-back step. */
+static uint64_t udiv192by128_(
+    unsigned __int128 u, uint64_t u0, uint64_t d1, uint64_t d0,
+    unsigned __int128 rem[static 1])
+{
+    uint64_t u1 = u >> 64;
+    uint64_t qhat;
+    unsigned __int128 rhat;
+
+    if (u1 == d1) {
+        /* uldivmoddi5_ would overflow; u < d caps the true digit at 2^64 - 1. */
+        qhat = UINT64_MAX;
+        rhat = (uint64_t)u + (unsigned __int128)d1;
+    } else {
+        uint64_t r64;
+        qhat = uldivmoddi5_(u1, u, d1, &r64);
+        rhat = r64;
+    }
+
+    while (!(rhat >> 64) && (unsigned __int128)qhat * d0 > (rhat << 64 | u0)) {
+        --qhat;
+        rhat += d1;
+    }
+
+    /* True remainder rhat:u0 - qhat * d0 is in [0, d), so computing it
+     * mod 2^128 is exact even when rhat has outgrown 64 bits. */
+    *rem = (rhat << 64 | u0) - (unsigned __int128)qhat * d0;
+    return qhat;
+}
+
 /* Divide a 256-bit dividend (n_hi:n_lo) by a 128-bit divisor d, returning a
  * 128-bit quotient and the 128-bit remainder.  Requires n_hi < d so that
- * the quotient fits in 128 bits.  Bit-by-bit long division -- ~128
- * iterations, same shape as the software path of udivmodti4_. */
+ * the quotient fits in 128 bits, and a top-bit-set d (pow5_ mantissas are
+ * normalized). */
 static unsigned __int128 udiv256by128_(
     unsigned __int128 n_hi, unsigned __int128 n_lo,
     unsigned __int128 d, unsigned __int128 r[static 1])
 {
-    unsigned __int128 q = 0;
-    unsigned __int128 rem = n_hi;
-
-    for (int i = 127; i >= 0; --i) {
-        int carry = (int)(rem >> 127);
-        rem = (rem << 1) | ((n_lo >> i) & 1);
-        q <<= 1;
-        if (carry || rem >= d) {
-            rem -= d;
-            q |= 1;
-        }
-    }
+    unsigned __int128 rem;
+    uint64_t q1 = udiv192by128_(n_hi, n_lo >> 64, d >> 64, d, &rem);
+    uint64_t q0 = udiv192by128_(rem, n_lo, d >> 64, d, &rem);
 
     *r = rem;
-    return q;
+    return (unsigned __int128)q1 << 64 | q0;
 }
 
 /* Convert a decimal_t to a correctly-rounded double using a 128-bit fast
