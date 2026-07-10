@@ -1,5 +1,6 @@
 #include "kernel/exptab.h"
 #include "kernel/exp2tab.h"
+#include "kernel/exp2lvl.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -22,6 +23,31 @@ double exp2(double x)
      * windows).  The nearest exp2_wc_ entry (≈2^-52.5) lies outside. */
     if (fabs(x) < 0x1p-54)
         return 1 + x;
+
+    /* Lean two-level fast leg: exp2(x) = (th + fl)·2^q on the 4096-point
+     * grid, with an almost exact base-2 reduction: sigma = 4096·x − scaled is
+     * exact (power-of-two scale + Sterbenz), and dx = sigma·(hi + lo) differs
+     * from metallic-rs's fma form only by the sigma·lo product rounding
+     * ≤ 2^-95, leaving dx within ~2^-67 of sigma·ln2/4096 — the fold's own
+     * budget dominates, well inside the 2^-62 gate.  |sigma| ≥ ulp(x)·2^12
+     * bounds |fl| ≥ 2^-43.5 for x just below 1024, so `left` cannot round up
+     * to 1.0 at q = 1024 and shift_ stays exact; q ≥ -1021 keeps the
+     * subnormal boundary on the accurate path below. */
+    {
+        double scaled = rint(x * 4096.0);
+        double sigma = x * 4096.0 - scaled;
+        double dx = sigma * exp2lvl_ln2_over_n_hi_ + sigma * exp2lvl_ln2_over_n_lo_;
+        int64_t q;
+        exptab_sum_ f = exp2lvl_fold_((int64_t)scaled, dx, &q);
+
+        if (q >= -1021) {
+            double left = f.hi + (f.lo - EXP2LVL_EPS_);
+            double right = f.hi + (f.lo + EXP2LVL_EPS_);
+
+            if (left == right)
+                return shift_(left, q);
+        }
+    }
 
     /* n = round(N * x), j = n mod N, q = n / N.
      * sigma = x * N - n is exact (N is a power of 2, Sterbenz). */
