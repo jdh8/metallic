@@ -1,4 +1,5 @@
 #include "kernel/exptab.h"
+#include "kernel/exp2lvl.h"
 #include <math.h>
 #include <stdint.h>
 
@@ -146,6 +147,31 @@ double exp(double x)
      * and no exp_wc_ entry lies inside |x| < 2^-53. */
     if (fabs(x) < 0x1p-53)
         return 1 + x;
+
+    /* Lean two-level fast leg: exp(x) = (th + fl)·2^q on the 4096-point grid.
+     * scaled·hi is exact (hi has 25 trailing zero bits, |scaled| < 2^22.1) and
+     * cancels against x down to |dx| scale (Sterbenz), so `a` is exact; the
+     * plain scaled·lo product adds <= 2^-72 over metallic-rs's fma.  The gate
+     * resolves the rounding without renormalizing th + fl; q >= -1021 keeps
+     * shift_ exact (the subnormal boundary stays on the accurate path below).
+     * th + fl < 2^(4095.5/4096)·(1+2^-12) < 2 - 2^-53, so `left` never rounds
+     * to 2.0 and shift_ cannot jump a binade; overflow (q = 1023, left = 2.0
+     * would hit +inf via shift_) is already excluded by the threshold above. */
+    {
+        double scaled = rint(x * exp2lvl_n_over_ln2_);
+        double a = x - scaled * exp2lvl_ln2_over_n_hi_;
+        double dx = a - scaled * exp2lvl_ln2_over_n_lo_;
+        int64_t q;
+        exptab_sum_ f = exp2lvl_fold_((int64_t)scaled, dx, &q);
+
+        if (q >= -1021) {
+            double left = f.hi + (f.lo - EXP2LVL_EPS_);
+            double right = f.hi + (f.lo + EXP2LVL_EPS_);
+
+            if (left == right)
+                return shift_(left, q);
+        }
+    }
 
     /* n = round(128 * x / ln2) = 128*q + j, reducing x to r = x - n*ln2/128
      * with |r| <= ln2/256.  scaled * hi is exact (hi has 17 trailing zero bits,
