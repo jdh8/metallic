@@ -78,6 +78,7 @@ _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
 #endif
 
 #if __STDC_VERSION__ > 201710L
+_Scalar _MATHCALL(exp10)(_Scalar);
 _Scalar _MATHCALL(rsqrt)(_Scalar);
 
 _Scalar _MATHCALL(sinpi)(_Scalar);

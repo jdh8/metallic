@@ -172,13 +172,17 @@ static const double exp2lvl_t1_[64][2] = {
  * 2^-74 -- far under the gate. */
 static const double exp2lvl_p_[4] = { 1.0, 0.5, 0.16666666666666666, 0.041666666666666664 };
 
-/* Lean fold: (th + fl) * 2^q = 2^(t/4096) * exp(dx), th = 2^(j/4096) in
- * [1, 2), |fl| <~ ln2/8192.  fl = fma(th*dx, p, tab.lo) in metallic-rs; the
- * plain (th*dx)*p + tab.lo adds one rounding <= ulp(fl)/2 <= 2^-66, and the
- * dropped tab.lo*(exp(dx)-1) cross term stays <= 2^-64.5 -- both inside the
- * gate.  th + fl may sit just outside [1, 2); q = t >> 12 is not adjusted
- * for it, which the exponent-only shift_ absorbs. */
-static inline exptab_sum_ exp2lvl_fold_(int64_t t, double dx, int64_t *q)
+/* Lean fold: (th + fl) * 2^q = 2^(t/4096) * b^dx, th = 2^(j/4096) in
+ * [1, 2), |fl| <~ ln2/8192.  `coeffs` approximates (b^dx - 1)/dx for the
+ * caller's base: exp2lvl_p_ for base e (exp/exp2/expm1/exp2m1), exp2lvl_p10_
+ * for base 10 with ln10 baked in (exp10/exp10m1).
+ * fl = fma(th*dx, p, tab.lo) in metallic-rs; the plain (th*dx)*p + tab.lo
+ * adds one rounding <= ulp(fl)/2 <= 2^-66, and the dropped
+ * tab.lo*(b^dx - 1) cross term stays <= 2^-64.5 -- both inside the gate.
+ * th + fl may sit just outside [1, 2); q = t >> 12 is not adjusted for it,
+ * which the exponent-only shift_ absorbs. */
+static inline exptab_sum_ exp2lvl_fold2_(int64_t t, double dx, const double coeffs[4],
+                                         int64_t *q)
 {
     int j = (int)(t & 4095);
     int i0 = j >> 6, i1 = j & 63;
@@ -188,10 +192,33 @@ static inline exptab_sum_ exp2lvl_fold_(int64_t t, double dx, int64_t *q)
         (exptab_sum_){ exp2lvl_t0_[i0][0], exp2lvl_t0_[i0][1] },
         (exptab_sum_){ exp2lvl_t1_[i1][0], exp2lvl_t1_[i1][1] });
 
-    double p = ((exp2lvl_p_[3] * dx + exp2lvl_p_[2]) * dx + exp2lvl_p_[1]) * dx
-             + exp2lvl_p_[0];
+    double p = ((coeffs[3] * dx + coeffs[2]) * dx + coeffs[1]) * dx + coeffs[0];
 
     return (exptab_sum_){ tab.hi, tab.hi * dx * p + tab.lo };
 }
+
+static inline exptab_sum_ exp2lvl_fold_(int64_t t, double dx, int64_t *q)
+{
+    return exp2lvl_fold2_(t, dx, exp2lvl_p_, q);
+}
+
+/* Base-10 reduction for exp10/exp10m1: t = round(4096*x*log2(10)),
+ * delta = x - t*log10(2)/4096, |delta| <= log10(2)/8192, so
+ * 10^x = 2^(t/4096) * 10^delta.  hi has 23 trailing zero significand bits,
+ * so t*hi is exact for |t| < 2^23 (exp10 tops out near 2^22.1) and
+ * x - t*hi is exact (Sterbenz).  hi + mid + lo = log10(2)/4096 to ~2^-141
+ * relative; mid and lo are negative, so the residual *adds* t*mid, t*lo. */
+static const double exp2lvl_n_log2_10_ = 13606.617476658635;
+static const double exp2lvl_log10_2_hi_ = 7.349365125719487e-05;
+static const double exp2lvl_log10_2_mid_ = -2.795678930181113e-14;
+static const double exp2lvl_log10_2_lo_ = -6.5950754538526695e-31;
+
+/* (10^delta - 1)/delta = sum ln10^(k+1) delta^k/(k+1)!, low degree first --
+ * the base-10 counterpart of exp2lvl_p_ with ln10 baked in.  The delta^4
+ * truncation contributes ~2^-75 to fl, far under the gate, so exact Taylor
+ * coefficients suffice. */
+static const double exp2lvl_p10_[4] = {
+    2.302585092994046, 2.650949055239199, 2.034678592293476, 1.171255148912267
+};
 
 #endif
