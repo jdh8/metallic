@@ -235,4 +235,24 @@ static inline exptab_sum_ lncells_ln_(double x)
     return lncells_assemble_((double)e, cell, z);
 }
 
+/* The lean leg on the exact split 1 + x = s + c (log1p and its base-2/10
+ * lifts): with delta = c*2^-e the true mantissa is m + delta, so the true
+ * reduced argument is z + r*delta; |c| <= ulp(s)/2 makes dz = r*delta <=
+ * 2^-53, and its first-order image through ln, dz/(1+z), is dz*(1-z) up to
+ * a dropped dz*z^2 <= 2^-68 -- inside the gates' margins.  Plain ops
+ * replace metallic-rs's fast_mul_add(-dz, z, dz): rounding dz*z (<= 2^-113)
+ * and the subtraction (<= 2^-106) are negligible against them. */
+static inline exptab_sum_ lncells_ln1p_raw_(double s, double c)
+{
+    int64_t e;
+    const lncells_cell_ *cell;
+    double z = lncells_reduce_(s, &e, &cell);
+    double delta = e > -1000 ? c * shift_(1.0, -e) : 0.0;
+    double dz = cell->r * delta;
+    exptab_sum_ f = lncells_assemble_((double)e, cell, z);
+
+    f.lo += dz - dz * z;
+    return f;
+}
+
 #endif

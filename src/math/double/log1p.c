@@ -61,26 +61,16 @@ double log1p(double x)
         c = 1.0 - (s - x);
     }
 
-    /* The lean exact-z leg on s, with the tail c folded into the low word:
-     * with delta = c·2^-e the true mantissa is m + delta, so the true reduced
-     * argument is z + r·delta; |c| ≤ ulp(s)/2 makes dz = r·delta ≤ 2^-53, and
-     * its first-order image through ln, dz/(1+z), is dz·(1-z) up to a dropped
-     * dz·z² ≤ 2^-68 -- inside the gate's margin.  Plain ops replace
-     * metallic-rs's fast_mul_add(-dz, z, dz): rounding dz·z (≤ 2^-113) and the
-     * subtraction (≤ 2^-106) are negligible against the 2^-63 gate. */
-    int64_t e;
-    const lncells_cell_ *cell;
-    double z = lncells_reduce_(s, &e, &cell);
-    double delta = e > -1000 ? c * shift_(1.0, -e) : 0.0;
-    double dz = cell->r * delta;
-    exptab_sum_ f = lncells_assemble_((double)e, cell, z);
-    f.lo += dz - dz * z;
+    /* The lean exact-z leg on s with the tail c folded into the low word
+     * (see lncells_ln1p_raw_). */
+    exptab_sum_ f = lncells_ln1p_raw_(s, c);
     double left = f.hi + (f.lo - LN_ZIV_EPS);
     double right = f.hi + (f.lo + LN_ZIV_EPS);
     if (left == right)
         return left;
 
     /* Middle tier: reduce s = 2^e * m, compute r = m * INV[i] − 1 ∈ [−1/256, 1/256]. */
+    int64_t e;
     int i;
     exptab_sum_ r;
     logtab_reduce_(s, &e, &i, &r);
