@@ -83,6 +83,7 @@ _Scalar _MATHCALL(exp2m1)(_Scalar);
 _Scalar _MATHCALL(exp10m1)(_Scalar);
 _Scalar _MATHCALL(log2p1)(_Scalar);
 _Scalar _MATHCALL(log10p1)(_Scalar);
+_Scalar _MATHCALL(logp1)(_Scalar);
 _Scalar _MATHCALL(rsqrt)(_Scalar);
 
 _Scalar _MATHCALL(sinpi)(_Scalar);
