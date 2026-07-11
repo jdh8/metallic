@@ -336,6 +336,46 @@ static inline double dint_to_f64_(const dint_t *self)
     return r * e;
 }
 
+/* Convert to f64 with correct rounding, safe across the subnormal and
+ * overflow ranges (port of metallic-rs Dint::to_f64_general): round half to
+ * even directly on the 128-bit significand, retaining fewer bits as the
+ * result goes subnormal, then scale by one exact step. */
+static inline double dint_to_f64_general_(const dint_t *self)
+{
+    double sign = self->sgn ? -1.0 : 1.0;
+
+    if (self->m == 0)
+        return sign * 0.0;
+
+    /* m in [2^127, 2^128) => value in [2^ex, 2^(ex+1)). */
+    if (self->ex >= 1024)
+        return sign * INFINITY;
+
+    if (self->ex < -1075)
+        return sign * 0.0;
+
+    /* Bits to retain above the round bit: 53 for a normal result, fewer as
+     * the result goes subnormal (the lowest kept bit sits at 2^-1074). */
+    int64_t keep = self->ex >= -1022 ? 53 : self->ex + 1075; /* 0..=53 */
+    unsigned shift = (unsigned)(128 - keep);
+    uint64_t mantissa = shift >= 128 ? 0 : (uint64_t)(self->m >> shift);
+    unsigned round_pos = shift - 1; /* 74..=127, always a valid shift */
+    _Bool round = (self->m >> round_pos) & 1;
+    _Bool sticky = (self->m & (((unsigned __int128)1 << round_pos) - 1)) != 0;
+
+    mantissa += round && (sticky || (mantissa & 1));
+
+    /* value = mantissa * 2^(ex - keep + 1) with mantissa <= 2^53: one exact
+     * step (a carry out of the kept field lands exactly on a power of two;
+     * the subnormal carry 2^52 * 2^-1074 is the smallest normal). */
+    int64_t scale = self->ex - keep + 1; /* >= -1074 */
+    double p2 = scale >= -1022
+        ? reinterpret(double, (uint64_t)(scale + 1023) << 52)
+        : reinterpret(double, (uint64_t)1 << (scale + 1074));
+
+    return sign * (double)mantissa * p2;
+}
+
 /* === Constants, converted from metallic-rs f64/dint_consts.rs ===
  * value = (-1)^sgn * (m / 2^127) * 2^ex; { sgn, ex, m }. */
 

@@ -128,7 +128,7 @@ ORACLE.cr := expf_cr logf_cr log2f_cr log10f_cr log1pf_cr sinf_cr cosf_cr tanf_c
              exp2f_cr expm1f_cr cbrtf_cr coshf_cr sinhf_cr tanhf_cr erff_cr erfcf_cr \
              lgamma_cr tgamma_cr atan2f_cr hypotf_cr powf_cr rsqrtf_cr \
              sinpif_cr cospif_cr tanpif_cr asinpif_cr acospif_cr atanpif_cr atan2pif_cr \
-             exp10f_cr
+             exp10f_cr exp2m1f_cr
 check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
 
 # Independent ground-truth AUDIT (not gated; slow, opt-in): the exhaustive MPFR
@@ -138,7 +138,7 @@ check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.
 # impractically slow, and the cr_* cross-checks cover the gamma pair.
 ORACLE.mpfr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) \
                coshf sinhf tanhf erff erfcf atan2f hypotf rsqrtf \
-               sinpif cospif tanpif asinpif acospif atanpif atan2pif exp10f
+               sinpif cospif tanpif asinpif acospif atanpif atan2pif exp10f exp2m1f
 check.oracle.mpfr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.mpfr)))
 
 # Emit the ORACLE.cr names (space-separated) so the `oracle` CI workflow can
