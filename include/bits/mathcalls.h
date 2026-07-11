@@ -93,4 +93,6 @@ _Scalar _MATHCALL(asinpi)(_Scalar);
 _Scalar _MATHCALL(acospi)(_Scalar);
 _Scalar _MATHCALL(atanpi)(_Scalar);
 _Scalar _MATHCALL(atan2pi)(_Scalar, _Scalar);
+
+_Scalar _MATHCALL(compoundn)(_Scalar, long long);
 #endif
