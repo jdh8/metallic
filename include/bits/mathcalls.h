@@ -83,4 +83,6 @@ _Scalar _MATHCALL(rsqrt)(_Scalar);
 _Scalar _MATHCALL(sinpi)(_Scalar);
 _Scalar _MATHCALL(cospi)(_Scalar);
 _Scalar _MATHCALL(tanpi)(_Scalar);
+_Scalar _MATHCALL(asinpi)(_Scalar);
+_Scalar _MATHCALL(acospi)(_Scalar);
 #endif
