@@ -76,3 +76,7 @@ _Scalar _MATHCALL(nextafter)(_Scalar, _Scalar);
 _Scalar _MATHCALL(nexttoward)(_Scalar, long double);
 _Scalar _MATHCALL(copysign)(_Scalar, _Scalar);
 #endif
+
+#if __STDC_VERSION__ > 201710L
+_Scalar _MATHCALL(rsqrt)(_Scalar);
+#endif

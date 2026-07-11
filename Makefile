@@ -44,8 +44,10 @@ SOURCES.check.wasm.fast := $(filter-out $(KNOWN_BROKEN_WASM), $(SOURCES.check.wa
 
 check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
+# -std=c23 so the tests see the C23 declarations (rsqrt, sinpi, ...) that
+# include/bits/mathcalls.h gates on __STDC_VERSION__ > 201710L.
 %.out: %.c metallic.a
-	$(CC.wasm) -I include -D__STDC_NO_THREADS__=1 -iquote . $(CFLAGS) $(LDFLAGS) -o $@ $^
+	$(CC.wasm) -I include -D__STDC_NO_THREADS__=1 -iquote . -std=c23 $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 %.run: %.out
 	$(WASMRUN) --dir=$(dir $<)::. $<
@@ -124,7 +126,7 @@ check.oracle.complex: $(SOURCES.check.oracle.complex:.c=.exe-)
 ORACLE.cr := expf_cr logf_cr log2f_cr log10f_cr log1pf_cr sinf_cr cosf_cr tanf_cr \
              asinf_cr acosf_cr atanf_cr asinhf_cr acoshf_cr atanhf_cr \
              exp2f_cr expm1f_cr cbrtf_cr coshf_cr sinhf_cr tanhf_cr erff_cr erfcf_cr \
-             lgamma_cr tgamma_cr atan2f_cr hypotf_cr powf_cr
+             lgamma_cr tgamma_cr atan2f_cr hypotf_cr powf_cr rsqrtf_cr
 check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.cr)))
 
 # Independent ground-truth AUDIT (not gated; slow, opt-in): the exhaustive MPFR
@@ -133,7 +135,7 @@ check.oracle.cr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.
 # development, but too slow to gate.  Gamma is omitted: MPFR loggamma is
 # impractically slow, and the cr_* cross-checks cover the gamma pair.
 ORACLE.mpfr := $(filter-out tgammaf lgammaf,$(CR_FUNCS)) \
-               coshf sinhf tanhf erff erfcf atan2f hypotf
+               coshf sinhf tanhf erff erfcf atan2f hypotf rsqrtf
 check.oracle.mpfr: $(addprefix test/oracle/math/float/,$(addsuffix .exe-,$(ORACLE.mpfr)))
 
 # Emit the ORACLE.cr names (space-separated) so the `oracle` CI workflow can
