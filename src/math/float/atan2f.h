@@ -88,7 +88,7 @@ static inline double atan2f_gap_(float f, double residual)
  * hi:     the fast-path double result (sign bit gives the output sign).
  * residual: (hi - (float)hi) + lo from the fast path (lo=0 for acute branch).
  */
-static float atan2f_accurate_(double abs_q_hi, double abs_q_lo, int q_neg,
+static inline float atan2f_accurate_(double abs_q_hi, double abs_q_lo, int q_neg,
                                const dint_t *base, double hi, double residual)
 {
     /* 128-bit atan of the positive quotient. */
@@ -150,7 +150,7 @@ static float atan2f_accurate_(double abs_q_hi, double abs_q_lo, int q_neg,
     return copysignf(result_abs, f);
 }
 
-static float atan2f_(double y, double x)
+static inline float atan2f_(double y, double x)
 {
     double a = fabs(x);
     double b = fabs(y);
