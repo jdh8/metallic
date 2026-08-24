@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783799001172,
+  "lastUpdate": 1787600410583,
   "repoUrl": "https://github.com/jdh8/metallic",
   "entries": {
     "Metallic math benchmarks": [
@@ -25373,6 +25373,840 @@ window.BENCHMARK_DATA = {
           {
             "name": "tan libm",
             "value": 16.3449,
+            "unit": "s"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "chen.pang.he@jdh8.org",
+            "name": "Chen-Pang He",
+            "username": "jdh8"
+          },
+          "committer": {
+            "email": "chen.pang.he@jdh8.org",
+            "name": "Chen-Pang He",
+            "username": "jdh8"
+          },
+          "distinct": true,
+          "id": "ede070528095713dbac6cfbca25b548c35dee645",
+          "message": "Import binary128 long double math functions",
+          "timestamp": "2026-08-25T03:38:05+08:00",
+          "tree_id": "8e9c49c75c9d8b7dec6b9b146e885a5d55b5ae86",
+          "url": "https://github.com/jdh8/metallic/commit/ede070528095713dbac6cfbca25b548c35dee645"
+        },
+        "date": 1787600409517,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "expf metallic [fma]",
+            "value": 1.3051,
+            "unit": "s"
+          },
+          {
+            "name": "expf libm [fma]",
+            "value": 1.1566,
+            "unit": "s"
+          },
+          {
+            "name": "expf core-math [fma]",
+            "value": 1.1835,
+            "unit": "s"
+          },
+          {
+            "name": "log2f metallic [fma]",
+            "value": 1.4265,
+            "unit": "s"
+          },
+          {
+            "name": "log2f libm [fma]",
+            "value": 1.1299,
+            "unit": "s"
+          },
+          {
+            "name": "log2f core-math [fma]",
+            "value": 1.28,
+            "unit": "s"
+          },
+          {
+            "name": "logf metallic [fma]",
+            "value": 1.4825,
+            "unit": "s"
+          },
+          {
+            "name": "logf libm [fma]",
+            "value": 1.1286,
+            "unit": "s"
+          },
+          {
+            "name": "logf core-math [fma]",
+            "value": 1.4313,
+            "unit": "s"
+          },
+          {
+            "name": "log10f metallic [fma]",
+            "value": 1.4384,
+            "unit": "s"
+          },
+          {
+            "name": "log10f libm [fma]",
+            "value": 2.4803,
+            "unit": "s"
+          },
+          {
+            "name": "log10f core-math [fma]",
+            "value": 1.4164,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf metallic [fma]",
+            "value": 3.1145,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf libm [fma]",
+            "value": 3.4852,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf core-math [fma]",
+            "value": 2.2047,
+            "unit": "s"
+          },
+          {
+            "name": "sinf metallic [fma]",
+            "value": 4.7227,
+            "unit": "s"
+          },
+          {
+            "name": "sinf libm [fma]",
+            "value": 3.1877,
+            "unit": "s"
+          },
+          {
+            "name": "sinf core-math [fma]",
+            "value": 3.6297,
+            "unit": "s"
+          },
+          {
+            "name": "cosf metallic [fma]",
+            "value": 5.5308,
+            "unit": "s"
+          },
+          {
+            "name": "cosf libm [fma]",
+            "value": 3.5164,
+            "unit": "s"
+          },
+          {
+            "name": "cosf core-math [fma]",
+            "value": 3.6956,
+            "unit": "s"
+          },
+          {
+            "name": "tanf metallic [fma]",
+            "value": 3.667,
+            "unit": "s"
+          },
+          {
+            "name": "tanf libm [fma]",
+            "value": 4.9555,
+            "unit": "s"
+          },
+          {
+            "name": "tanf core-math [fma]",
+            "value": 3.8638,
+            "unit": "s"
+          },
+          {
+            "name": "asinf metallic [fma]",
+            "value": 3.0922,
+            "unit": "s"
+          },
+          {
+            "name": "asinf libm [fma]",
+            "value": 3.4999,
+            "unit": "s"
+          },
+          {
+            "name": "asinf core-math [fma]",
+            "value": 2.0394,
+            "unit": "s"
+          },
+          {
+            "name": "acosf metallic [fma]",
+            "value": 2.7171,
+            "unit": "s"
+          },
+          {
+            "name": "acosf libm [fma]",
+            "value": 3.4768,
+            "unit": "s"
+          },
+          {
+            "name": "acosf core-math [fma]",
+            "value": 2.0672,
+            "unit": "s"
+          },
+          {
+            "name": "atanf metallic [fma]",
+            "value": 2.3524,
+            "unit": "s"
+          },
+          {
+            "name": "atanf libm [fma]",
+            "value": 3.0229,
+            "unit": "s"
+          },
+          {
+            "name": "atanf core-math [fma]",
+            "value": 2.3758,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf metallic [fma]",
+            "value": 2.3826,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf libm [fma]",
+            "value": 3.1773,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf core-math [fma]",
+            "value": 2.1765,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf metallic [fma]",
+            "value": 1.9977,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf libm [fma]",
+            "value": 2.5202,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf core-math [fma]",
+            "value": 1.9122,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f metallic [fma]",
+            "value": 1.3247,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f libm [fma]",
+            "value": 1.0849,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f core-math [fma]",
+            "value": 1.3666,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f metallic [fma]",
+            "value": 2.1028,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f libm [fma]",
+            "value": 5.1619,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f core-math [fma]",
+            "value": 1.288,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf metallic [fma]",
+            "value": 2.0925,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf libm [fma]",
+            "value": 7.6239,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf core-math [fma]",
+            "value": 2.2733,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf metallic [fma]",
+            "value": 1.7429,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf libm [fma]",
+            "value": 5.3423,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf core-math [fma]",
+            "value": 1.7178,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf metallic [fma]",
+            "value": 6.0451,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf libm [fma]",
+            "value": 8.6466,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf core-math [fma]",
+            "value": 4.8973,
+            "unit": "s"
+          },
+          {
+            "name": "powf metallic [fma]",
+            "value": 7.4028,
+            "unit": "s"
+          },
+          {
+            "name": "powf libm [fma]",
+            "value": 6.2483,
+            "unit": "s"
+          },
+          {
+            "name": "powf core-math [fma]",
+            "value": 6.8735,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf metallic [fma]",
+            "value": 8.962,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf libm [fma]",
+            "value": 15.0289,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf core-math [fma]",
+            "value": 6.1578,
+            "unit": "s"
+          },
+          {
+            "name": "log2f metallic [nofma]",
+            "value": 1.5712,
+            "unit": "s"
+          },
+          {
+            "name": "log2f libm [nofma]",
+            "value": 1.0992,
+            "unit": "s"
+          },
+          {
+            "name": "log2f core-math [nofma]",
+            "value": 1.4374,
+            "unit": "s"
+          },
+          {
+            "name": "logf metallic [nofma]",
+            "value": 1.6318,
+            "unit": "s"
+          },
+          {
+            "name": "logf libm [nofma]",
+            "value": 1.0648,
+            "unit": "s"
+          },
+          {
+            "name": "logf core-math [nofma]",
+            "value": 1.5732,
+            "unit": "s"
+          },
+          {
+            "name": "expf metallic [nofma]",
+            "value": 1.9375,
+            "unit": "s"
+          },
+          {
+            "name": "expf libm [nofma]",
+            "value": 1.2647,
+            "unit": "s"
+          },
+          {
+            "name": "expf core-math [nofma]",
+            "value": 1.6437,
+            "unit": "s"
+          },
+          {
+            "name": "log10f metallic [nofma]",
+            "value": 1.6918,
+            "unit": "s"
+          },
+          {
+            "name": "log10f libm [nofma]",
+            "value": 2.4312,
+            "unit": "s"
+          },
+          {
+            "name": "log10f core-math [nofma]",
+            "value": 1.5913,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf metallic [nofma]",
+            "value": 3.7434,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf libm [nofma]",
+            "value": 3.2237,
+            "unit": "s"
+          },
+          {
+            "name": "log1pf core-math [nofma]",
+            "value": 2.3168,
+            "unit": "s"
+          },
+          {
+            "name": "sinf metallic [nofma]",
+            "value": 4.6817,
+            "unit": "s"
+          },
+          {
+            "name": "sinf libm [nofma]",
+            "value": 3.1297,
+            "unit": "s"
+          },
+          {
+            "name": "sinf core-math [nofma]",
+            "value": 4.0102,
+            "unit": "s"
+          },
+          {
+            "name": "cosf metallic [nofma]",
+            "value": 5.7466,
+            "unit": "s"
+          },
+          {
+            "name": "cosf libm [nofma]",
+            "value": 3.0895,
+            "unit": "s"
+          },
+          {
+            "name": "cosf core-math [nofma]",
+            "value": 3.8189,
+            "unit": "s"
+          },
+          {
+            "name": "tanf metallic [nofma]",
+            "value": 3.8234,
+            "unit": "s"
+          },
+          {
+            "name": "tanf libm [nofma]",
+            "value": 4.5515,
+            "unit": "s"
+          },
+          {
+            "name": "tanf core-math [nofma]",
+            "value": 4.1327,
+            "unit": "s"
+          },
+          {
+            "name": "asinf metallic [nofma]",
+            "value": 3.1497,
+            "unit": "s"
+          },
+          {
+            "name": "asinf libm [nofma]",
+            "value": 3.3046,
+            "unit": "s"
+          },
+          {
+            "name": "asinf core-math [nofma]",
+            "value": 2.3897,
+            "unit": "s"
+          },
+          {
+            "name": "atanf metallic [nofma]",
+            "value": 2.6101,
+            "unit": "s"
+          },
+          {
+            "name": "atanf libm [nofma]",
+            "value": 2.6919,
+            "unit": "s"
+          },
+          {
+            "name": "atanf core-math [nofma]",
+            "value": 2.3742,
+            "unit": "s"
+          },
+          {
+            "name": "acosf metallic [nofma]",
+            "value": 3.0929,
+            "unit": "s"
+          },
+          {
+            "name": "acosf libm [nofma]",
+            "value": 3.2468,
+            "unit": "s"
+          },
+          {
+            "name": "acosf core-math [nofma]",
+            "value": 2.5019,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf metallic [nofma]",
+            "value": 2.4797,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf libm [nofma]",
+            "value": 3.0532,
+            "unit": "s"
+          },
+          {
+            "name": "asinhf core-math [nofma]",
+            "value": 2.4759,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf metallic [nofma]",
+            "value": 2.6872,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf libm [nofma]",
+            "value": 2.4679,
+            "unit": "s"
+          },
+          {
+            "name": "acoshf core-math [nofma]",
+            "value": 2.4126,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f metallic [nofma]",
+            "value": 2.0008,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f libm [nofma]",
+            "value": 1.2673,
+            "unit": "s"
+          },
+          {
+            "name": "exp2f core-math [nofma]",
+            "value": 1.8429,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf metallic [nofma]",
+            "value": 2.5054,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf libm [nofma]",
+            "value": 6.7961,
+            "unit": "s"
+          },
+          {
+            "name": "atanhf core-math [nofma]",
+            "value": 2.8721,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f metallic [nofma]",
+            "value": 3.5193,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f libm [nofma]",
+            "value": 4.4817,
+            "unit": "s"
+          },
+          {
+            "name": "expm1f core-math [nofma]",
+            "value": 2.2734,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf metallic [nofma]",
+            "value": 2.2825,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf libm [nofma]",
+            "value": 5.155,
+            "unit": "s"
+          },
+          {
+            "name": "cbrtf core-math [nofma]",
+            "value": 2.1298,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf metallic [nofma]",
+            "value": 5.7786,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf libm [nofma]",
+            "value": 6.2919,
+            "unit": "s"
+          },
+          {
+            "name": "lgammaf core-math [nofma]",
+            "value": 4.3996,
+            "unit": "s"
+          },
+          {
+            "name": "powf metallic [nofma]",
+            "value": 8.8383,
+            "unit": "s"
+          },
+          {
+            "name": "powf libm [nofma]",
+            "value": 5.7717,
+            "unit": "s"
+          },
+          {
+            "name": "powf core-math [nofma]",
+            "value": 6.0829,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf metallic [nofma]",
+            "value": 11.0733,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf libm [nofma]",
+            "value": 18.8256,
+            "unit": "s"
+          },
+          {
+            "name": "tgammaf core-math [nofma]",
+            "value": 6.2429,
+            "unit": "s"
+          },
+          {
+            "name": "exp metallic",
+            "value": 2.0481,
+            "unit": "s"
+          },
+          {
+            "name": "exp libm",
+            "value": 5.6061,
+            "unit": "s"
+          },
+          {
+            "name": "cosh metallic",
+            "value": 2.7795,
+            "unit": "s"
+          },
+          {
+            "name": "cosh libm",
+            "value": 5.3991,
+            "unit": "s"
+          },
+          {
+            "name": "exp2 metallic",
+            "value": 2.0589,
+            "unit": "s"
+          },
+          {
+            "name": "exp2 libm",
+            "value": 3.4008,
+            "unit": "s"
+          },
+          {
+            "name": "expm1 metallic",
+            "value": 2.0498,
+            "unit": "s"
+          },
+          {
+            "name": "expm1 libm",
+            "value": 3.08,
+            "unit": "s"
+          },
+          {
+            "name": "cbrt metallic",
+            "value": 11.0535,
+            "unit": "s"
+          },
+          {
+            "name": "cbrt libm",
+            "value": 12.4615,
+            "unit": "s"
+          },
+          {
+            "name": "log metallic",
+            "value": 6.5727,
+            "unit": "s"
+          },
+          {
+            "name": "log libm",
+            "value": 4.8825,
+            "unit": "s"
+          },
+          {
+            "name": "log10 metallic",
+            "value": 7.7953,
+            "unit": "s"
+          },
+          {
+            "name": "log10 libm",
+            "value": 6.8501,
+            "unit": "s"
+          },
+          {
+            "name": "logb metallic",
+            "value": 1.6904,
+            "unit": "s"
+          },
+          {
+            "name": "logb libm",
+            "value": 1.8928,
+            "unit": "s"
+          },
+          {
+            "name": "cos metallic",
+            "value": 14.7763,
+            "unit": "s"
+          },
+          {
+            "name": "cos libm",
+            "value": 18.9423,
+            "unit": "s"
+          },
+          {
+            "name": "log1p metallic",
+            "value": 6.0595,
+            "unit": "s"
+          },
+          {
+            "name": "log1p libm",
+            "value": 4.415,
+            "unit": "s"
+          },
+          {
+            "name": "log2 metallic",
+            "value": 7.5371,
+            "unit": "s"
+          },
+          {
+            "name": "log2 libm",
+            "value": 3.4635,
+            "unit": "s"
+          },
+          {
+            "name": "tanh metallic",
+            "value": 2.1269,
+            "unit": "s"
+          },
+          {
+            "name": "tanh libm",
+            "value": 3.2697,
+            "unit": "s"
+          },
+          {
+            "name": "sinh metallic",
+            "value": 2.2506,
+            "unit": "s"
+          },
+          {
+            "name": "sinh libm",
+            "value": 6.4309,
+            "unit": "s"
+          },
+          {
+            "name": "coshf metallic",
+            "value": 1.8432,
+            "unit": "s"
+          },
+          {
+            "name": "coshf libm",
+            "value": 3.2595,
+            "unit": "s"
+          },
+          {
+            "name": "erfcf metallic",
+            "value": 6.389,
+            "unit": "s"
+          },
+          {
+            "name": "erfcf libm",
+            "value": 3.0244,
+            "unit": "s"
+          },
+          {
+            "name": "logbf metallic",
+            "value": 0.5415,
+            "unit": "s"
+          },
+          {
+            "name": "logbf libm",
+            "value": 1.1017,
+            "unit": "s"
+          },
+          {
+            "name": "erff metallic",
+            "value": 5.7486,
+            "unit": "s"
+          },
+          {
+            "name": "erff libm",
+            "value": 2.986,
+            "unit": "s"
+          },
+          {
+            "name": "tanhf metallic",
+            "value": 2.1468,
+            "unit": "s"
+          },
+          {
+            "name": "tanhf libm",
+            "value": 3.616,
+            "unit": "s"
+          },
+          {
+            "name": "sinhf metallic",
+            "value": 2.6697,
+            "unit": "s"
+          },
+          {
+            "name": "sinhf libm",
+            "value": 5.0735,
+            "unit": "s"
+          },
+          {
+            "name": "sin metallic",
+            "value": 16.2299,
+            "unit": "s"
+          },
+          {
+            "name": "sin libm",
+            "value": 17.352,
+            "unit": "s"
+          },
+          {
+            "name": "tan metallic",
+            "value": 22.2029,
+            "unit": "s"
+          },
+          {
+            "name": "tan libm",
+            "value": 16.4749,
             "unit": "s"
           }
         ]
