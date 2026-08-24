@@ -5,7 +5,7 @@ env:
   # gitlab.inria.fr/core-math/core-math pinned commit.  A fixed SHA makes the
   # cache key stable (so warm runs never re-clone) and the gate reproducible.
   # Bump with: git ls-remote https://gitlab.inria.fr/core-math/core-math.git HEAD
-  CORE_MATH_REF: 646e6ce4fcc29ace08b9c28de30e3283a0e6dd65
+  CORE_MATH_REF: d73a94afb330c327654488c7d6443b7d83a01b5c
 
 # Correct-rounding gate for the correctly-rounded float functions (Makefile
 # ORACLE.cr).  Each job is a bit-for-bit cross-check against CORE-MATH's
@@ -119,3 +119,37 @@ jobs:
       # on any mismatch, so make (and the job) fails on a correct-rounding bug.
       - name: Verify ${{ matrix.fn }} correctly rounded
         run: make test/oracle/math/float/${{ matrix.fn }}.exe-
+
+  # Binary128 has no tractable exhaustive input sweep.  Gate the ten public
+  # long-double functions over CORE-MATH's complete hard-to-round corpora in
+  # one sequential job alongside the exhaustive binary32 matrix.
+  quad-rounding:
+    needs: coremath
+    name: Binary128 long double
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Clang
+        run: sudo apt-get update && sudo apt-get install -y clang
+
+      - name: Restore CORE-MATH
+        id: coremath
+        uses: actions/cache@v5
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
+
+      - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
+        run: |
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
+
+      - name: Verify binary128 functions correctly rounded
+        run: make check.oracle.long-double

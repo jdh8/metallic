@@ -15,12 +15,12 @@ wasmtime hello.out          # run under wasmtime
 ## Tests
 
 ```bash
-make check.wasm.fast    # CI suite — must pass (excludes 11 known-broken tests)
+make check.wasm.fast    # CI suite — must pass (excludes 10 known-broken tests)
 make check.wasm         # full suite including known failures
 make check.native       # informational native run
 ```
 
-Tests are individual `.c` files under `test/wasm/` and `test/native/`. Each compiles to a `.out` (wasm) or `.exe` (native) and is run directly. There are 11 pre-existing failures in the soft-float / 128-bit integer / long-double paths excluded from CI via `check.wasm.fast`.
+Tests are individual `.c` files under `test/wasm/` and `test/native/`. Each compiles to a `.out` (wasm) or `.exe` (native) and is run directly. There are 10 pre-existing failures in the soft-float / 128-bit integer paths excluded from CI via `check.wasm.fast`.
 
 ## Repository layout
 

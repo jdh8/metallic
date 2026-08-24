@@ -8,7 +8,7 @@ WASMRUN ?= $(or $(shell command -v wasmtime 2>/dev/null),$(if $(wildcard $(HOME)
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.cr check.oracle.mpfr print.oracle.cr clean all compile_commands.json
+.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.long-double check.oracle.cr check.oracle.mpfr print.oracle.cr clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -24,11 +24,9 @@ check: check.wasm check.native
 
 check.wasm: $(SOURCES.check.wasm:.c=.run)
 
-# Tests with pre-existing failures in soft-float, 128-bit integer shifts, and
-# long double sqrt code paths.  These are not regressions; CI runs the fast
-# subset that filters them out.
+# Tests with pre-existing failures in soft-float and 128-bit integer shifts.
+# These are not regressions; CI runs the fast subset that filters them out.
 KNOWN_BROKEN_WASM := \
-    test/wasm/math/long-double/sqrtl.c \
 	test/wasm/soft/float/divtf3.c \
     test/wasm/soft/float/fixtfdi.c \
     test/wasm/soft/float/fixtfsi.c \
@@ -46,6 +44,8 @@ check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
 # -std=c23 so the tests see the C23 declarations (rsqrt, sinpi, ...) that
 # include/bits/mathcalls.h gates on __STDC_VERSION__ > 201710L.
+test/wasm/math/long-double/%.out: CFLAGS += -fno-builtin
+
 %.out: %.c metallic.a
 	$(CC.wasm) -I include -D__STDC_NO_THREADS__=1 -iquote . -std=c23 $(CFLAGS) $(LDFLAGS) -o $@ $^
 
@@ -109,11 +109,50 @@ ORACLE_LDLIBS := -lmpfr -lgmp -lm
 SOURCES.check.oracle.float   := $(wildcard test/oracle/math/float/*.c)
 SOURCES.check.oracle.double  := $(wildcard test/oracle/math/double/*.c)
 SOURCES.check.oracle.complex := $(wildcard test/oracle/math/float/complex/*.c)
+SOURCES.check.oracle.long-double := $(wildcard test/oracle/math/long-double/*.c)
 
-check.oracle: check.oracle.float check.oracle.double check.oracle.complex
+check.oracle: check.oracle.float check.oracle.double check.oracle.complex check.oracle.long-double
 check.oracle.float:   $(SOURCES.check.oracle.float:.c=.exe-)
 check.oracle.double:  $(SOURCES.check.oracle.double:.c=.exe-)
 check.oracle.complex: $(SOURCES.check.oracle.complex:.c=.exe-)
+
+# Binary128 gate: build the public long-double implementations in x86 Clang's
+# IEEE binary128 ABI and compare every CORE-MATH worst-case input bit-for-bit.
+# This target intentionally does not use host long-double libc, whose ABI is
+# x87 on the supported CI host.
+QCC ?= clang
+QUAD_ORACLE_CFLAGS := -std=gnu11 -iquote . -I $(CORE_MATH) -O3 -Wall \
+    -ffp-contract=off -mno-fma -fno-builtin -mlong-double-128 \
+    -DCORE_MATH='"$(CORE_MATH)"' -include test/oracle/quad_coremath.h
+QUAD_ORACLE_LDLIBS := -lquadmath -lm
+ORACLE.quad := sqrt rsqrt cbrt hypot exp exp2 exp10 expm1 log atan2
+
+QUAD_IMPL_sqrt  := src/math/long-double/sqrtl.c
+QUAD_IMPL_rsqrt := src/math/long-double/sqrtl.c
+QUAD_IMPL_cbrt  := src/math/long-double/sqrtl.c
+QUAD_IMPL_hypot := src/math/long-double/hypotl.c src/math/long-double/sqrtl.c
+QUAD_IMPL_exp   := src/math/long-double/expl.c
+QUAD_IMPL_exp2  := src/math/long-double/expl.c
+QUAD_IMPL_exp10 := src/math/long-double/expl.c
+QUAD_IMPL_expm1 := src/math/long-double/expl.c
+QUAD_IMPL_log   := src/math/long-double/logl.c
+QUAD_IMPL_atan2 := src/math/long-double/atan2l.c
+
+QUAD_KERNEL_HEADERS := $(wildcard src/math/long-double/kernel/*.h)
+
+check.oracle.long-double: $(addprefix test/oracle/math/long-double/,$(addsuffix .exe-,$(ORACLE.quad)))
+
+define QUAD_ORACLE_template
+test/oracle/math/long-double/$(1).exe: test/oracle/math/long-double/$(1).c \
+        $$(QUAD_IMPL_$(1)) $$(QUAD_KERNEL_HEADERS) test/oracle/quad.h \
+        test/oracle/quad_coremath.h \
+        $$(CORE_MATH)/binary128/$(1)/$(1)q.c $$(CORE_MATH)/binary128/$(1)/$(1)q.wc
+	$$(QCC) $$(QUAD_ORACLE_CFLAGS) -D$(1)f128=cr_$(1)q -o $$@ \
+		test/oracle/math/long-double/$(1).c $$(QUAD_IMPL_$(1)) \
+		$$(CORE_MATH)/binary128/$(1)/$(1)q.c $$(QUAD_ORACLE_LDLIBS)
+endef
+
+$(foreach function,$(ORACLE.quad),$(eval $(call QUAD_ORACLE_template,$(function))))
 
 # The correct-rounding GATE: fast cr_* bit-for-bit cross-checks
 # (test/oracle/math/float/<fn>_cr.c), run by the `oracle` CI workflow (one matrix

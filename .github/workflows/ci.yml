@@ -40,7 +40,7 @@ jobs:
       - name: Build
         run: make
       - name: Run wasm tests (known-good subset)
-        # check.wasm.fast excludes the 11 pre-existing soft-float / 128-bit
-        # integer shift / long double sqrt failures.  Full `make check.wasm`
+        # check.wasm.fast excludes the 10 pre-existing soft-float / 128-bit
+        # integer shift failures.  Full `make check.wasm`
         # is reserved for manual runs.
         run: make check.wasm.fast

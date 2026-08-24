@@ -67,6 +67,9 @@ hammers the published hard-to-round cases plus a broad random sample. See
   `atan` `asinh` `acosh` `atanh` `sinh` `cosh` `tanh` `cbrt` `erf` `erfc`
   `lgamma` `tgamma`.  Bivariate (sampler evidence, since the 2⁶⁴ domain cannot
   be swept): `atan2` `hypot` `pow`.
+* **Selected binary128 `long double`, correctly rounded, worst-case-corpus
+  evidence.** `sqrtl` `rsqrtl` `cbrtl` `hypotl` `expl` `exp2l` `exp10l`
+  `expm1l` `logl` `atan2l`. This is not complete `long double` coverage.
 * **Complex `float`, correctly rounded (≤ 0.5 ulp per part), sampler evidence.**
   Each of the real and imaginary parts is the correctly-rounded `float` of the
   exact value (the 2⁶⁴ domain cannot be swept, so this is a random + near-axis
@@ -96,9 +99,12 @@ hammers the published hard-to-round cases plus a broad random sample. See
 
 * `make check.native` — native tests (some pre-existing math accuracy failures
   against the host libm).
-* `make check.wasm.fast` — wasm tests under `wasmtime`, excluding the 11
-  pre-existing soft-float/integer/long-double failures. CI runs this.
+* `make check.wasm.fast` — wasm tests under `wasmtime`, excluding the 10
+  pre-existing soft-float/integer failures. CI runs this.
 * `make check.wasm` — full wasm suite including the known-broken tests.
+* `make check.oracle.long-double` — compare the selected binary128 functions
+  against CORE-MATH's complete worst-case corpora (requires Clang, quadmath,
+  and a CORE-MATH checkout).
 
 If `wasmtime` is installed but not on `PATH` (for example via
 `$HOME/.wasmtime/bin/wasmtime`), the Makefile will use that location
@@ -108,8 +114,8 @@ automatically. You can also select another runner explicitly:
 
 ## Known issues
 
-11 pre-existing test failures in the soft-float / 128-bit integer / long-double
-sqrt code paths. These are not regressions and are excluded from
+10 pre-existing test failures in the soft-float / 128-bit integer shift code
+paths. These are not regressions and are excluded from
 `check.wasm.fast`. See [Makefile](Makefile) `KNOWN_BROKEN_WASM`.
 
 ## Acknowledgements
