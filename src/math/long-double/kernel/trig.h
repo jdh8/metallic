@@ -147,18 +147,18 @@ static inline bool trig_round_fast_(u128 fraction, int exponent,
     return true;
 }
 
-/* Five-limb Payne-Hanek reduction.  False hands a deep cancellation to the
+/* Six-limb Payne-Hanek reduction.  False hands a deep cancellation to the
  * wide reduction rather than evaluating it with fewer than 136 useful bits. */
 static inline bool trig_reduce_(u128 mantissa, int exponent,
     trig_residual_t *result)
 {
     int shift;
     const uint64_t *window = trig_window_(exponent, &shift);
-    uint64_t product[8];
-    trig_product_(mantissa, window, 5, product);
+    uint64_t product[9];
+    trig_product_(mantissa, window, 6, product);
 
-    unsigned base = (unsigned)(126 - shift);
-    unsigned index = base / 64 & 3;
+    unsigned base = (unsigned)(190 - shift);
+    unsigned index = base / 64;
     unsigned bits = base % 64;
     uint64_t f0 = funnel_down_(product[index], product[index + 1], bits);
     uint64_t f1 = funnel_down_(product[index + 1], product[index + 2], bits);

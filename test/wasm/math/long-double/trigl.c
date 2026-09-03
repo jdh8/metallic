@@ -85,6 +85,12 @@ int main(void)
         U128_(0x3ffdf4eb3ff66e36, 0xcd2dc761b1ffbcc6),
         U128_(0xbfffc86fbfa8cecc, 0x31efc7a12115f421));
 
+    /* Medium cancellation in the fast Payne-Hanek reduction. */
+    check_(from_bits_(U128_(0x409d4fb51e8fc339, 0x9f199688d9b9a19c)),
+        U128_(0x3fc6921fb54442d1, 0x855478773135ec78),
+        U128_(0x3ffeffffffffffff, 0xffffffffffffffff),
+        U128_(0x3fc6921fb54442d1, 0x855478773135ec78));
+
     check_(LDBL_MAX,
         U128_(0x3ffee761623db0b6, 0xffc87a2204a2b017),
         U128_(0xbffd39b7257ed4a6, 0xf0d97d1cb93ef07e),
