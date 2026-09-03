@@ -1,4 +1,4 @@
-CC.wasm := clang --target=wasm32-unknown-unknown-wasm
+CC.wasm := clang --target=wasm32-unknown-unknown-wasm -mbulk-memory
 CPPFLAGS += -I include -D__STDC_NO_THREADS__=1 -MMD -MP -MQ $@
 CFLAGS := -pipe -O3 -Wall -flto $(CFLAGS)
 LDFLAGS := -nostdlib $(LDFLAGS)
@@ -215,7 +215,7 @@ test/oracle/math/double/%.exe: test/oracle/math/double/%.c
 %.exe: %.c
 	$(CC) -iquote test/native -iquote . $(CFLAGS) -march=native -o $@ $< $(LDLIBS)
 
-FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-I", "include", "-D__STDC_NO_THREADS__=1", "-Wall"
+FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-mbulk-memory", "-I", "include", "-D__STDC_NO_THREADS__=1", "-Wall"
 FLAGS.wasm.test := $(FLAGS.wasm), "-iquote", "."
 FLAGS.native := "clang", "-xc", "-std=c11", "-iquote", "test/native", "-iquote", ".", "-Wall"
 
