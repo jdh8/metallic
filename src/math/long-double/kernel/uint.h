@@ -34,15 +34,17 @@ static inline u128 mhi_(u128 x, u128 y)
     return high;
 }
 
-/* Up to two units short of the exact high half, never over. */
+/* Keep the partial products 64-bit so wasm32 avoids the generic __multi3.
+ * The result is up to two units short of the exact high half, never over. */
 static inline u128 mhi_approx_(u128 x, u128 y)
 {
-    u128 xh = x >> 64;
-    u128 xl = (uint64_t)x;
-    u128 yh = y >> 64;
-    u128 yl = (uint64_t)y;
+    uint64_t xh = x >> 64;
+    uint64_t xl = x;
+    uint64_t yh = y >> 64;
+    uint64_t yl = y;
 
-    return xh * yh + ((xh * yl) >> 64) + ((xl * yh) >> 64);
+    return umulditi3_(xh, yh) + (umulditi3_(xh, yl) >> 64)
+        + (umulditi3_(xl, yh) >> 64);
 }
 
 static inline uint64_t mul_hi_64_(uint64_t x, uint64_t y)
@@ -188,6 +190,18 @@ static inline u384_t u384_shr_sat_(u384_t x, unsigned shift)
         result.limb[i - word] = (x.limb[i] >> bits) | carry;
     }
     return result;
+}
+
+static inline u256_t u256_shr_sat_(u256_t x, unsigned shift)
+{
+    if (shift >= 256)
+        return U256(0, 0);
+    if (shift >= 128)
+        return U256(x.limb[1] >> (shift - 128), 0);
+    if (!shift)
+        return x;
+    return U256((x.limb[0] >> shift) | (x.limb[1] << (128 - shift)),
+        x.limb[1] >> shift);
 }
 
 static inline bool u384_any_below_(u384_t x, unsigned n)
