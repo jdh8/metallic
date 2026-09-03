@@ -173,10 +173,14 @@ static inline void sincosn_(int64_t s, exptab_sum_ *sq, exptab_sum_ *cq)
 
     exptab_sum_ s2 = exptab_fast2sum_(sh, sl);
     exptab_sum_ c2 = exptab_fast2sum_(ch, cl);
-    sq->hi = reinterpret(double, reinterpret(uint64_t, s2.hi) ^ ssgn);
-    sq->lo = reinterpret(double, reinterpret(uint64_t, s2.lo) ^ ssgn);
-    cq->hi = reinterpret(double, reinterpret(uint64_t, c2.hi) ^ csgn);
-    cq->lo = reinterpret(double, reinterpret(uint64_t, c2.lo) ^ csgn);
+    uint64_t s2hi = reinterpret(uint64_t, s2.hi) ^ ssgn;
+    uint64_t s2lo = reinterpret(uint64_t, s2.lo) ^ ssgn;
+    uint64_t c2hi = reinterpret(uint64_t, c2.hi) ^ csgn;
+    uint64_t c2lo = reinterpret(uint64_t, c2.lo) ^ csgn;
+    sq->hi = reinterpret(double, s2hi);
+    sq->lo = reinterpret(double, s2lo);
+    cq->hi = reinterpret(double, c2hi);
+    cq->lo = reinterpret(double, c2lo);
 }
 
 #endif

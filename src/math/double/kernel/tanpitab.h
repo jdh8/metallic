@@ -84,8 +84,10 @@ static inline exptab_sum_ tanpi_reconstruct_(exptab_sum_ t, int64_t iq, int neg_
     }
 
     uint64_t sgn = neg_n ? 1ULL << 63 : 0;
-    double nh = reinterpret(double, reinterpret(uint64_t, tanpi_t_[iq][0]) ^ sgn);
-    double nl = reinterpret(double, reinterpret(uint64_t, tanpi_t_[iq][1]) ^ sgn);
+    uint64_t nh_bits = reinterpret(uint64_t, tanpi_t_[iq][0]) ^ sgn;
+    uint64_t nl_bits = reinterpret(uint64_t, tanpi_t_[iq][1]) ^ sgn;
+    double nh = reinterpret(double, nh_bits);
+    double nl = reinterpret(double, nl_bits);
 
     /* m = 1 - n*t (dd), num = n + t (dd), result = num/m with one refined
      * reciprocal -- CORE-MATH's operation order, kept for the certified eps. */
