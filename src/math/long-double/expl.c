@@ -3,14 +3,15 @@
 #include "kernel/binary128.h"
 #include "kernel/uint.h"
 #include "kernel/exptab.h"
+#include "kernel/exp_engine.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
-#define ZIV_GATE ((u128)32)
-#define GUARD 15
-#define GUARD_MASK ((((u128)1) << GUARD) - 1)
-#define GUARD_HALF (((u128)1) << (GUARD - 1))
+#define ZIV_GATE F128_EXP_ZIV_GATE
+#define GUARD F128_EXP_GUARD
+#define GUARD_MASK F128_EXP_GUARD_MASK
+#define GUARD_HALF F128_EXP_GUARD_HALF
 #define SATURATE (((u128)(F128_BIAS + 15)) << F128_EXP_SHIFT)
 #define TINY (((u128)(F128_BIAS - 120)) << F128_EXP_SHIFT)
 #define MINUS_ONE ((((u128)(F128_BIAS + 6)) << F128_EXP_SHIFT) | ((u128)1 << (F128_EXP_SHIFT - 2)))
@@ -20,14 +21,13 @@
 #define MID_EXP (-19)
 #define MAX_SHIFT 7
 
-typedef struct { int n; u128 r; } exp_fast_result;
+typedef f128_exp_fast_result_t exp_fast_result;
 typedef struct { int n; u128 high, low; } expm1_result;
-typedef struct { int n; u256_t r; } exp_wide_result;
+typedef f128_exp_wide_result_t exp_wide_result;
 typedef struct { u128 lo, hi; } exp_product;
 typedef struct { u128 mantissa; int exponent; } exp_parts;
 
 static long double exp_accurate(u128, int, bool, const exp_reduction *);
-static long double exp_round(int, u128, u128);
 static exp_wide_result exp_wide(u128, int, bool, const exp_reduction *);
 static long double expm1_accurate(u128, int, bool);
 static long double expm1_small(u128, int, u384_t, bool);
@@ -154,7 +154,7 @@ static u256_t mul255(u256_t a, u256_t b)
     return (u256_t){{p.limb[0] << 1, (p.limb[1] << 1) | (p.limb[0] >> 127)}};
 }
 
-static exp_fast_result exp_fast(int n, u128 f)
+f128_exp_fast_result_t __metallic_f128_exp_fast(int n, u128 f)
 {
     unsigned i0, i1, i2;
     u128 t;
@@ -174,12 +174,8 @@ static exp_fast_result exp_fast(int n, u128 f)
         carry ? product.hi : (product.hi << 1) | (product.lo >> 127)};
 }
 
-static exp_wide_result exp_wide(u128 m, int e, bool negative, const exp_reduction *l)
+f128_exp_wide_result_t __metallic_f128_exp2_frame(u384_t y)
 {
-    u384_t y = reduce(m, e, l->head);
-    y = u384_add_(y, (u384_t){{correction(m, e, l->tail), 0, 0}});
-    if (negative) y = u384_neg_(y);
-
     unsigned i0, i1, i2;
     u128 tail;
     exp_index(y.limb[1], &i0, &i1, &i2, &tail);
@@ -199,13 +195,21 @@ static exp_wide_result exp_wide(u128 m, int e, bool negative, const exp_reductio
     return (exp_wide_result){(int)y.limb[2] + (int)carry, r};
 }
 
+static exp_wide_result exp_wide(u128 m, int e, bool negative, const exp_reduction *l)
+{
+    u384_t y = reduce(m, e, l->head);
+    y = u384_add_(y, (u384_t){{correction(m, e, l->tail), 0, 0}});
+    if (negative) y = u384_neg_(y);
+    return __metallic_f128_exp2_frame(y);
+}
+
 static unsigned discarded(int n)
 {
     int subnormal = -16382 - n;
     return 15 + (subnormal > 0 ? subnormal : 0);
 }
 
-static bool undecided(int n, u128 r, u128 gate)
+bool __metallic_f128_exp_undecided(int n, u128 r, u128 gate)
 {
     unsigned shift = discarded(n);
     if (n > 16383 || shift > 128) return false;
@@ -213,7 +217,7 @@ static bool undecided(int n, u128 r, u128 gate)
     return abs_diff(r & mask, (u128)1 << (shift - 1)) <= gate;
 }
 
-static long double exp_round(int n, u128 high, u128 low)
+long double __metallic_f128_exp_round(int n, u128 high, u128 low)
 {
     if (n > 16383) return f128_from_bits_(F128_EXP_MASK);
     unsigned shift = discarded(n);
@@ -231,7 +235,7 @@ static long double exp_round(int n, u128 high, u128 low)
 static long double exp_accurate(u128 m, int e, bool negative, const exp_reduction *l)
 {
     exp_wide_result w = exp_wide(m, e, negative, l);
-    return exp_round(w.n, w.r.limb[1], w.r.limb[0]);
+    return __metallic_f128_exp_round(w.n, w.r.limb[1], w.r.limb[0]);
 }
 
 static long double exp_generic(long double x, const exp_reduction *l)
@@ -246,11 +250,11 @@ static long double exp_generic(long double x, const exp_reduction *l)
     exp_parts s = split_magnitude(magnitude);
     bool negative = (bits & F128_SIGN_MASK) != 0;
     exp_fast_result f = exp_frame(s.mantissa, s.exponent, l, negative);
-    f = exp_fast(f.n, f.r);
+    f = __metallic_f128_exp_fast(f.n, f.r);
     if ((unsigned)(f.n + 16382) > 32765) {
-        if (undecided(f.n, f.r, ZIV_GATE))
+        if (__metallic_f128_exp_undecided(f.n, f.r, ZIV_GATE))
             return exp_accurate(s.mantissa, s.exponent, negative, l);
-        return exp_round(f.n, f.r, 0);
+        return __metallic_f128_exp_round(f.n, f.r, 0);
     }
     u128 rest = f.r & GUARD_MASK;
     if (abs_diff(rest, GUARD_HALF) <= ZIV_GATE)
@@ -349,7 +353,8 @@ static long double expm1_small(u128 m, int e, u384_t y, bool negative)
     u384_t product = {{a.lo, middle, b.hi + carry}};
     unsigned shift = u384_clz_(product);
     u384_t p = u384_shl_(product, shift);
-    return exp_round(e + 19 - (int)shift, p.limb[2], p.limb[1] | (p.limb[0] != 0));
+    return __metallic_f128_exp_round(e + 19 - (int)shift, p.limb[2],
+        p.limb[1] | (p.limb[0] != 0));
 }
 
 static long double expm1_accurate(u128 m, int e, bool negative)
@@ -371,7 +376,8 @@ static long double expm1_accurate(u128 m, int e, bool negative)
     }
     unsigned shift = u128_lz(v.limb[1]);
     u128 high = (v.limb[1] << shift) | (v.limb[0] >> 1 >> (127 - shift));
-    return exp_round(frame - (int)shift, high, v.limb[0] << shift);
+    return __metallic_f128_exp_round(frame - (int)shift, high,
+        v.limb[0] << shift);
 }
 
 long double expm1l(long double x)
@@ -390,22 +396,23 @@ long double expm1l(long double x)
     if (s.exponent >= EXPM1_FRAME_EXP) {
         exp_fast_result f = exp_frame(s.mantissa, s.exponent, &LOG2E, negative);
         expm1_result d;
-        f = exp_fast(f.n, f.r);
-        if (subtract_one(f, &d) && !undecided(d.n, d.high, d.low))
-            value = exp_round(d.n, d.high, 0);
+        f = __metallic_f128_exp_fast(f.n, f.r);
+        if (subtract_one(f, &d)
+            && !__metallic_f128_exp_undecided(d.n, d.high, d.low))
+            value = __metallic_f128_exp_round(d.n, d.high, 0);
         else
             value = expm1_accurate(s.mantissa, s.exponent, negative);
     } else {
         expm1_result r = s.exponent >= MID_EXP
             ? expm1_mid(s.mantissa << 15, s.exponent, negative)
             : expm1_tiny(s.mantissa << 15, s.exponent, negative);
-        if (undecided(r.n, r.high, ZIV_GATE)) {
+        if (__metallic_f128_exp_undecided(r.n, r.high, ZIV_GATE)) {
             u384_t y = reduce(s.mantissa, s.exponent, LOG2E.head);
             value = y.limb[2] == 0 && y.limb[1] < POLY_LIMIT
                 ? expm1_small(s.mantissa, s.exponent, y, negative)
                 : expm1_accurate(s.mantissa, s.exponent, negative);
         } else {
-            value = exp_round(r.n, r.high, r.low);
+            value = __metallic_f128_exp_round(r.n, r.high, r.low);
         }
     }
     return f128_from_bits_(f128_bits_(value) | (negative ? F128_SIGN_MASK : 0));
