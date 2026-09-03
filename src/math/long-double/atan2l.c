@@ -1,33 +1,16 @@
-/* Correctly rounded binary128 atan2.
- * Imported from metallic-rs 76a9d7f0bce0e2a1dd271b106801325beb866dc3. */
-#include "kernel/uint.h"
+/* Correctly rounded binary128 atan/atan2.
+ * Ported from metallic-rs 6c2178df4e987cd67e6541bd32843fd3031cb20a. */
+#include "kernel/atan.h"
 #include "kernel/atan2tab.h"
 #include <stdbool.h>
 #include <stdint.h>
-
-#define ATAN2_GUARD 15
-#define ATAN2_GUARD_MASK (((u128)1 << ATAN2_GUARD) - 1)
-#define ATAN2_GUARD_HALF ((u128)1 << (ATAN2_GUARD - 1))
-#define ATAN2_ZIV_GATE 64
 
 static const u128 ATAN2_PI = U128(0x4000921fb54442d1, 0x8469898cc51701b8);
 static const u128 ATAN2_PI_2 = U128(0x3fff921fb54442d1, 0x8469898cc51701b8);
 static const u128 ATAN2_PI_4 = U128(0x3ffe921fb54442d1, 0x8469898cc51701b8);
 
-typedef struct {
-    u128 numerator;
-    u128 denominator;
-    int scale;
-    bool negative;
-    unsigned sector;
-    unsigned quadrant;
-    bool negate;
-} atan2_reduction_t;
-
-typedef struct {
-    u128 fraction;
-    int exponent;
-} atan2_frac128_t;
+typedef atan_reduction_t atan2_reduction_t;
+typedef atan_frac128_t atan2_frac128_t;
 
 typedef struct {
     u384_t fraction;
@@ -127,21 +110,9 @@ static atan2_reduction_t atan2_reduce_(u128 ay, u128 ax, bool xneg)
     };
 }
 
-/* (2^254/d)(1-delta), with 0 <= delta < 2^-125. */
-static u128 atan2_recip_128_(u128 d)
-{
-    u128 dh = d >> 64;
-    u128 dl = (uint64_t)d;
-    u128 r = ((u128)1 << 127) / dh - 2;
-    u128 e = ((u128)1 << 127) - (dh * r + (dl * r >> 64));
-    u128 c = (r * (uint64_t)e >> 64) + r * (e >> 64);
-    u128 c2 = ((c >> 32) * (e >> 32)) >> 63;
-    return (r << 63) + c + c2 - 1;
-}
-
 static u256_t atan2_recip_256_(u128 d)
 {
-    u128 r = atan2_recip_128_(d);
+    u128 r = atan_recip_128_(d);
     u128 high;
     u128 low;
     wmul_(d, r, &high, &low);
@@ -176,7 +147,7 @@ static atan2_frac128_t atan2_quotient_128_(const atan2_reduction_t *r)
 {
     u128 high;
     u128 low;
-    wmul_(r->numerator, atan2_recip_128_(r->denominator), &high, &low);
+    wmul_(r->numerator, atan_recip_128_(r->denominator), &high, &low);
     unsigned lz = (unsigned)clzti2_(high);
     return (atan2_frac128_t) {
         .fraction = atan2_top_256_(U256(low, high), lz),
@@ -272,36 +243,22 @@ static inline u256_t atan2_add_signed_256_(u256_t a, u256_t b, bool negative)
 
 static atan2_frac128_t atan2_fast_(const atan2_reduction_t *r)
 {
+    if (r->numerator == 0)
+        return __metallic_atan_combine(U256(0, 0), r->sector, r->negative,
+            r->quadrant, r->negate);
+
+    atan2_frac128_t quotient = atan2_quotient_128_(r);
+    u128 fraction = atan2_fraction_(quotient.fraction, quotient.exponent);
     if (atan2_relative_(r)) {
-        atan2_frac128_t quotient = atan2_quotient_128_(r);
-        u128 fraction = atan2_fraction_(quotient.fraction, quotient.exponent);
         unsigned lz = (unsigned)clzti2_(fraction);
         return (atan2_frac128_t) {
             .fraction = fraction << lz,
             .exponent = quotient.exponent - (int)lz,
         };
     }
-
-    u256_t theta = U256(0, 0);
-    if (r->numerator) {
-        atan2_frac128_t quotient = atan2_quotient_128_(r);
-        u128 fraction = atan2_fraction_(quotient.fraction, quotient.exponent);
-        int position = quotient.exponent + 125;
-        if (position >= 0)
-            theta = atan2_place_256_(fraction, (unsigned)position);
-        else if (position > -128)
-            theta = U256(fraction >> (unsigned)-position, 0);
-    }
-
-    u256_t phi = U256(ATAN2_PHI[r->sector][1], ATAN2_PHI[r->sector][2]);
-    u256_t arc = atan2_add_signed_256_(phi, theta, r->negative);
-    u256_t offset = U256(ATAN2_QOFF[r->quadrant][1], ATAN2_QOFF[r->quadrant][2]);
-    u256_t result = atan2_add_signed_256_(offset, arc, r->negate);
-    unsigned lz = (unsigned)clzti2_(result.limb[1]);
-    return (atan2_frac128_t) {
-        .fraction = atan2_top_256_(result, lz),
-        .exponent = 3 - (int)lz,
-    };
+    return __metallic_atan_combine(__metallic_atan_place(fraction,
+        quotient.exponent), r->sector,
+        r->negative, r->quadrant, r->negate);
 }
 
 static bool atan2_round_fast_(u128 fraction, int exponent, u128 sign, long double *result)
@@ -309,15 +266,15 @@ static bool atan2_round_fast_(u128 fraction, int exponent, u128 sign, long doubl
     /* C's LDBL_MIN_EXP is -16381: e2 == -16382 is already subnormal. */
     if (exponent < -16381)
         return false;
-    u128 rest = fraction & ATAN2_GUARD_MASK;
-    u128 distance = rest > ATAN2_GUARD_HALF
-        ? rest - ATAN2_GUARD_HALF : ATAN2_GUARD_HALF - rest;
-    if (distance <= ATAN2_ZIV_GATE)
+    u128 rest = fraction & ATAN_GUARD_MASK_;
+    u128 distance = rest > ATAN_GUARD_HALF_
+        ? rest - ATAN_GUARD_HALF_ : ATAN_GUARD_HALF_ - rest;
+    if (distance <= ATAN_ZIV_GATE)
         return false;
 
     u128 bits = sign | ((u128)(exponent + 16382) << F128_EXP_SHIFT)
-        + (fraction >> ATAN2_GUARD) - F128_IMPLICIT_BIT
-        + (rest > ATAN2_GUARD_HALF);
+        + (fraction >> ATAN_GUARD_) - F128_IMPLICIT_BIT
+        + (rest > ATAN_GUARD_HALF_);
     *result = f128_from_bits_(bits);
     return true;
 }
@@ -373,6 +330,73 @@ static long double atan2_round_384_(u384_t fraction, int exponent, u128 sign)
         + mantissa - implicit + up);
 }
 
+u128 __metallic_atan_shr_round(u128 x, unsigned shift)
+{
+    return atan2_shr_round_(x, shift);
+}
+
+u256_t __metallic_atan_place(u128 fraction, int exponent)
+{
+    int position = exponent + 125;
+    if (position >= 256)
+        return U256(0, 0);
+    if (position >= 128)
+        return U256(0, fraction << (unsigned)(position - 128));
+    if (position >= 0)
+        return atan2_place_256_(fraction, (unsigned)position);
+    if (position > -128)
+        return U256(fraction >> (unsigned)-position, 0);
+    return U256(0, 0);
+}
+
+atan_frac128_t __metallic_atan_combine(u256_t theta, unsigned sector, bool negative,
+    unsigned quadrant, bool negate)
+{
+    u256_t phi = U256(ATAN2_PHI[sector][1], ATAN2_PHI[sector][2]);
+    u256_t arc = atan2_add_signed_256_(phi, theta, negative);
+    u256_t offset = U256(ATAN2_QOFF[quadrant][1], ATAN2_QOFF[quadrant][2]);
+    u256_t result = atan2_add_signed_256_(offset, arc, negate);
+    unsigned lz = (unsigned)clzti2_(result.limb[1]);
+    return (atan_frac128_t) {
+        .fraction = atan2_top_256_(result, lz),
+        .exponent = 3 - (int)lz,
+    };
+}
+
+atan_frac128_t __metallic_atan_fast(const atan_reduction_t *r)
+{
+    return atan2_fast_(r);
+}
+
+bool __metallic_atan_round_fast(u128 fraction, int exponent, u128 sign,
+    long double *result)
+{
+    return atan2_round_fast_(fraction, exponent, sign, result);
+}
+
+u384_t __metallic_atan_fraction_384(u384_t t, int exponent)
+{
+    return atan2_fraction_384_(t, exponent);
+}
+
+long double __metallic_atan_assemble_384(u384_t theta, bool negative, unsigned sector,
+    unsigned quadrant, bool negate, u128 sign)
+{
+    u384_t phi = U384(ATAN2_PHI[sector][0], ATAN2_PHI[sector][1],
+        ATAN2_PHI[sector][2]);
+    u384_t arc = negative ? u384_sub_(phi, theta) : u384_add_(phi, theta);
+    u384_t offset = U384(ATAN2_QOFF[quadrant][0],
+        ATAN2_QOFF[quadrant][1], ATAN2_QOFF[quadrant][2]);
+    u384_t result = negate ? u384_sub_(offset, arc) : u384_add_(offset, arc);
+    unsigned lz = (unsigned)clzti2_(result.limb[2]);
+    return atan2_round_384_(u384_shl_(result, lz), 3 - (int)lz, sign);
+}
+
+long double __metallic_atan_round_384(u384_t fraction, int exponent, u128 sign)
+{
+    return atan2_round_384_(fraction, exponent, sign);
+}
+
 static __attribute__((cold, noinline)) long double
 atan2_accurate_(const atan2_reduction_t *r, u128 sign)
 {
@@ -391,14 +415,8 @@ atan2_accurate_(const atan2_reduction_t *r, u128 sign)
             quotient.exponent), (unsigned)(3 - quotient.exponent));
     }
 
-    u384_t phi = U384(ATAN2_PHI[r->sector][0], ATAN2_PHI[r->sector][1],
-        ATAN2_PHI[r->sector][2]);
-    u384_t arc = r->negative ? u384_sub_(phi, theta) : u384_add_(phi, theta);
-    u384_t offset = U384(ATAN2_QOFF[r->quadrant][0],
-        ATAN2_QOFF[r->quadrant][1], ATAN2_QOFF[r->quadrant][2]);
-    u384_t result = r->negate ? u384_sub_(offset, arc) : u384_add_(offset, arc);
-    unsigned lz = (unsigned)clzti2_(result.limb[2]);
-    return atan2_round_384_(u384_shl_(result, lz), 3 - (int)lz, sign);
+    return __metallic_atan_assemble_384(theta, r->negative, r->sector, r->quadrant,
+        r->negate, sign);
 }
 
 long double atan2l(long double y, long double x)
@@ -418,4 +436,119 @@ long double atan2l(long double y, long double x)
     if (atan2_round_fast_(fast.fraction, fast.exponent, sign, &result))
         return result;
     return atan2_accurate_(&reduction, sign);
+}
+
+typedef struct {
+    atan_reduction_t reduction;
+    u128 exact_fraction;
+    int exact_exponent;
+    bool exact;
+} atan_input_t;
+
+static atan_reduction_t atan_normalize_(__int128 kn, u128 kd,
+    unsigned sector, unsigned quadrant, bool negate)
+{
+    bool negative = kn < 0;
+    u128 magnitude = negative ? (u128)-kn : (u128)kn;
+    unsigned lzn = magnitude ? (unsigned)clzti2_(magnitude) : 128;
+    unsigned lzd = (unsigned)clzti2_(kd);
+    return (atan_reduction_t) {
+        .numerator = magnitude ? magnitude << lzn : 0,
+        .denominator = kd << lzd,
+        .scale = (int)lzd - (int)lzn,
+        .negative = negative,
+        .sector = sector,
+        .quadrant = quadrant,
+        .negate = negate,
+    };
+}
+
+static atan_input_t atan_reduce_(u128 ax)
+{
+    static const u128 one = (u128)F128_BIAS << F128_EXP_SHIFT;
+    u128 m;
+    int e;
+    f128_split_(ax, &m, &e);
+
+    if (ax < one) {
+        unsigned dn = (unsigned)-e;
+        unsigned i = dn < 8
+            ? (unsigned)(((m >> (105 + dn)) + 1) >> 1) : 0;
+        if (i == 0)
+            return (atan_input_t) {
+                .exact_fraction = m << 15,
+                .exact_exponent = 1 - (int)dn,
+                .exact = true,
+            };
+        __int128 kn = (__int128)(m << 6)
+            - ((__int128)i << (112 + dn));
+        u128 kd = ((u128)1 << (118 + dn)) + m * i;
+        return (atan_input_t) {
+            .reduction = atan_normalize_(kn, kd, i, 0, false),
+        };
+    }
+
+    unsigned dn = (unsigned)e;
+    unsigned i = 0;
+    if (dn < 8) {
+        uint64_t q = ((uint64_t)1 << 63) / (uint64_t)(m >> (64 - dn));
+        i = (unsigned)((q + 256) >> 9);
+    }
+    if (i == 0)
+        return (atan_input_t) {
+            .reduction = {
+                .numerator = (u128)1 << 127,
+                .denominator = m << 15,
+                .scale = -(int)dn,
+                .sector = 0,
+                .quadrant = 1,
+                .negate = true,
+            },
+        };
+    __int128 kn = ((__int128)1 << 118) - ((__int128)(m * i) << dn);
+    u128 kd = (m << (6 + dn)) + ((u128)i << 112);
+    return (atan_input_t) {
+        .reduction = atan_normalize_(kn, kd, i, 1, true),
+    };
+}
+
+static atan_frac128_t atan_input_fast_(const atan_input_t *input)
+{
+    if (!input->exact)
+        return atan2_fast_(&input->reduction);
+    u128 fraction = atan2_fraction_(input->exact_fraction,
+        input->exact_exponent);
+    unsigned lz = (unsigned)clzti2_(fraction);
+    return (atan_frac128_t) {
+        .fraction = fraction << lz,
+        .exponent = input->exact_exponent - (int)lz,
+    };
+}
+
+static __attribute__((cold, noinline)) long double
+atan_accurate_exact_(u128 fraction, int exponent, u128 sign)
+{
+    u384_t wide = atan2_fraction_384_(U384(0, 0, fraction), exponent);
+    unsigned lz = (unsigned)clzti2_(wide.limb[2]);
+    return atan2_round_384_(u384_shl_(wide, lz), exponent - (int)lz, sign);
+}
+
+long double atanl(long double x)
+{
+    static const u128 one = (u128)F128_BIAS << F128_EXP_SHIFT;
+    u128 bits = f128_bits_(x);
+    u128 ax = bits & ~F128_SIGN_MASK;
+    if (ax - 1 >= F128_EXP_MASK - 1)
+        return atan2_edge_(bits, one);
+
+    u128 sign = bits & F128_SIGN_MASK;
+    atan_input_t input = atan_reduce_(ax);
+    atan_frac128_t fast = atan_input_fast_(&input);
+    long double result;
+    if (atan2_round_fast_(fast.fraction, fast.exponent, sign, &result))
+        return result;
+    if (input.exact)
+        return atan_accurate_exact_(input.exact_fraction,
+            input.exact_exponent, sign);
+    return atan2_accurate_(&input.reduction, sign);
 }

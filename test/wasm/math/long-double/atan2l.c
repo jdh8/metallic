@@ -50,6 +50,12 @@ int main(void)
     assert(same_(atan2l(-1.0L, -INFINITY), -pi));
     assert(same_(atan2l(LDBL_TRUE_MIN, LDBL_MAX), 0.0L));
     assert(same_(atan2l(-LDBL_TRUE_MIN, LDBL_MAX), -0.0L));
+    assert(same_(atan2l(1.0L, 2.0L),
+        from_bits_(U128_(0x3ffddac670561bb4, 0xf68adfc88bd97875))));
+    assert(same_(atan2l(2.0L, 1.0L),
+        from_bits_(U128_(0x3fff1b6e192ebbe4, 0x46c6d19aa220a39b))));
+    assert(same_(atan2l(3.0L, -7.0L),
+        from_bits_(U128_(0x40005e4c36ca0118, 0xa2bf4259eee68f07))));
     assert(isnan(atan2l(NAN, 1.0L)));
     assert(isnan(atan2l(1.0L, NAN)));
 

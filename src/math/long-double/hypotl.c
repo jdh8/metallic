@@ -20,15 +20,6 @@ static int signaling_(u128 bits)
     return bits > F128_EXP_MASK && !(bits & F128_QUIET_BIT);
 }
 
-static u128 rsqrt_step_(u128 w, u128 q)
-{
-    const u128 unit = (u128)1 << 124;
-    u128 residual = mhi_(w, mhi_(q, q));
-    return residual >= unit
-        ? q - (mhi_(q, residual - unit) << 3)
-        : q + (mhi_(q, unit - residual) << 3);
-}
-
 static long double subnormal_(u384_t v, u128 c, unsigned t, int exponent)
 {
     unsigned shift = -16382 - exponent;
