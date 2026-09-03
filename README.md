@@ -69,7 +69,8 @@ hammers the published hard-to-round cases plus a broad random sample. See
   be swept): `atan2` `hypot` `pow`.
 * **Selected binary128 `long double`, correctly rounded, worst-case-corpus
   evidence.** `sqrtl` `rsqrtl` `cbrtl` `hypotl` `expl` `exp2l` `exp10l`
-  `expm1l` `logl` `atan2l`. This is not complete `long double` coverage.
+  `expm1l` `logl` `log2l` `log10l` `log1pl` `sinl` `cosl` `tanl` `asinl`
+  `acosl` `atanl` `atan2l` `powl`. This is not complete `long double` coverage.
 * **Complex `float`, correctly rounded (≤ 0.5 ulp per part), sampler evidence.**
   Each of the real and imaginary parts is the correctly-rounded `float` of the
   exact value (the 2⁶⁴ domain cannot be swept, so this is a random + near-axis

@@ -125,7 +125,7 @@ QUAD_ORACLE_CFLAGS := -std=gnu11 -iquote . -I $(CORE_MATH) -O3 -Wall \
     -ffp-contract=off -mno-fma -fno-builtin -mlong-double-128 \
     -DCORE_MATH='"$(CORE_MATH)"' -include test/oracle/quad_coremath.h
 QUAD_ORACLE_LDLIBS := -lquadmath -lm
-ORACLE.quad := sqrt rsqrt cbrt hypot exp exp2 exp10 expm1 log atan2
+ORACLE.quad := sqrt rsqrt cbrt hypot exp exp2 exp10 expm1 log atan atan2 asin acos
 
 QUAD_IMPL_sqrt  := src/math/long-double/sqrtl.c
 QUAD_IMPL_rsqrt := src/math/long-double/sqrtl.c
@@ -136,7 +136,11 @@ QUAD_IMPL_exp2  := src/math/long-double/expl.c
 QUAD_IMPL_exp10 := src/math/long-double/expl.c
 QUAD_IMPL_expm1 := src/math/long-double/expl.c
 QUAD_IMPL_log   := src/math/long-double/logl.c
+QUAD_IMPL_atan  := src/math/long-double/atan2l.c
 QUAD_IMPL_atan2 := src/math/long-double/atan2l.c
+QUAD_IMPL_asin  := src/math/long-double/asinl.c src/math/long-double/atan2l.c \
+                  src/math/long-double/sqrtl.c
+QUAD_IMPL_acos  := $(QUAD_IMPL_asin)
 
 QUAD_KERNEL_HEADERS := $(wildcard src/math/long-double/kernel/*.h)
 

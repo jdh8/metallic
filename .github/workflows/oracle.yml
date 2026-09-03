@@ -5,7 +5,7 @@ env:
   # gitlab.inria.fr/core-math/core-math pinned commit.  A fixed SHA makes the
   # cache key stable (so warm runs never re-clone) and the gate reproducible.
   # Bump with: git ls-remote https://gitlab.inria.fr/core-math/core-math.git HEAD
-  CORE_MATH_REF: d73a94afb330c327654488c7d6443b7d83a01b5c
+  CORE_MATH_REF: d350cca6c3c22d4b5e57f6f0073869fc67627e38
 
 # Correct-rounding gate for the correctly-rounded float functions (Makefile
 # ORACLE.cr).  Each job is a bit-for-bit cross-check against CORE-MATH's
@@ -120,7 +120,7 @@ jobs:
       - name: Verify ${{ matrix.fn }} correctly rounded
         run: make test/oracle/math/float/${{ matrix.fn }}.exe-
 
-  # Binary128 has no tractable exhaustive input sweep.  Gate the ten public
+  # Binary128 has no tractable exhaustive input sweep.  Gate the public
   # long-double functions over CORE-MATH's complete hard-to-round corpora in
   # one sequential job alongside the exhaustive binary32 matrix.
   quad-rounding:

@@ -120,8 +120,8 @@ static __attribute__((unused)) int quad_check_unary_(const char *name, quad_unar
             fclose(stream);
             return 1;
         }
-        /* exp2q.wc contains two literal generator diagnostics, not inputs. */
-        if (!*record || !strcmp(record, "Error 10290"))
+        /* A few upstream corpora contain literal generator diagnostics. */
+        if (!*record || !strcmp(record, "Error 10290") || !strcmp(record, "x***"))
             continue;
 
         char *tail = record;

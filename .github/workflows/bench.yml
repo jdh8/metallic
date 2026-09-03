@@ -4,7 +4,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
   # gitlab.inria.fr/core-math/core-math pinned commit.  Keep this in sync with
   # oracle.yml so both workflows share one repo-scoped cache entry.
-  CORE_MATH_REF: d73a94afb330c327654488c7d6443b7d83a01b5c
+  CORE_MATH_REF: d350cca6c3c22d4b5e57f6f0073869fc67627e38
 
 # Run benchmarks on every push to main and on manual dispatch.
 # Results are stored in the gh-pages branch and visualised at
