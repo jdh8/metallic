@@ -65,15 +65,17 @@ static u128 cbrt_fixed_(u128 mantissa, int remainder)
     u128 hp = ((u128)1 << 122)
         - ((u128)r * (sx >> 64) + ((u128)r * (uint64_t)sx >> 64));
     const u128 two_thirds = 2 * (~(u128)0 / 3) + 1;
-    const u128 five_ninths = ((u128)5 << 64) / 9;
+    /* The quadratic term is ~2^17 units, so 64 bits of 5/9 leave its
+     * truncation far below one unit. */
+    const uint64_t five_ninths = UINT64_C(0x8e38e38e38e38e38);
     u128 s23 = mhi_approx_(sx, two_thirds);
     u128 high;
     u128 low;
     wmul_(hp, s23, &high, &low);
     u128 linear = (high << 6) | (low >> 122);
     u128 hs = (uint64_t)(hp >> 26);
-    u128 quadratic = (((((hs * hs) >> 69) * five_ninths) >> 64)
-        * (sx >> 60)) >> 63;
+    uint64_t q59 = mul_hi_64_((uint64_t)((hs * hs) >> 69), five_ninths);
+    u128 quadratic = ((u128)q59 * (uint64_t)(sx >> 61)) >> 62;
     return sx + linear + quadratic;
 }
 
