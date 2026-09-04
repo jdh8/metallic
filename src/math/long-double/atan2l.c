@@ -198,9 +198,9 @@ static u128 atan2_fraction_(u128 t, int exponent)
     if (shift >= 128)
         return t;
 
-    u128 u = atan2_shr_round_(mhi_approx_(t, t), shift);
+    u128 u = atan2_shr_round_(atan_sqr_hi_(t), shift);
     u128 cube = mhi_approx_(t, u);
-    u128 v = mhi_approx_(u, u);
+    u128 v = atan_sqr_hi_(u);
     uint64_t vh = v >> 64;
     uint64_t tail_even = (uint64_t)(ATAN2_COEF[4][2] >> 64)
         + mul_hi_64_(vh, (uint64_t)(ATAN2_COEF[6][2] >> 64)

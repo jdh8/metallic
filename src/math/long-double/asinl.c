@@ -310,9 +310,9 @@ static atan_frac128_t asin_series_(u128 t, int exponent)
     unsigned shift = (unsigned)(-2 * exponent);
     if (shift >= 128)
         return (atan_frac128_t) { t, exponent };
-    u128 u = __metallic_atan_shr_round(mhi_approx_(t, t), shift);
+    u128 u = __metallic_atan_shr_round(atan_sqr_hi_(t), shift);
     u128 cube = mhi_approx_(t, u);
-    u128 v = mhi_approx_(u, u);
+    u128 v = atan_sqr_hi_(u);
     u128 even;
     u128 odd;
     if (exponent <= ASIN_NARROW_BAND_)

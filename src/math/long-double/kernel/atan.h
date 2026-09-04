@@ -25,6 +25,17 @@ typedef struct {
     int exponent;
 } atan_frac128_t;
 
+/* High 128 bits of x^2 from three 64x64 products: xl^2 never reaches the
+ * window and (xh*xl >> 63) folds both cross terms, so the result is at most
+ * one unit short of the exact high half, never over — tighter than the
+ * two-unit bound of the generic mhi_approx_. */
+static inline u128 atan_sqr_hi_(u128 x)
+{
+    uint64_t xh = x >> 64;
+    uint64_t xl = x;
+    return umulditi3_(xh, xh) + (umulditi3_(xh, xl) >> 63);
+}
+
 /* (2^254/d)(1-delta), with 0 <= delta < 2^-125. */
 static inline u128 atan_recip_128_(u128 d)
 {
