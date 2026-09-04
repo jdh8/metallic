@@ -6,7 +6,7 @@ Three line formats emitted by bench/*/common.h:
   BENCH_CR native (3-way, CR functions):
     <model> <func> metallic <t_m> libm <t_l> core-math <t_c> cr/m <ratio>
 
-  BENCH_CR wasm (2-way, no system libm on wasm):
+  BENCH_CR two-way (wasm or native binary128; no valid system libm):
     <model> <func> metallic <t_m>  core-math <t_c>  cr/m <ratio>
 
   BENCH (2-way, libm-only):
@@ -29,11 +29,11 @@ CR_PAT = re.compile(
     r"core-math\s+(\S+)"     # core-math time
 )
 
-WASM_PAT = re.compile(
+TWO_WAY_CR_PAT = re.compile(
     r"^(\S+)\s+"              # model (e.g. "wasm")
     r"(\S+)\s+"               # func  (e.g. "expf")
     r"metallic\s+(\S+)\s+"   # metallic time
-    r"core-math\s+(\S+)"     # core-math time (no libm column on wasm)
+    r"core-math\s+(\S+)"     # core-math time (no valid libm baseline)
 )
 
 LIBM_PAT = re.compile(
@@ -54,7 +54,7 @@ for line in sys.stdin:
         results.append({"name": f"{func} core-math {label}", "unit": "s", "value": float(t_c)})
         continue
 
-    m = WASM_PAT.match(line)
+    m = TWO_WAY_CR_PAT.match(line)
     if m:
         model, func, t_m, t_c = m.groups()
         label = f"[{model}]"

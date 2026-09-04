@@ -123,8 +123,49 @@ jobs:
           name: bench-wasm
           path: bench_wasm.txt
 
+  # Native x86_64 software-binary128 comparison.  CORE-MATH's quad sources use
+  # x86 intrinsics, so this cannot be folded into the wasm benchmark job.
+  bench-quad:
+    name: Benchmark binary128
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v6
+
+      # Pin the oldest compiler version supported by the Makefile check instead
+      # of relying on ubuntu-latest's moving clang metapackage.
+      - name: Install Clang 18
+        run: sudo apt-get update && sudo apt-get install -y clang-18
+
+      - name: Cache CORE-MATH
+        id: coremath
+        uses: actions/cache@v5
+        with:
+          path: ~/src/core-math-sys/vendor
+          key: core-math-${{ env.CORE_MATH_REF }}
+      - name: Clone CORE-MATH
+        if: steps.coremath.outputs.cache-hit != 'true'
+        run: |
+          dst="${HOME}/src/core-math-sys/vendor"
+          git init -q "${dst}"
+          git -C "${dst}" remote add origin https://gitlab.inria.fr/core-math/core-math.git
+          git -C "${dst}" fetch -q --depth=1 origin "${CORE_MATH_REF}"
+          git -C "${dst}" checkout -q FETCH_HEAD
+
+      - name: Run binary128 benchmarks
+        run: |
+          set -o pipefail
+          cpu=$(awk '/Cpus_allowed_list:/ { split($2, ranges, ","); split(ranges[1], bounds, "-"); print bounds[1] }' /proc/self/status)
+          taskset --cpu-list "${cpu}" make QCC=clang-18 bench.quad 2>&1 | tee bench_quad.txt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bench-quad
+          path: bench_quad.txt
+
   publish:
-    needs: [bench-cr, bench-libm, bench-wasm]
+    needs: [bench-cr, bench-libm, bench-wasm, bench-quad]
     runs-on: ubuntu-latest
 
     steps:
@@ -157,7 +198,7 @@ jobs:
 
       - name: Parse benchmark output to JSON
         run: |
-          cat bench_fma.txt bench_nofma.txt bench_libm.txt bench_wasm.txt \
+          cat bench_fma.txt bench_nofma.txt bench_libm.txt bench_wasm.txt bench_quad.txt \
             | python3 scripts/parse_bench.py > bench.json
           cat bench.json
 

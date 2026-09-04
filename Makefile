@@ -63,10 +63,12 @@ check.native: $(SOURCES.check.native:.c=.exe) $(SOURCES.check.native:.c=.exe-)
 CR_FUNCS := expf logf log2f log10f log1pf sinf cosf tanf \
             asinf acosf atanf asinhf acoshf atanhf exp2f expm1f cbrtf \
             tgammaf lgammaf powf
+QUAD_FUNCS := sqrt rsqrt cbrt hypot exp exp2 exp10 expm1 log atan atan2 asin acos
 BENCH.cr   := $(addprefix bench/float/,$(addsuffix .c,$(CR_FUNCS)))
+BENCH.quad := $(addprefix bench/long-double/,$(addsuffix .c,$(QUAD_FUNCS)))
 # Functions without a CORE-MATH apples-to-apples comparison here (all double
 # benches plus float functions not yet correctly rounded): legacy 2-way vs libm.
-BENCH.libm := $(filter-out $(BENCH.cr),$(SOURCES.bench))
+BENCH.libm := $(filter-out $(BENCH.cr) $(BENCH.quad),$(SOURCES.bench))
 
 .PHONY: bench bench.fma bench.nofma bench.libm
 bench: bench.fma bench.nofma
@@ -125,7 +127,7 @@ QUAD_ORACLE_CFLAGS := -std=gnu11 -iquote . -I $(CORE_MATH) -O3 -Wall \
     -ffp-contract=off -mno-fma -fno-builtin -mlong-double-128 \
     -DCORE_MATH='"$(CORE_MATH)"' -include test/oracle/quad_coremath.h
 QUAD_ORACLE_LDLIBS := -lquadmath -lm
-ORACLE.quad := sqrt rsqrt cbrt hypot exp exp2 exp10 expm1 log atan atan2 asin acos
+ORACLE.quad := $(QUAD_FUNCS)
 
 QUAD_IMPL_sqrt  := src/math/long-double/sqrtl.c
 QUAD_IMPL_rsqrt := src/math/long-double/sqrtl.c
@@ -157,6 +159,55 @@ test/oracle/math/long-double/$(1).exe: test/oracle/math/long-double/$(1).c \
 endef
 
 $(foreach function,$(ORACLE.quad),$(eval $(call QUAD_ORACLE_template,$(function))))
+
+# Binary128 throughput benchmark: the same 13 public long-double functions as
+# the oracle gate, compared with CORE-MATH on native x86_64.  Both implementations
+# use the IEEE binary128 software ABI selected by -mlong-double-128; the system
+# long-double libm remains x87 and is therefore not a valid third baseline.
+QUAD_BENCH_CFLAGS := $(QUAD_ORACLE_CFLAGS) -DBENCH_LABEL='"quad"'
+
+.PHONY: bench.quad check.quad.compiler check.quad.setup
+bench.quad: check.quad.setup
+	+$(MAKE) $(BENCH.quad:.c=.quad.exe-)
+
+# Clang 18 is the oldest configuration exercised by CI.  Give older compilers
+# and non-x86 hosts a direct diagnostic instead of letting CORE-MATH fail later
+# in its x86 intrinsic or binary128 code.
+check.quad.compiler:
+	@printf '%s\n' \
+	  '#if !defined(__clang__) || __clang_major__ < 18' \
+	  '#error "bench.quad requires Clang 18 or newer"' \
+	  '#endif' \
+	  '#if !defined(__x86_64__) || !defined(__linux__)' \
+	  '#error "bench.quad requires x86_64 Linux"' \
+	  '#endif' \
+	  | $(QCC) -x c -fsyntax-only -
+	@printf '%s\n' \
+	  '#include <float.h>' \
+	  '_Static_assert(sizeof(long double) == 16 && LDBL_MANT_DIG == 113 && LDBL_MAX_EXP == 16384, "long double must be IEEE binary128");' \
+	  '_Static_assert(sizeof(__float128) == 16, "__float128 must be IEEE binary128");' \
+	  '_Static_assert((__float128)1 + 0x1p-112Q != 1 && (__float128)1 + 0x1p-113Q == 1, "__float128 must have 113-bit precision");' \
+	  | $(QCC) -std=gnu11 -mlong-double-128 -x c -fsyntax-only -
+
+check.quad.setup: check.quad.compiler
+	@for function in $(QUAD_FUNCS); do \
+	  source="$(CORE_MATH)/binary128/$$function/$${function}q.c"; \
+	  if test ! -f "$$source"; then \
+	    echo "bench.quad requires a current CORE-MATH checkout (missing $$source)" >&2; \
+	    exit 1; \
+	  fi; \
+	done
+
+define QUAD_BENCH_template
+bench/long-double/$(1).quad.exe: bench/long-double/$(1).c \
+        bench/long-double/common.h $$(QUAD_IMPL_$(1)) $$(QUAD_KERNEL_HEADERS) \
+        test/oracle/quad_coremath.h $$(CORE_MATH)/binary128/$(1)/$(1)q.c
+	$$(QCC) $$(QUAD_BENCH_CFLAGS) -D$(1)f128=cr_$(1)q -o $$@ \
+		bench/long-double/$(1).c $$(QUAD_IMPL_$(1)) \
+		$$(CORE_MATH)/binary128/$(1)/$(1)q.c $$(QUAD_ORACLE_LDLIBS)
+endef
+
+$(foreach function,$(ORACLE.quad),$(eval $(call QUAD_BENCH_template,$(function))))
 
 # The correct-rounding GATE: fast cr_* bit-for-bit cross-checks
 # (test/oracle/math/float/<fn>_cr.c), run by the `oracle` CI workflow (one matrix
@@ -218,6 +269,7 @@ test/oracle/math/double/%.exe: test/oracle/math/double/%.c
 FLAGS.wasm := "clang", "-xc", "-std=c11", "--target=wasm32-unknown-unknown-wasm", "-mbulk-memory", "-I", "include", "-D__STDC_NO_THREADS__=1", "-Wall"
 FLAGS.wasm.test := $(FLAGS.wasm), "-iquote", "."
 FLAGS.native := "clang", "-xc", "-std=c11", "-iquote", "test/native", "-iquote", ".", "-Wall"
+FLAGS.quad := "clang", "-xc", "-std=gnu11", "-iquote", ".", "-O3", "-Wall", "-ffp-contract=off", "-mno-fma", "-fno-builtin", "-mlong-double-128"
 
 compile_commands.json:
 	@{ printf '['; sep=''; \
@@ -227,8 +279,11 @@ compile_commands.json:
 	  for f in $(SOURCES.check.wasm); do \
 	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.wasm.test),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
 	  done; \
-	  for f in $(SOURCES.check.native) $(SOURCES.bench); do \
+	  for f in $(SOURCES.check.native) $(filter-out $(BENCH.quad),$(SOURCES.bench)); do \
 	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.native),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
+	  done; \
+	  for f in $(BENCH.quad); do \
+	    printf '%s\n  {"directory":"$(CURDIR)","file":"%s","arguments":[$(FLAGS.quad),"-c","%s"]}' "$$sep" "$$f" "$$f"; sep=','; \
 	  done; \
 	  printf '\n]\n'; \
 	} > $@

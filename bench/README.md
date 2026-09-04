@@ -10,6 +10,7 @@ not accuracy (accuracy is proven separately by the oracle sweep — see
 - `make bench.fma`: same set, native/FMA model only.
 - `make bench.nofma`: same set, no-FMA model only.
 - `make bench.wasm`: the **honest ship-target** comparison — the same 19 functions built for **wasm32 and run under wasmtime**, Metallic vs CORE-MATH. Requires `wasmtime` and a CORE-MATH checkout. See "wasm model" below.
+- `make bench.quad`: Metallic vs **CORE-MATH** for the 13 binary128 functions with matching correctly-rounded implementations. Requires x86_64 Linux, Clang 18 or newer, quadmath, and a CORE-MATH checkout. See "binary128 model" below.
 - `make bench.libm`: Metallic vs **libm** only for everything else (all `double/*`, plus float functions outside the curated set).
 
 `make bench` requires a CORE-MATH checkout (the `CORE_MATH` variable in the
@@ -26,9 +27,15 @@ several other correctly-rounded float functions (`erff`, `erfcf`, `hypotf`,
 baseline here and so fall into `make bench.libm` alongside the genuinely
 not-yet-correctly-rounded ones (for now, `powf`).
 
+The 13 in `make bench.quad` are `sqrtl`, `rsqrtl`, `cbrtl`, `hypotl`, `expl`,
+`exp2l`, `exp10l`, `expm1l`, `logl`, `atanl`, `atan2l`, `asinl`, and `acosl`.
+They are the binary128 functions for which the pinned CORE-MATH revision has a
+direct `cr_*q` implementation. The other selected binary128 functions remain
+outside this apples-to-apples benchmark until a matching baseline exists.
+
 ## What the numbers mean
 
-Each run evaluates a function on 225 million random inputs drawn from an
+Each binary32 run evaluates a function on 225 million random inputs drawn from an
 interval matched to the function's domain (same intervals as `metallic-rs`
 benchmarks):
 
@@ -42,7 +49,13 @@ benchmarks):
   …).
 
 The double benchmarks still use a strided bit-pattern sweep (coarse `binary64`
-stride) as a throughput baseline.
+stride) as a throughput baseline. The binary128 benchmark uses 2,097,152 calls
+per implementation over a deterministic 16,384-value buffer. Roots and logs
+draw normal encodings across the binary128 exponent field; the other functions
+use log-uniform exponent bands matched to their active kernels. This avoids a
+sample dominated by overflow, domain errors, or exponent-gap fast exits. Both
+implementations receive the exact same input bits. Four timed batches alternate
+which implementation runs first, reducing warm-up and frequency-drift bias.
 
 The printed `metallic`, `libm`, and `core-math` columns are the **CPU seconds**
 (`clock()`) for one full run.
@@ -59,7 +72,7 @@ less time); **< 1 means the other implementation is faster**. For example
 `cr/m 2.70` ⇒ Metallic ≈ 2.7× faster than CORE-MATH; `cr/m 0.27` ⇒ CORE-MATH
 ≈ 3.7× faster than Metallic.
 
-The harness pre-fills a 65536-element buffer with random inputs (outside the
+The binary32 harness pre-fills a 65536-element buffer with random inputs (outside the
 timed loop), then cycles through it 3440 times.  Results are sunk through a
 `volatile` so no call is optimized away.  It is fine for relative comparison —
 every implementation is measured identically — but do not read it as a latency
@@ -78,6 +91,12 @@ The first column is the **FP model** the binary was built with.
 
 ```text
 cosh    metallic   0.4521  libm   0.6013  libm/m  1.33
+```
+
+### Example row (`make bench.quad`)
+
+```text
+quad  sqrtl   metallic   0.4521  core-math   0.6013  cr/m  1.33
 ```
 
 ## FP models (`make bench` only)
@@ -133,6 +152,28 @@ A few things differ from `make bench`:
 Run it the same way as `make bench` (serial for grouped rows; `make -j … | sort`
 if you parallelize). Only the `cr/m` ratio is meaningful (`>1` ⇒ Metallic faster),
 and there is real run-to-run jitter — trust the stable pattern, not single digits.
+
+## binary128 model (`make bench.quad`)
+
+Binary128 has no native hardware arithmetic on the CI host. `bench.quad`
+compiles Metallic's public `long double` functions with Clang's
+`-mlong-double-128` ABI and compares them with CORE-MATH's `__float128`
+functions. Both sides therefore use software binary128 arithmetic, with FMA
+contraction disabled, while their integer kernels still run natively. This is
+the closest available apples-to-apples comparison because CORE-MATH's
+binary128 implementations use x86 intrinsics and cannot be built for wasm.
+
+The target deliberately requires **x86_64 Linux and Clang 18+**. A normal Linux
+system `long double` uses the incompatible x87 ABI, so system libm is not a valid
+third column. Quadmath is a link dependency, but no quadmath function is timed.
+On ARM Macs, even a new Clang rejects `-mlong-double-128` for the host target.
+Run the benchmark in CI or on an x86_64 Linux machine instead. Clang 18 is the
+oldest configuration maintained by this project; the Makefile checks the
+compiler and target first so an older Clang produces a direct error.
+
+The CI job pins the process to one allowed CPU with `taskset`, preventing core
+migration from adding noise. When running on a heterogeneous-core Linux host,
+pin repeated runs to the same core class as well.
 
 ## Notes
 
