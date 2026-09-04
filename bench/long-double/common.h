@@ -21,9 +21,9 @@ typedef struct {
 #define BENCH_POSITIVE_NORMAL ((bench_interval_){0, 0, 1})
 #define BENCH_EXPONENTS(low, high) ((bench_interval_){(low), (high), 2})
 
-/* Two million calls are long enough to measure the software binary128 paths
- * without making the 13-function CI job take as long as the binary32 sweep. */
-enum { BENCH_N_ = 16384, BENCH_REPS_ = 128, BENCH_BATCHES_ = 4 };
+/* Sixteen million calls keep even the fastest software binary128 paths above
+ * scheduler-scale noise without approaching the cost of the binary32 sweep. */
+enum { BENCH_N_ = 16384, BENCH_REPS_ = 1024, BENCH_BATCHES_ = 4 };
 _Static_assert(BENCH_REPS_ % BENCH_BATCHES_ == 0,
     "benchmark batches must divide the repetition count");
 

@@ -49,7 +49,7 @@ benchmarks):
   …).
 
 The double benchmarks still use a strided bit-pattern sweep (coarse `binary64`
-stride) as a throughput baseline. The binary128 benchmark uses 2,097,152 calls
+stride) as a throughput baseline. The binary128 benchmark uses 16,777,216 calls
 per implementation over a deterministic 16,384-value buffer. Roots and logs
 draw normal encodings across the binary128 exponent field; the other functions
 use log-uniform exponent bands matched to their active kernels. This avoids a
