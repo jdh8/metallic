@@ -388,6 +388,19 @@ static expm1_result expm1_mid(u128 m15, int e, bool negative)
     return apply_correction(m15, mhi_(t, h), e, negative);
 }
 
+/* e <= -62: two Taylor terms in 64-bit words.  h = 1/2 -+ t/6 is at most two
+ * units short at 2^-64; scaled by t < 2^-62 and doubled by the worst-case
+ * renormalization in apply_correction that is at most 16 units of 2^-128 on
+ * the significand, plus 4 from the approximate t*h: inside the Ziv gate. */
+static expm1_result expm1_tiny2(u128 m15, int e, bool negative)
+{
+    u128 t = m15 >> (-1 - e);
+    uint64_t narrow = negative ? ~UINT64_C(0) : 0;
+    uint64_t term = mul_hi_64_((uint64_t)(t >> 64), inv_factorial64(1)) ^ narrow;
+    uint64_t h = inv_factorial64(0) + (term - narrow);
+    return apply_correction(m15, mhi_approx_(t, (u128)h << 64), e, negative);
+}
+
 static expm1_result expm1_tiny(u128 m15, int e, bool negative)
 {
     u128 t = m15 >> (-1 - e);
@@ -492,7 +505,9 @@ long double expm1l(long double x)
     } else {
         expm1_result r = s.exponent >= MID_EXP
             ? expm1_mid(s.mantissa << 15, s.exponent, negative)
-            : expm1_tiny(s.mantissa << 15, s.exponent, negative);
+            : s.exponent >= -61
+            ? expm1_tiny(s.mantissa << 15, s.exponent, negative)
+            : expm1_tiny2(s.mantissa << 15, s.exponent, negative);
         if (__metallic_f128_exp_undecided(r.n, r.high, ZIV_GATE)) {
             u384_t y = reduce(s.mantissa, s.exponent, LOG2E.head);
             value = y.limb[2] == 0 && y.limb[1] < POLY_LIMIT
