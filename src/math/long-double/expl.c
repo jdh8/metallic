@@ -102,13 +102,24 @@ static unsigned reduction_tz(const exp_reduction *l)
 
 static inline __attribute__((always_inline)) exp_fast_result exp_frame(u128 m, int e, const exp_reduction *l, bool negative)
 {
-    exp_product p = wide_product(m, l->head[1]);
-    u128 middle = mhi_approx_(m, l->head[0]) + p.lo;
-    bool carry0 = middle < p.lo;
-    u128 top = p.hi + carry0;
+    /* Bits [192, 384) of m * head suffice: the fraction window bottom sits at
+     * bit 222 or above (shift <= 228 below), so the five dropped partial
+     * products contribute < 2^195 — a one-sided deficit 27+ bits under the
+     * window that at worst leaves the fraction one unit short. */
+    uint64_t m0 = (uint64_t)m;
+    uint64_t m1 = (uint64_t)(m >> 64);
+    uint64_t h1 = (uint64_t)(l->head[0] >> 64);
+    uint64_t h2 = (uint64_t)l->head[1];
+    uint64_t h3 = (uint64_t)(l->head[1] >> 64);
+    u128 a = umulditi3_(m0, h3);
+    u128 b = umulditi3_(m1, h2)
+        + ((umulditi3_(m0, h2) >> 64) + (umulditi3_(m1, h1) >> 64));
+    u128 middle = a + b;
+    u128 top = umulditi3_(m1, h3) + (middle >> 64)
+        + ((u128)(middle < a) << 64);
     unsigned shift = 108 - e;
     unsigned bits = shift & 63;
-    uint64_t low = (uint64_t)(middle >> 64);
+    uint64_t low = (uint64_t)middle;
     uint64_t high = (uint64_t)top;
     uint64_t integer = (uint64_t)(top >> 64);
 
