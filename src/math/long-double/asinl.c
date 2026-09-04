@@ -274,6 +274,25 @@ static atan_reduction_t asin_reduce_(u128 fx, int ex, const asin_sqrt_t *sq,
     };
 }
 
+static void asin_taylor_5_(u128 v, u128 *even, u128 *odd)
+{
+    *even = ASIN_COEF_[0] + mhi_approx_(v, ASIN_COEF_[2]
+        + mhi_approx_(v, ASIN_COEF_[4]));
+    *odd = ASIN_COEF_[1] + mhi_approx_(v, ASIN_COEF_[3]);
+}
+
+static void asin_taylor_7_(u128 v, u128 *even, u128 *odd)
+{
+    uint64_t vh = v >> 64;
+#define NARROW_(i) ((uint64_t)(ASIN_COEF_[i] >> 64))
+    uint64_t te = NARROW_(4) + mul_hi_64_(vh, NARROW_(6));
+    *even = ASIN_COEF_[0] + mhi_approx_(v, ASIN_COEF_[2]
+        + mhi_approx_(v, (u128)te << 64));
+    *odd = ASIN_COEF_[1] + mhi_approx_(v, ASIN_COEF_[3]
+        + ((u128)mul_hi_64_(vh, NARROW_(5)) << 64));
+#undef NARROW_
+}
+
 static void asin_taylor_14_(u128 v, u128 *even, u128 *odd)
 {
     uint64_t vh = v >> 64;
@@ -324,7 +343,21 @@ static atan_frac128_t asin_series_(u128 t, int exponent)
     u128 v = atan_sqr_hi_(u);
     u128 even;
     u128 odd;
-    if (exponent <= ASIN_NARROW_BAND_)
+    /* Magnitude tiers: the squared argument is below 2^-shift = 2^(2*exponent),
+     * so dropping the Taylor series from ASIN_COEF_[N] on truncates by
+     * ASIN_COEF_[N] * 2^(2*exponent*(N+1)) relative, one-sided, against the
+     * 64-unit Ziv gate (units of 2^-128 on the fraction):
+     *   exponent <= -11, N=5: c[5] * 2^-132 < 2^-137.5
+     *   exponent <=  -8, N=7: c[7] * 2^-128 < 2^-134.4
+     * The narrow 64-bit c[5] slot in asin_taylor_7_ adds at most 3 * 2^-64
+     * in its bracket, suppressed by one v factor and the u * cube scaling to
+     * at most 3 units at the exponent = -8 boundary, decaying by 2^-8 per
+     * exponent step below it. */
+    if (exponent <= -11)
+        asin_taylor_5_(v, &even, &odd);
+    else if (exponent <= -8)
+        asin_taylor_7_(v, &even, &odd);
+    else if (exponent <= ASIN_NARROW_BAND_)
         asin_taylor_14_(v, &even, &odd);
     else
         asin_taylor_19_(v, &even, &odd);
