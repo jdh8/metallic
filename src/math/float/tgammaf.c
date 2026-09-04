@@ -147,7 +147,8 @@ static double tgamma_f64_(double x, double err[static 1])
         value /= product;
     }
 
-    *err = ldexp(fabs(value), -37);
+    /* The fixed scale is exact throughout the recurrence range. */
+    *err = fabs(value) * 0x1p-37;
     return value;
 }
 
