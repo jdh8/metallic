@@ -27,10 +27,13 @@ typedef f128_exp_wide_result_t exp_wide_result;
 typedef struct { u128 lo, hi; } exp_product;
 typedef struct { u128 mantissa; int exponent; } exp_parts;
 
-static long double exp_accurate(u128, int, bool, const exp_reduction *);
+static long double exp_accurate(u128, int, bool, const exp_reduction *)
+    __attribute__((cold, noinline));
 static exp_wide_result exp_wide(u128, int, bool, const exp_reduction *);
-static long double expm1_accurate(u128, int, bool);
-static long double expm1_small(u128, int, u384_t, bool);
+static long double expm1_accurate(u128, int, bool)
+    __attribute__((cold, noinline));
+static long double expm1_small(u128, int, u384_t, bool)
+    __attribute__((cold, noinline));
 
 static exp_product wide_product(u128 a, u128 b)
 {
@@ -97,7 +100,7 @@ static unsigned reduction_tz(const exp_reduction *l)
     return l->head[0] ? u128_tz(l->head[0]) : 128 + u128_tz(l->head[1]);
 }
 
-static exp_fast_result exp_frame(u128 m, int e, const exp_reduction *l, bool negative)
+static inline __attribute__((always_inline)) exp_fast_result exp_frame(u128 m, int e, const exp_reduction *l, bool negative)
 {
     exp_product p = wide_product(m, l->head[1]);
     u128 middle = mhi_(m, l->head[0]) + p.lo;
@@ -154,7 +157,7 @@ static u256_t mul255(u256_t a, u256_t b)
     return (u256_t){{p.limb[0] << 1, (p.limb[1] << 1) | (p.limb[0] >> 127)}};
 }
 
-f128_exp_fast_result_t __metallic_f128_exp_fast(int n, u128 f)
+static inline __attribute__((always_inline)) exp_fast_result exp_fast(int n, u128 f)
 {
     unsigned i0, i1, i2;
     u128 t;
@@ -172,6 +175,11 @@ f128_exp_fast_result_t __metallic_f128_exp_fast(int n, u128 f)
     u128 carry = product.hi >> 127;
     return (exp_fast_result){n + (int)carry,
         carry ? product.hi : (product.hi << 1) | (product.lo >> 127)};
+}
+
+f128_exp_fast_result_t __metallic_f128_exp_fast(int n, u128 f)
+{
+    return exp_fast(n, f);
 }
 
 f128_exp_wide_result_t __metallic_f128_exp2_frame(u384_t y)
@@ -250,7 +258,7 @@ static long double exp_generic(long double x, const exp_reduction *l)
     exp_parts s = split_magnitude(magnitude);
     bool negative = (bits & F128_SIGN_MASK) != 0;
     exp_fast_result f = exp_frame(s.mantissa, s.exponent, l, negative);
-    f = __metallic_f128_exp_fast(f.n, f.r);
+    f = exp_fast(f.n, f.r);
     if ((unsigned)(f.n + 16382) > 32765) {
         if (__metallic_f128_exp_undecided(f.n, f.r, ZIV_GATE))
             return exp_accurate(s.mantissa, s.exponent, negative, l);
@@ -396,7 +404,7 @@ long double expm1l(long double x)
     if (s.exponent >= EXPM1_FRAME_EXP) {
         exp_fast_result f = exp_frame(s.mantissa, s.exponent, &LOG2E, negative);
         expm1_result d;
-        f = __metallic_f128_exp_fast(f.n, f.r);
+        f = exp_fast(f.n, f.r);
         if (subtract_one(f, &d)
             && !__metallic_f128_exp_undecided(d.n, d.high, d.low))
             value = __metallic_f128_exp_round(d.n, d.high, 0);
