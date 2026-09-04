@@ -379,10 +379,8 @@ u256_t __metallic_atan_place(u128 fraction, int exponent)
 atan_frac128_t __metallic_atan_combine(u256_t theta, unsigned sector, bool negative,
     unsigned quadrant, bool negate)
 {
-    u256_t arc = theta;
-    if (sector | negative)
-        arc = atan2_add_signed_256_(U256(ATAN2_PHI[sector][1],
-            ATAN2_PHI[sector][2]), theta, negative);
+    u256_t phi = U256(ATAN2_PHI[sector][1], ATAN2_PHI[sector][2]);
+    u256_t arc = atan2_add_signed_256_(phi, theta, negative);
     u256_t offset = U256(ATAN2_QOFF[quadrant][1], ATAN2_QOFF[quadrant][2]);
     u256_t result = atan2_add_signed_256_(offset, arc, negate);
     unsigned lz = (unsigned)clzti2_(result.limb[1]);
