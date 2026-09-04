@@ -96,7 +96,7 @@ cosh    metallic   0.4521  libm   0.6013  libm/m  1.33
 ### Example row (`make bench.quad`)
 
 ```text
-quad  sqrtl   metallic   0.4521  core-math   0.6013  cr/m  1.33
+quad  sqrtl   metallic   0.4897  core-math   0.3964  cr/m  0.81
 ```
 
 ## FP models (`make bench` only)
