@@ -1,7 +1,6 @@
 #include "kernel/binary128.h"
 #include "kernel/cbrt_tables.h"
 #include "kernel/roots.h"
-#include "kernel/rsqrt_tables.h"
 #include "kernel/uint.h"
 #include <stdint.h>
 
@@ -27,36 +26,6 @@ static int mod_floor_(int value, int divisor)
     return remainder < 0 ? remainder + divisor : remainder;
 }
 
-static uint64_t rsqrt64_(u128 mantissa, int octave)
-{
-    uint64_t m64 = mantissa >> 49;
-    unsigned i = (m64 >> 57) & 63;
-    int64_t d = (int64_t)(m64 & (((uint64_t)1 << 57) - 1))
-        - ((int64_t)1 << 56);
-    int64_t slope = ((__int128)d * (__int128)RSQRT_SEED_SLOPE_[i]) >> 65;
-    uint64_t dd = ((u128)((__int128)d * (__int128)d)) >> 63;
-    int64_t curve = (u128)dd * RSQRT_SEED_CURVE_[i] >> 65;
-    uint64_t r0 = RSQRT_SEED_VALUE_[i] - (uint64_t)slope + (uint64_t)curve;
-
-    uint64_t r2 = mul_hi_64_(r0, r0);
-    uint64_t t = ((uint64_t)3 << 61) - mul_hi_64_(m64, r2);
-    uint64_t u = mul_hi_64_(r0, t);
-    return (uint64_t)(((u128)u * RSQRT_NEWTON_[octave]) >> 61) - 64;
-}
-
-u128 sqrt_wide_(u128 z)
-{
-    int octave = z >> 127;
-    uint64_t r = rsqrt64_(z >> (14 + octave), octave);
-    u128 hp = ((u128)1 << 124) - mhi_approx_((u128)r * r, z);
-    u128 s0 = (u128)r * (z >> 64) + ((u128)r * (uint64_t)z >> 64);
-    u128 linear = mhi_approx_(s0, hp << 3);
-    u128 hs = (uint64_t)(hp >> 28);
-    uint64_t s64 = s0 >> 62;
-    u128 quadratic = (((hs * hs) >> 68) * 3 * s64) >> 65;
-    return s0 + linear + quadratic;
-}
-
 static u128 sqrt_fixed_(u128 mantissa, int octave)
 {
     return sqrt_wide_(mantissa << (14 + octave));
@@ -69,7 +38,8 @@ static u128 rsqrt_fixed_(u128 mantissa, int octave)
     u128 hp = ((u128)1 << 124) - mhi_approx_((u128)r * r, z);
     u128 linear = (u128)r * (hp >> 64) + ((u128)r * (uint64_t)hp >> 64);
     u128 hs = (uint64_t)(hp >> 28);
-    u128 quadratic = (((hs * hs) >> 68) * 3 * r) >> 66;
+    uint64_t q3 = (uint64_t)((hs * hs) >> 68) * 3;
+    u128 quadratic = ((u128)q3 * r) >> 66;
     return ((u128)r << 61) + linear + quadratic;
 }
 
@@ -107,19 +77,6 @@ static u128 cbrt_fixed_(u128 mantissa, int remainder)
     return sx + linear + quadratic;
 }
 
-static void parts_(u128 magnitude, u128 *mantissa, int *exponent)
-{
-    *mantissa = (magnitude & F128_MANTISSA_MASK) | F128_IMPLICIT_BIT;
-    *exponent = (int)(magnitude >> F128_EXP_SHIFT) - F128_BIAS;
-}
-
-static void midpoints_(u128 mantissa, u128 *lower, u128 *upper)
-{
-    u128 center = mantissa << 2;
-    *lower = center - (mantissa == F128_IMPLICIT_BIT ? 1 : 2);
-    *upper = center + 2;
-}
-
 static u384_t mul3_(u128 a, u128 b, u128 c)
 {
     u128 ab_high;
@@ -136,94 +93,43 @@ static u384_t mul3_(u128 a, u128 b, u128 c)
     return U384(low, sum, high);
 }
 
-static long double correct_sqrt_(u128 mantissa, int exponent, long double candidate)
+/* Gate hit: the candidate is within ROOT_GATE_ of its block midpoint
+ * M = (2m + 1) / 2 ulp, and the fast path is within ROOT_GATE_ of the exact
+ * root, so the result is one of the two neighbors of M.  The sign of an
+ * exact integer comparison of the input against M squared (or cubed) picks
+ * it; ties are impossible because 2m + 1 is odd while the input side always
+ * carries a nonzero power of two. */
+static __attribute__((cold, noinline)) u128 correct_sqrt_(u128 mantissa,
+    int octave, u128 candidate)
 {
-    for (;;) {
-        u128 bits = f128_bits_(candidate);
-        u128 m;
-        u128 lower;
-        u128 upper;
-        int e;
-        parts_(bits, &m, &e);
-        midpoints_(m, &lower, &upper);
-        u384_t input = u384_shl_(U384(mantissa, 0, 0),
-            116 + exponent - 2 * e);
-        int odd = bits & 1;
-        u128 high;
-        u128 low;
-
-        wmul_(lower, lower, &high, &low);
-        int side = u384_cmp_(input, U384(low, high, 0));
-        if (side < 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits - 1);
-            continue;
-        }
-
-        wmul_(upper, upper, &high, &low);
-        side = u384_cmp_(input, U384(low, high, 0));
-        if (side > 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits + 1);
-            continue;
-        }
-        return candidate;
-    }
+    u128 m = candidate >> 13;
+    u128 modd = 2 * m + 1;
+    u128 high;
+    u128 low;
+    wmul_(modd, modd, &high, &low);
+    u128 in_high = mantissa >> (14 - octave);
+    u128 in_low = mantissa << (114 + octave);
+    return m + (in_high > high || (in_high == high && in_low > low));
 }
 
-static long double correct_rsqrt_(u128 mantissa, int exponent,
-    long double candidate)
+static __attribute__((cold, noinline)) u128 correct_rsqrt_(u128 mantissa,
+    int octave, u128 candidate)
 {
-    for (;;) {
-        u128 bits = f128_bits_(candidate);
-        u128 m;
-        u128 lower;
-        u128 upper;
-        int e;
-        parts_(bits, &m, &e);
-        midpoints_(m, &lower, &upper);
-        u384_t one = u384_shl_(U384(1, 0, 0), 340 - exponent - 2 * e);
-        int odd = bits & 1;
-
-        int side = u384_cmp_(mul3_(mantissa, lower, lower), one);
-        if (side > 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits - 1);
-            continue;
-        }
-        side = u384_cmp_(mul3_(mantissa, upper, upper), one);
-        if (side < 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits + 1);
-            continue;
-        }
-        return candidate;
-    }
+    u128 m = candidate >> 11;
+    u128 modd = 2 * m + 1;
+    int side = u384_cmp_(mul3_(mantissa, modd, modd),
+        U384(0, 0, (u128)1 << (84 - octave)));
+    return m + (side < 0);
 }
 
-static long double correct_cbrt_(u128 mantissa, int remainder,
-    long double candidate)
+static __attribute__((cold, noinline)) u128 correct_cbrt_(u128 mantissa,
+    int remainder, u128 candidate)
 {
-    for (;;) {
-        u128 bits = f128_bits_(candidate);
-        u128 m;
-        u128 lower;
-        u128 upper;
-        int e;
-        parts_(bits, &m, &e);
-        midpoints_(m, &lower, &upper);
-        u384_t input = u384_shl_(U384(mantissa, 0, 0),
-            remainder - 3 * e + 230);
-        int odd = bits & 1;
-
-        int side = u384_cmp_(mul3_(lower, lower, lower), input);
-        if (side > 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits - 1);
-            continue;
-        }
-        side = u384_cmp_(mul3_(upper, upper, upper), input);
-        if (side < 0 || (side == 0 && odd)) {
-            candidate = f128_from_bits_(bits + 1);
-            continue;
-        }
-        return candidate;
-    }
+    u128 m = candidate >> 11;
+    u128 modd = 2 * m + 1;
+    int side = u384_cmp_(u384_shl_(U384(mantissa, 0, 0), 227 + remainder),
+        mul3_(modd, modd, modd));
+    return m + (side > 0);
 }
 
 long double sqrtl(long double x)
@@ -245,11 +151,11 @@ long double sqrtl(long double x)
     int octave = mod_floor_(exponent, 2);
     int scale = div_floor_(exponent, 2);
     u128 candidate = sqrt_fixed_(mantissa, octave);
-    u128 rounded_bits = (u128)(F128_BIAS - 1 + scale) << F128_EXP_SHIFT;
-    rounded_bits += (candidate + 4096) >> 13;
-    long double rounded = f128_from_bits_(rounded_bits);
-    return abs_diff_(candidate & 8191, 4096) <= ROOT_GATE_
-        ? correct_sqrt_(mantissa, exponent, rounded) : rounded;
+    u128 m = abs_diff_(candidate & 8191, 4096) <= ROOT_GATE_
+        ? correct_sqrt_(mantissa, octave, candidate)
+        : (candidate + 4096) >> 13;
+    return f128_from_bits_(((u128)(F128_BIAS - 1 + scale) << F128_EXP_SHIFT)
+        + m);
 }
 
 long double rsqrtl(long double x)
@@ -271,11 +177,11 @@ long double rsqrtl(long double x)
     int octave = mod_floor_(exponent, 2);
     int scale = -div_floor_(exponent, 2);
     u128 candidate = rsqrt_fixed_(mantissa, octave);
-    u128 rounded_bits = (u128)(F128_BIAS - 2 + scale) << F128_EXP_SHIFT;
-    rounded_bits += (candidate + 1024) >> 11;
-    long double rounded = f128_from_bits_(rounded_bits);
-    return abs_diff_(candidate & 2047, 1024) <= ROOT_GATE_
-        ? correct_rsqrt_(mantissa, exponent, rounded) : rounded;
+    u128 m = abs_diff_(candidate & 2047, 1024) <= ROOT_GATE_
+        ? correct_rsqrt_(mantissa, octave, candidate)
+        : (candidate + 1024) >> 11;
+    return f128_from_bits_(((u128)(F128_BIAS - 2 + scale) << F128_EXP_SHIFT)
+        + m);
 }
 
 long double cbrtl(long double x)
@@ -292,12 +198,10 @@ long double cbrtl(long double x)
     int remainder = mod_floor_(exponent, 3);
     int scale = div_floor_(exponent, 3);
     u128 candidate = cbrt_fixed_(mantissa, remainder);
-    u128 rounded_bits = (u128)(F128_BIAS - 1) << F128_EXP_SHIFT;
-    rounded_bits += (candidate + 1024) >> 11;
-    long double rounded = f128_from_bits_(rounded_bits);
-    long double result = abs_diff_(candidate & 2047, 1024) <= ROOT_GATE_
-        ? correct_cbrt_(mantissa, remainder, rounded) : rounded;
-    u128 scaled = f128_bits_(result);
+    u128 m = abs_diff_(candidate & 2047, 1024) <= ROOT_GATE_
+        ? correct_cbrt_(mantissa, remainder, candidate)
+        : (candidate + 1024) >> 11;
+    u128 scaled = ((u128)(F128_BIAS - 1) << F128_EXP_SHIFT) + m;
     u128 step = (u128)(scale < 0 ? -scale : scale) << F128_EXP_SHIFT;
     scaled = scale < 0 ? scaled - step : scaled + step;
     return f128_from_bits_((bits & F128_SIGN_MASK) | scaled);
