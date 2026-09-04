@@ -45,15 +45,6 @@ typedef struct {
 
 double sqrt(double);
 
-static inline double asin_double_from_bits_(uint64_t bits)
-{
-    union {
-        double value;
-        uint64_t bits;
-    } value = { .bits = bits };
-    return value.value;
-}
-
 static inline bool asin_u256_zero_(u256_t x)
 {
     return x.limb[0] == 0 && x.limb[1] == 0;
@@ -203,13 +194,15 @@ static u384_t asin_sqrt_384_(const asin_sqrt_t *sq, int *exponent)
     return u384_shl_(s3, lz);
 }
 
+/* round(64 * 2^-dn * n/d) half-up on the 15-bit tops; a sector off by one
+ * only moves the residual within the polynomial's convergence window. */
 static unsigned asin_sector_(u128 ntop, u128 dtop, unsigned dn)
 {
     if (dn >= 8)
         return 0;
-    double scale = asin_double_from_bits_((uint64_t)(1029 - dn) << 52);
-    return (unsigned)(scale * (double)(uint32_t)(ntop >> 113)
-        / (double)(uint32_t)(dtop >> 113) + 0.5);
+    uint64_t n = (uint64_t)(ntop >> 113) << 7 >> dn;
+    uint64_t d = (uint64_t)(dtop >> 113);
+    return (unsigned)((n + d) / (2 * d));
 }
 
 static atan_reduction_t asin_reduce_(u128 fx, int ex, const asin_sqrt_t *sq,
