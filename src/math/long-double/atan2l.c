@@ -22,15 +22,6 @@ static inline bool atan2_relative_(const atan2_reduction_t *r)
     return r->sector == 0 && r->quadrant == 0;
 }
 
-static inline double atan2_double_from_bits_(uint64_t bits)
-{
-    union {
-        double value;
-        uint64_t bits;
-    } value = { .bits = bits };
-    return value.value;
-}
-
 static __attribute__((cold, noinline)) long double atan2_edge_(u128 ybits, u128 xbits)
 {
     u128 ay = ybits & ~F128_SIGN_MASK;
@@ -71,9 +62,11 @@ static atan2_reduction_t atan2_reduce_(u128 ay, u128 ax, bool xneg)
 
     unsigned sector = 0;
     if (dn < 8) {
-        double scale = atan2_double_from_bits_((uint64_t)(1029 - dn) << 52);
-        sector = (unsigned)(scale * (double)(uint32_t)(n >> 98)
-            / (double)(uint32_t)(d >> 98) + 0.5);
+        /* round(64 * 2^-dn * n/d) half-up on the 30-bit tops; a sector off
+         * by one only moves the residual within the polynomial window. */
+        uint64_t ntop = (uint64_t)(uint32_t)(n >> 98) << 7 >> dn;
+        uint64_t dtop = (uint32_t)(d >> 98);
+        sector = (unsigned)((ntop + dtop) / (2 * dtop));
     }
 
     u128 numerator;
