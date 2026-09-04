@@ -43,8 +43,6 @@ typedef struct {
     int es_base;
 } asin_sqrt_t;
 
-double sqrt(double);
-
 static inline bool asin_u256_zero_(u256_t x)
 {
     return x.limb[0] == 0 && x.limb[1] == 0;
@@ -103,6 +101,19 @@ static u384_t asin_ceil_shr_(u128 hi, u128 lo, unsigned shift)
     return U384(rounded.limb[0], rounded.limb[1], 0);
 }
 
+/* rsqrt_step_ with the cheap one-sided multiplies: the residual comes out at
+ * most three units of 2^-128 short, perturbing q by less than 2^-122
+ * relative — the exact-residual frame correction downstream absorbs that
+ * (its own windows drop ~2^-222). */
+static inline u128 asin_rsqrt_step_(u128 w, u128 q)
+{
+    const u128 unit = (u128)1 << 124;
+    u128 residual = mhi_approx_(w, atan_sqr_hi_(q));
+    return residual >= unit
+        ? q - (mhi_approx_(q, residual - unit) << 3)
+        : q + (mhi_approx_(q, unit - residual) << 3);
+}
+
 static asin_sqrt_t asin_wide_sqrt_(u128 m, int e)
 {
     u128 hi;
@@ -118,9 +129,14 @@ static asin_sqrt_t asin_wide_sqrt_(u128 m, int e)
     u384_t vn = u384_shl_(v, parity);
     u128 w = vn.limb[2];
 
-    u128 seed = (u128)(0x1p158 / sqrt((double)(uint64_t)(w >> 64)));
-    u128 q = rsqrt_step_(w, seed);
-    u128 s0 = mhi_(w, q);
+    /* Integer 2^190/sqrt(w) seed: rsqrt64_ is good to ~2^-38, and two
+     * quadratic steps reach the ~2^-122 resolution floor of a 128-bit q —
+     * tighter than the former double-sqrt seed plus one step (~2^-104), so
+     * the frame correction below only improves. */
+    unsigned octave = (unsigned)(w >> 127);
+    u128 seed = (u128)rsqrt64_(w >> (14 + octave), (int)octave) << 64;
+    u128 q = asin_rsqrt_step_(w, asin_rsqrt_step_(w, seed));
+    u128 s0 = mhi_approx_(w, q);
     u128 s0h = (s0 >> 126) == 0 ? s0 << 2 : ~(u128)0;
 
     u128 sqh;
