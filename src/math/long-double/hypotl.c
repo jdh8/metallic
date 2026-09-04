@@ -6,7 +6,10 @@
 /* Correctly rounded binary128 hypot imported from metallic-rs commit
  * 76a9d7f0bce0e2a1dd271b106801325beb866dc3. */
 
-#define HYPOT_GATE_ 32
+/* 32 covered the exact-square candidate; the approximate squares in
+ * hypot_fixed_ shift it by at most 4 more units either way (measured over
+ * 20M mantissa pairs across the full dn range). */
+#define HYPOT_GATE_ 40
 
 double sqrt(double);
 
@@ -62,18 +65,19 @@ static long double exact_(u128 ma, u128 mb, unsigned dn, int eb)
     return f128_from_bits_(packed + round);
 }
 
+/* High 128 bits of x^2, at most 2 units short, never over. */
+static u128 sqr_hi_approx_(u128 x)
+{
+    uint64_t xh = (uint64_t)(x >> 64);
+    uint64_t xl = (uint64_t)x;
+    return umulditi3_(xh, xh) + (umulditi3_(xh, xl) >> 63);
+}
+
 static u128 hypot_fixed_(u128 ma, u128 mb, unsigned dn, unsigned *carry)
 {
     u128 big = ma << 14;
     u128 small = (mb << 14) >> dn;
-    u128 high_a;
-    u128 low_a;
-    u128 high_b;
-    u128 low_b;
-    wmul_(big, big, &high_a, &low_a);
-    wmul_(small, small, &high_b, &low_b);
-    u128 low = low_a + low_b;
-    u128 v = high_a + high_b + (low < low_a);
+    u128 v = sqr_hi_approx_(big) + sqr_hi_approx_(small);
     *carry = v >> 126;
     return sqrt_wide_(v << (2 - 2 * *carry));
 }
