@@ -246,18 +246,9 @@ static long double exp_accurate(u128 m, int e, bool negative, const exp_reductio
     return __metallic_f128_exp_round(w.n, w.r.limb[1], w.r.limb[0]);
 }
 
-static long double exp_generic(long double x, const exp_reduction *l)
+static inline __attribute__((always_inline)) long double
+exp_finish(exp_parts s, exp_fast_result f, bool negative, const exp_reduction *l)
 {
-    u128 bits = f128_bits_(x);
-    u128 magnitude = bits & ~F128_SIGN_MASK;
-    if (magnitude >= SATURATE) {
-        if (magnitude > F128_EXP_MASK) return f128_from_bits_(bits | F128_QUIET_BIT);
-        return bits & F128_SIGN_MASK ? 0.0L : f128_from_bits_(F128_EXP_MASK);
-    }
-    if (magnitude < TINY) return 1.0L;
-    exp_parts s = split_magnitude(magnitude);
-    bool negative = (bits & F128_SIGN_MASK) != 0;
-    exp_fast_result f = exp_frame(s.mantissa, s.exponent, l, negative);
     f = exp_fast(f.n, f.r);
     if ((unsigned)(f.n + 16382) > 32765) {
         if (__metallic_f128_exp_undecided(f.n, f.r, ZIV_GATE))
@@ -271,9 +262,63 @@ static long double exp_generic(long double x, const exp_reduction *l)
         + ((f.r >> GUARD) - F128_IMPLICIT_BIT) + (rest > GUARD_HALF));
 }
 
+static long double exp_generic(long double x, const exp_reduction *l)
+{
+    u128 bits = f128_bits_(x);
+    u128 magnitude = bits & ~F128_SIGN_MASK;
+    if (magnitude >= SATURATE) {
+        if (magnitude > F128_EXP_MASK) return f128_from_bits_(bits | F128_QUIET_BIT);
+        return bits & F128_SIGN_MASK ? 0.0L : f128_from_bits_(F128_EXP_MASK);
+    }
+    if (magnitude < TINY) return 1.0L;
+    exp_parts s = split_magnitude(magnitude);
+    bool negative = (bits & F128_SIGN_MASK) != 0;
+    exp_fast_result f = exp_frame(s.mantissa, s.exponent, l, negative);
+    return exp_finish(s, f, negative, l);
+}
+
+/* exp2's reduction is an exact funnel shift: x = m·2^(e-112), so the frame is
+ * the mantissa split at the binary point — no multiplication by a constant.
+ * The TINY exit bounds e to [-120, 14], keeping every shift count in range. */
+static exp_fast_result exp2_frame(u128 m, int e, bool negative)
+{
+    int left = e + 16;
+    u128 fraction;
+    int n;
+    bool borrow;
+    if (left >= 0) {
+        fraction = m << left;
+        n = left ? (int)(m >> (112 - e)) : 0;
+        borrow = negative;
+    } else {
+        fraction = m >> -left;
+        n = 0;
+        borrow = negative && u128_tz(m) >= (unsigned)-left;
+    }
+    u128 mask = negative ? ~(u128)0 : 0;
+    u128 before = fraction ^ mask;
+    fraction = before + borrow;
+    bool carry = fraction < before;
+    return (exp_fast_result){((n ^ (int)mask) + carry), fraction};
+}
+
 long double expl(long double x) { return exp_generic(x, &LOG2E); }
-long double exp2l(long double x) { return exp_generic(x, &ONE); }
 long double exp10l(long double x) { return exp_generic(x, &LOG2_10); }
+
+long double exp2l(long double x)
+{
+    u128 bits = f128_bits_(x);
+    u128 magnitude = bits & ~F128_SIGN_MASK;
+    if (magnitude >= SATURATE) {
+        if (magnitude > F128_EXP_MASK) return f128_from_bits_(bits | F128_QUIET_BIT);
+        return bits & F128_SIGN_MASK ? 0.0L : f128_from_bits_(F128_EXP_MASK);
+    }
+    if (magnitude < TINY) return 1.0L;
+    exp_parts s = split_magnitude(magnitude);
+    bool negative = (bits & F128_SIGN_MASK) != 0;
+    exp_fast_result f = exp2_frame(s.mantissa, s.exponent, negative);
+    return exp_finish(s, f, negative, &ONE);
+}
 
 static uint64_t inv_factorial64(unsigned j) { return INV_FACT[j] >> 64; }
 
