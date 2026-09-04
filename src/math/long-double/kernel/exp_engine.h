@@ -4,7 +4,7 @@
 #include "uint.h"
 #include <stdbool.h>
 
-#define F128_EXP_ZIV_GATE ((u128)32)
+#define F128_EXP_ZIV_GATE ((u128)64)
 #define F128_EXP_GUARD 15
 #define F128_EXP_GUARD_MASK (((u128)1 << F128_EXP_GUARD) - 1)
 #define F128_EXP_GUARD_HALF ((u128)1 << (F128_EXP_GUARD - 1))

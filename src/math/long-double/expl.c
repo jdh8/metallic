@@ -103,7 +103,7 @@ static unsigned reduction_tz(const exp_reduction *l)
 static inline __attribute__((always_inline)) exp_fast_result exp_frame(u128 m, int e, const exp_reduction *l, bool negative)
 {
     exp_product p = wide_product(m, l->head[1]);
-    u128 middle = mhi_(m, l->head[0]) + p.lo;
+    u128 middle = mhi_approx_(m, l->head[0]) + p.lo;
     bool carry0 = middle < p.lo;
     u128 top = p.hi + carry0;
     unsigned shift = 108 - e;
@@ -140,16 +140,31 @@ static void exp_index(u128 f, unsigned *i0, unsigned *i1, unsigned *i2, u128 *t)
     *t = f & (((u128)1 << 110) - 1);
 }
 
-static uint64_t exp_coefficient(unsigned k)
+/* Q1.127 product, up to 5 units short of exact: mhi_approx_ loses <= 2
+ * pre-shift units and the doubling drops the bit below the point. */
+static u128 mul127_approx(u128 a, u128 b)
 {
-    return EXP_COEF[k][1] >> 64;
+    return mhi_approx_(a, b) << 1;
 }
 
-static u128 mul127(u128 a, u128 b)
+/* floor(a * b / 2^64) for a 64-bit a, at most 1 unit short. */
+static u128 window_mul(uint64_t a, u128 b)
 {
-    exp_product p = wide_product(a, b);
-    return (p.hi << 1) | (p.lo >> 127);
+    return umulditi3_(a, (uint64_t)(b >> 64)) + (umulditi3_(a, (uint64_t)b) >> 64);
 }
+
+/* EXP_COEF rescaled for a 2^18-normalized argument: EXP_G[k] is the Q0.128
+ * truncation of EXP_COEF[k] >> 18k, so the Horner chain multiplies by
+ * sigma = t << 18 instead of t and the low-order tail fits the 64-bit
+ * window below 2^-64 (EXP_G5W/EXP_G6W are EXP_COEF[4..5] >> 18(4..5)). */
+static const u128 EXP_G[4] = {
+    U128(0xb17217f7d1cf79ab, 0xc9e3b39803f2f6af),
+    U128(0x00000f5fdeffc162, 0xc754378b583764b9),
+    U128(0x0000000000e35846, 0xb82505fc599d3b15),
+    U128(0x0000000000000009, 0xd955b7dd273b94e6),
+};
+#define EXP_G5W UINT64_C(0x00005761ff9e299c)
+#define EXP_G6W UINT64_C(0x0000000002861225)
 
 static u256_t mul255(u256_t a, u256_t b)
 {
@@ -157,24 +172,32 @@ static u256_t mul255(u256_t a, u256_t b)
     return (u256_t){{p.limb[0] << 1, (p.limb[1] << 1) | (p.limb[0] >> 127)}};
 }
 
+/* One-sided error budget, in units of 2^-128 on the returned significand
+ * (everything below is a deficit, never an excess).  The polynomial runs on
+ * sigma = t << 18 (exact); its truncations reach p only through the >> 19,
+ * so p is at most 2 units short.  Degrees 1-2 keep the full 128-bit sigma:
+ * with only the top 64 bits their dropped cross terms would be 2^25 and 2^5
+ * units.  Degree 3 drops sigma_low * h4 < 2^-124 pre-shift; degrees 4+ live
+ * in the 64-bit window with 2^-128-scale truncation.  Each mul127_approx is
+ * <= 5 short, the final high half <= 5, amplified by the remaining <= 2x
+ * factors: tables + polynomial stay under ~40 total, within the Ziv gate. */
 static inline __attribute__((always_inline)) exp_fast_result exp_fast(int n, u128 f)
 {
     unsigned i0, i1, i2;
     u128 t;
     exp_index(f, &i0, &i1, &i2, &t);
-    uint64_t short_t = t >> 64;
-    uint64_t tail = exp_coefficient(3)
-                  + mul_hi_64_(short_t, exp_coefficient(4)
-                  + mul_hi_64_(short_t, exp_coefficient(5)));
-    u128 q = EXP_COEF[2][1] + mhi_(t, (u128)tail << 64);
-    q = EXP_COEF[1][1] + mhi_(t, q);
-    q = EXP_COEF[0][1] + mhi_(t, q);
-    u128 p = ((u128)1 << 127) + (mhi_(t, q) >> 1);
-    u128 r = mul127(mul127(T1[i1][1], T2[i2][1]), p);
-    exp_product product = wide_product(T0[i0][1], r);
-    u128 carry = product.hi >> 127;
-    return (exp_fast_result){n + (int)carry,
-        carry ? product.hi : (product.hi << 1) | (product.lo >> 127)};
+    u128 s = t << 18;
+    uint64_t z = (uint64_t)(s >> 64);
+    uint64_t h5 = EXP_G5W + mul_hi_64_(z, EXP_G6W);
+    u128 h4 = EXP_G[3] + mul_hi_64_(z, h5);
+    u128 h3 = EXP_G[2] + window_mul(z, h4);
+    u128 h2 = EXP_G[1] + mhi_approx_(s, h3);
+    u128 h1 = EXP_G[0] + mhi_approx_(s, h2);
+    u128 p = ((u128)1 << 127) + (mhi_approx_(s, h1) >> 19);
+    u128 r = mul127_approx(mul127_approx(T1[i1][1], T2[i2][1]), p);
+    u128 hi = mhi_approx_(T0[i0][1], r);
+    u128 carry = hi >> 127;
+    return (exp_fast_result){n + (int)carry, carry ? hi : hi << 1};
 }
 
 f128_exp_fast_result_t __metallic_f128_exp_fast(int n, u128 f)
