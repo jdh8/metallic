@@ -179,10 +179,15 @@ static u128 log_ratio(const log_base_t *base, i128 z)
         - (u128)mul_hi_i128(narrow, base->coef[1][1]);
     u128 b = base->coef[2][1]
         - (u128)mul_hi_i128(narrow, base->coef[3][1]);
+    /* The 64-bit tail rides in b as a high-half-only multiplicand
+     * (mhi_approx_ folds away the zero low limb), replacing the z^4
+     * Estrin leg: two fewer wide multiplies at the same chain depth.
+     * The join's short-multiply and tail-lane errors are scaled by
+     * z^2 * z^2 < 2^-72, so the fast bound tightens from ~8 to ~7
+     * units at 2^127 and every Ziv gate keeps its margin. */
     u128 nn = sqr_hi(narrow);
-    u128 n4 = mhi_approx_(nn, nn);
-    return a + mhi_approx_(nn, b)
-        + (u128)mul_hi_64_((uint64_t)n4, (uint64_t)tail);
+    b += mhi_approx_(nn, (u128)(uint64_t)tail << 64);
+    return a + mhi_approx_(nn, b);
 }
 
 /* log_b(1+z) at 2^145. */
