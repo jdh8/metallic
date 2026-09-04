@@ -193,8 +193,42 @@ static u128 atan2_fraction_(u128 t, int exponent)
 
     u128 u = atan2_shr_round_(atan_sqr_hi_(t), shift);
     u128 cube = mhi_approx_(t, u);
+
+    /* Magnitude tiers: the squared argument is below 2^-shift, so dropping
+     * the series from coefficient c[N] on (c[k] = 1/(2k+3)) truncates by
+     * c[N] * 2^-shift(N+1) relative, one-sided, against the 64-unit Ziv gate
+     * of atan2_round_fast_ (units of 2^-128 on the fraction):
+     *   shift >= 43, N=2: c[2] * 2^-129 < 2^-131.8  (< 1/8 unit)
+     *   shift >= 22, N=5: c[5] * 2^-132 < 2^-135.7
+     *   shift >= 16, N=7: c[7] * 2^-128 < 2^-132.1
+     * The narrow 64-bit slots below each add at most 3 * 2^-64 in their
+     * bracket, suppressed by the v (and u * cube) factors between them and
+     * the result to at most 3 units at the tier boundary, decaying by
+     * 2^-2(shift-16) beyond it.  Everything else is the unchanged
+     * mhi_approx_ machinery already inside the gate's budget. */
+    if (shift >= 43)
+        return t - mhi_approx_(cube,
+            ATAN2_COEF[0][2] - mhi_approx_(u, ATAN2_COEF[1][2]));
+
     u128 v = atan_sqr_hi_(u);
+    if (shift >= 22) {
+        u128 even5 = ATAN2_COEF[0][2] + mhi_approx_(v,
+            ATAN2_COEF[2][2] + mhi_approx_(v, ATAN2_COEF[4][2]));
+        u128 odd5 = ATAN2_COEF[1][2] + mhi_approx_(v, ATAN2_COEF[3][2]);
+        return t - mhi_approx_(cube, even5 - mhi_approx_(u, odd5));
+    }
+
     uint64_t vh = v >> 64;
+    if (shift >= 16) {
+        uint64_t te = (uint64_t)(ATAN2_COEF[4][2] >> 64)
+            + mul_hi_64_(vh, ATAN2_COEF[6][2] >> 64);
+        u128 even7 = ATAN2_COEF[0][2] + mhi_approx_(v,
+            ATAN2_COEF[2][2] + mhi_approx_(v, (u128)te << 64));
+        u128 odd7 = ATAN2_COEF[1][2] + mhi_approx_(v, ATAN2_COEF[3][2]
+            + ((u128)mul_hi_64_(vh, ATAN2_COEF[5][2] >> 64) << 64));
+        return t - mhi_approx_(cube, even7 - mhi_approx_(u, odd7));
+    }
+
     uint64_t tail_even = (uint64_t)(ATAN2_COEF[4][2] >> 64)
         + mul_hi_64_(vh, (uint64_t)(ATAN2_COEF[6][2] >> 64)
             + mul_hi_64_(vh, ATAN2_COEF[8][2] >> 64));
