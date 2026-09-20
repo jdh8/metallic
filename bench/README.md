@@ -58,7 +58,8 @@ implementations receive the exact same input bits. Four timed batches alternate
 which implementation runs first, reducing warm-up and frequency-drift bias.
 
 The printed `metallic`, `libm`, and `core-math` columns are the **CPU seconds**
-(`clock()`) for one full run.
+(`clock()`) for one full run (binary32: extrapolated from the fastest batch, see
+below).
 
 These are **aggregate throughput times, not per-call latency**, and their
 absolute values are machine- and load-dependent. **Only the ratios are
@@ -73,7 +74,15 @@ less time); **< 1 means the other implementation is faster**. For example
 ≈ 3.7× faster than Metallic.
 
 The binary32 harness pre-fills a 65536-element buffer with random inputs (outside the
-timed loop), then cycles through it 3440 times.  Results are sunk through a
+timed loop) from a fixed seed, so runs are reproducible and **every implementation
+receives the exact same input bits** — rare slow-path inputs cannot land on one
+side only.  The 3440 sweeps are split into 8 batches per implementation whose order
+alternates (metallic → core-math, then core-math → metallic, …), so warm-up and
+frequency drift do not favor a fixed position.  Noise only ever adds time, so each
+column is the **fastest batch scaled to the full 3440 sweeps**.  Every implementation
+is called through a function pointer the compiler cannot see through; otherwise LLVM
+may inline a small function into the timed loop while its larger rival stays a real
+call, and the ratio would measure the inliner.  Results are sunk through a
 `volatile` so no call is optimized away.  It is fine for relative comparison —
 every implementation is measured identically — but do not read it as a latency
 figure.

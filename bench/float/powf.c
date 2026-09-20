@@ -11,45 +11,45 @@
 #endif
 
 static float bench_y_[BENCH_N];
+static float (*volatile bench2_f_[3])(float, float);
 
-static double bench2_(float f(float, float), BenchInterval ivx, BenchInterval ivy)
+static double bench2_time_(int which)
 {
-    rng_state = (uint32_t)time(NULL) + bench_call++;
-    if (!rng_state) rng_state = 1;
-    for (int i = 0; i < BENCH_N; i++)
-        bench_buf[i] = draw_one(ivx);
-    for (int i = 0; i < BENCH_N; i++)
-        bench_y_[i] = draw_one(ivy);
-
+    float (*f)(float, float) = bench2_f_[which];
     volatile float dummy;
     double start = bench_clock();
-    for (int rep = 0; rep < BENCH_REPS; rep++)
+    for (int rep = 0; rep < BENCH_REPS / BENCH_BATCHES; rep++)
         for (int i = 0; i < BENCH_N; i++)
             dummy = f(bench_buf[i], bench_y_[i]);
-    return bench_clock() - start;
-    dummy;
+    double elapsed = bench_clock() - start;
+    (void)dummy;
+    return elapsed;
 }
 
 int main(void)
 {
-    BenchInterval iv = BENCH_FULL;
+    double t[3];
+    bench_fill(bench_buf, BENCH_FULL);
+    bench_fill(bench_y_, BENCH_FULL);
+    bench2_f_[0] = metallic_powf;
 
 #ifdef BENCH_COREMATH
-    double m = bench2_(metallic_powf, iv, iv);
 #ifdef BENCH_WASM
-    double c = bench2_(cr_powf, iv, iv);
+    bench2_f_[1] = cr_powf;
+    bench_run(bench2_time_, 2, t);
     printf("%-6s %-7s metallic %8.4f  core-math %8.4f  cr/m %5.2f\n",
-           BENCH_LABEL, "powf", m, c, c / m);
+           BENCH_LABEL, "powf", t[0], t[1], t[1] / t[0]);
 #else
-    double l = bench2_(powf, iv, iv);
-    double c = bench2_(cr_powf, iv, iv);
+    bench2_f_[1] = powf;
+    bench2_f_[2] = cr_powf;
+    bench_run(bench2_time_, 3, t);
     printf("%-6s %-7s metallic %8.4f  libm %8.4f  core-math %8.4f  cr/m %5.2f\n",
-           BENCH_LABEL, "powf", m, l, c, c / m);
+           BENCH_LABEL, "powf", t[0], t[1], t[2], t[2] / t[0]);
 #endif
 #else
-    double m = bench2_(metallic_powf, iv, iv);
-    double l = bench2_(powf, iv, iv);
+    bench2_f_[1] = powf;
+    bench_run(bench2_time_, 2, t);
     printf("%-7s metallic %8.4f  libm %8.4f  libm/m %5.2f\n",
-           "powf", m, l, l / m);
+           "powf", t[0], t[1], t[1] / t[0]);
 #endif
 }

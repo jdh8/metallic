@@ -40,9 +40,9 @@ typedef struct { float lo, hi; int mode; } BenchInterval;
 #define BENCH_TO(hi)          ((BenchInterval){0, (hi), 2})
 #define BENCH_BOUNDED(lo, hi) ((BenchInterval){(lo), (hi), 3})
 
-/* xorshift32 PRNG — seeded fresh at the start of each bench() call. */
-static uint32_t rng_state;
-static uint32_t bench_call;
+/* xorshift32 PRNG.  The seed is fixed so runs are reproducible; the inputs are
+ * drawn once per process and shared by every implementation. */
+static uint32_t rng_state = 0x9E3779B9u;
 
 static uint32_t rng_next(void) {
     rng_state ^= rng_state << 13;
@@ -87,8 +87,14 @@ static float draw_one(BenchInterval iv) {
     }
 }
 
-enum { BENCH_N = 65536, BENCH_REPS = 3440 };
+enum { BENCH_N = 65536, BENCH_REPS = 3440, BENCH_BATCHES = 8 };
+_Static_assert(BENCH_REPS % BENCH_BATCHES == 0, "batches must divide the repetition count");
 static float bench_buf[BENCH_N];
+
+static void bench_fill(float buf[], BenchInterval iv) {
+    for (int i = 0; i < BENCH_N; i++)
+        buf[i] = draw_one(iv);
+}
 
 /* Seconds since an arbitrary epoch.  Prefers CPU time (load-independent); falls
  * back to wall time if clock() is unavailable on the runtime.  The bench is
@@ -103,26 +109,51 @@ static double bench_clock(void) {
     return 0;
 }
 
-static double bench(float f(float), BenchInterval iv) {
-    rng_state = (uint32_t)time(NULL) + bench_call++;
-    if (!rng_state) rng_state = 1;
-    for (int i = 0; i < BENCH_N; i++)
-        bench_buf[i] = draw_one(iv);
+/* The candidates are read back through a volatile so the compiler cannot
+ * specialize the timed loop per callee.  Otherwise it may inline a small
+ * implementation into the loop while a larger rival stays a real call, and the
+ * ratio measures the inliner.  This way every candidate is an indirect call. */
+static float (*volatile bench_f[3])(float);
 
+/* One batch of candidate `which` over the shared inputs. */
+static __attribute__((unused)) double bench_time(int which) {
+    float (*f)(float) = bench_f[which];
     volatile float dummy;
     double start = bench_clock();
-    for (int rep = 0; rep < BENCH_REPS; rep++)
+    for (int rep = 0; rep < BENCH_REPS / BENCH_BATCHES; rep++)
         for (int i = 0; i < BENCH_N; i++)
             dummy = f(bench_buf[i]);
-    return bench_clock() - start;
+    double elapsed = bench_clock() - start;
+    (void)dummy;
+    return elapsed;
+}
+
+/* Time n candidates in batches whose order alternates (ABC, CBA, ...) so that
+ * warm-up and frequency drift do not favor a fixed position.  Noise only ever
+ * adds time, so keep the fastest batch of each candidate, scaled to a full run
+ * of BENCH_REPS sweeps. */
+static void bench_run(double timer(int), int n, double best[]) {
+    for (int i = 0; i < n; i++)
+        best[i] = INFINITY;
+    for (int batch = 0; batch < BENCH_BATCHES; batch++)
+        for (int k = 0; k < n; k++) {
+            int i = batch & 1 ? n - 1 - k : k;
+            double t = timer(i);
+            if (t < best[i]) best[i] = t;
+        }
+    for (int i = 0; i < n; i++)
+        best[i] *= BENCH_BATCHES;
 }
 
 /* Metallic vs system libm.  One row: function, the two sweep times (seconds),
  * and the libm/metallic ratio (>1 => Metallic faster).  See bench/README.md. */
 #define BENCH(f, iv) int main(void) {                              \
-    double m = bench(metallic_##f, iv), l = bench(f, iv);         \
+    double t[2];                                                   \
+    bench_f[0] = metallic_##f, bench_f[1] = f;                     \
+    bench_fill(bench_buf, iv);                                     \
+    bench_run(bench_time, 2, t);                                   \
     printf("%-7s metallic %8.4f  libm %8.4f  libm/m %5.2f\n",    \
-           #f, m, l, l / m);                                       \
+           #f, t[0], t[1], t[1] / t[0]);                           \
 }
 
 #ifndef BENCH_LABEL
@@ -142,14 +173,20 @@ static double bench(float f(float), BenchInterval iv) {
  * cr/m is apples-to-apples.  See bench/README.md. */
 #ifdef BENCH_WASM
 #define BENCH_CR(f, iv) int main(void) {                                               \
-    double m = bench(metallic_##f, iv), c = bench(cr_##f, iv);                        \
+    double t[2];                                                                       \
+    bench_f[0] = metallic_##f, bench_f[1] = cr_##f;                                    \
+    bench_fill(bench_buf, iv);                                                         \
+    bench_run(bench_time, 2, t);                                                       \
     printf("%-6s %-7s metallic %8.4f  core-math %8.4f  cr/m %5.2f\n",                \
-           BENCH_LABEL, #f, m, c, c / m);                                             \
+           BENCH_LABEL, #f, t[0], t[1], t[1] / t[0]);                                  \
 }
 #else
 #define BENCH_CR(f, iv) int main(void) {                                               \
-    double m = bench(metallic_##f, iv), l = bench(f, iv), c = bench(cr_##f, iv);      \
+    double t[3];                                                                       \
+    bench_f[0] = metallic_##f, bench_f[1] = f, bench_f[2] = cr_##f;                    \
+    bench_fill(bench_buf, iv);                                                         \
+    bench_run(bench_time, 3, t);                                                       \
     printf("%-6s %-7s metallic %8.4f  libm %8.4f  core-math %8.4f  cr/m %5.2f\n",   \
-           BENCH_LABEL, #f, m, l, c, c / m);                                          \
+           BENCH_LABEL, #f, t[0], t[1], t[2], t[2] / t[0]);                            \
 }
 #endif
