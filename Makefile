@@ -8,7 +8,7 @@ WASMRUN ?= $(or $(shell command -v wasmtime 2>/dev/null),$(if $(wildcard $(HOME)
 
 all: metallic.a
 
-.PHONY: check.wasm check.wasm.fast check.native check.oracle check.oracle.float check.oracle.double check.oracle.long-double check.oracle.cr check.oracle.mpfr print.oracle.cr clean all compile_commands.json
+.PHONY: check.wasm check.native check.oracle check.oracle.float check.oracle.double check.oracle.long-double check.oracle.cr check.oracle.mpfr print.oracle.cr clean all compile_commands.json
 
 SOURCES := $(wildcard src/*/*.c src/*/*/*.c)
 
@@ -23,24 +23,6 @@ SOURCES.bench := $(wildcard bench/*/*.c)
 check: check.wasm check.native
 
 check.wasm: $(SOURCES.check.wasm:.c=.run)
-
-# Tests with pre-existing failures in soft-float and 128-bit integer shifts.
-# These are not regressions; CI runs the fast subset that filters them out.
-KNOWN_BROKEN_WASM := \
-	test/wasm/soft/float/divtf3.c \
-    test/wasm/soft/float/fixtfdi.c \
-    test/wasm/soft/float/fixtfsi.c \
-    test/wasm/soft/float/fixtfti.c \
-    test/wasm/soft/float/fixunstfdi.c \
-    test/wasm/soft/float/fixunstfsi.c \
-    test/wasm/soft/float/fixunstfti.c \
-    test/wasm/soft/integer/ashlti3.c \
-    test/wasm/soft/integer/ashrti3.c \
-    test/wasm/soft/integer/lshrti3.c
-
-SOURCES.check.wasm.fast := $(filter-out $(KNOWN_BROKEN_WASM), $(SOURCES.check.wasm))
-
-check.wasm.fast: $(SOURCES.check.wasm.fast:.c=.run)
 
 # -std=c23 so the tests see the C23 declarations (rsqrt, sinpi, ...) that
 # include/bits/mathcalls.h gates on __STDC_VERSION__ > 201710L.

@@ -142,10 +142,10 @@ and correctly rounded need no table.
    existing tests in `test/wasm/math/` only check the *exact* functions
    bit-identically (`identical.h`); a transcendental-accuracy / correct-rounding
    harness is new work — see [reference/correct-rounding.md](reference/correct-rounding.md).
-   Run `make check.wasm.fast` before committing.
+   Run `make check.wasm` before committing.
 
 8. **Commit atomically** — one function (or one coherent improvement) per commit,
-   each building and passing `check.wasm.fast` on its own (see CLAUDE.md).
+   each building and passing `check.wasm` on its own (see CLAUDE.md).
 
 ## Worked skeleton: `exp` (`src/math/double/exp.c`)
 

@@ -15,7 +15,7 @@ env:
 # 2^32 binary32 inputs; the bivariate pair (atan2f, hypotf) is sampled plus
 # CORE-MATH's worst-case files (a 2^64 proof is infeasible -- the same way
 # CORE-MATH validates them).  This catches the slow-path / Ziv-fallback bugs
-# that check.wasm.fast (exact functions only) cannot see.
+# that check.wasm (exact functions only) cannot see.
 #
 # The independent MPFR ground-truth sweep (make check.oracle.mpfr) is kept for
 # development and audits but is too slow to gate, so it is not run here.

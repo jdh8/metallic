@@ -100,9 +100,7 @@ hammers the published hard-to-round cases plus a broad random sample. See
 
 * `make check.native` — native tests (some pre-existing math accuracy failures
   against the host libm).
-* `make check.wasm.fast` — wasm tests under `wasmtime`, excluding the 10
-  pre-existing soft-float/integer failures. CI runs this.
-* `make check.wasm` — full wasm suite including the known-broken tests.
+* `make check.wasm` — wasm tests under `wasmtime`. CI runs this.
 * `make check.oracle.long-double` — compare the selected binary128 functions
   against CORE-MATH's complete worst-case corpora (requires Clang, quadmath,
   and a CORE-MATH checkout).
@@ -111,13 +109,7 @@ If `wasmtime` is installed but not on `PATH` (for example via
 `$HOME/.wasmtime/bin/wasmtime`), the Makefile will use that location
 automatically. You can also select another runner explicitly:
 
-    make WASMRUN=/path/to/wasmtime check.wasm.fast
-
-## Known issues
-
-10 pre-existing test failures in the soft-float / 128-bit integer shift code
-paths. These are not regressions and are excluded from
-`check.wasm.fast`. See [Makefile](Makefile) `KNOWN_BROKEN_WASM`.
+    make WASMRUN=/path/to/wasmtime check.wasm
 
 ## Acknowledgements
 

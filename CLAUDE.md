@@ -15,12 +15,11 @@ wasmtime hello.out          # run under wasmtime
 ## Tests
 
 ```bash
-make check.wasm.fast    # CI suite — must pass (excludes 10 known-broken tests)
-make check.wasm         # full suite including known failures
+make check.wasm         # CI suite — must pass
 make check.native       # informational native run
 ```
 
-Tests are individual `.c` files under `test/wasm/` and `test/native/`. Each compiles to a `.out` (wasm) or `.exe` (native) and is run directly. There are 10 pre-existing failures in the soft-float / 128-bit integer paths excluded from CI via `check.wasm.fast`.
+Tests are individual `.c` files under `test/wasm/` and `test/native/`. Each compiles to a `.out` (wasm) or `.exe` (native) and is run directly.
 
 ## Repository layout
 
@@ -71,4 +70,4 @@ This is a sole-developer project. Develop directly on `main` — no feature bran
 
 ## Commit discipline
 
-When executing a large plan, **break it into atomic commits** — one logical change per commit. A commit should build and pass `make check.wasm.fast` on its own. Prefer many small commits over one large one; this makes bisect and review tractable and keeps the history readable.
+When executing a large plan, **break it into atomic commits** — one logical change per commit. A commit should build and pass `make check.wasm` on its own. Prefer many small commits over one large one; this makes bisect and review tractable and keeps the history readable.
